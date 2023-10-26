@@ -11,9 +11,16 @@
 	<groupId>at.ymeri</groupId>
 	<artifactId>finance</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>My Finance</name>
+    <packaging>pom</packaging>
+    <name>My Finance</name>
 	<description>Personal Finance Project</description>
-	<properties>
+    <modules>
+        <module>Application</module>
+		<module>Domain</module>
+		<module>Infrastructure</module>
+		<module>Launcher</module>
+	</modules>
+    <properties>
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
