@@ -1,0 +1,26 @@
+components:
+  schemas:
+    billResponseModel:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"
+        date:
+          type: "string"
+          format: "date"
+        billItems:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/billItem'
+
+    billItem:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"

@@ -1,0 +1,33 @@
+openapi: "3.0.0"
+tags:
+  - name: "BillFindController"
+    description: "API for retrieving bills from the system"
+info:
+  title: "Personal Finance Service - Find bills API"
+  description: "This API can be used to retrieve bills from the system"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /bills:
+    get:
+      summary: "List all bills"
+      operationId: listBills
+      description: "List all bills of the current user"
+      tags:
+        - bills
+      parameters:
+        - name: "date"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            format: "date"
+            example: '2023-10-26'
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: 'bill-model.yaml#/components/schemas/billResponseModel'
