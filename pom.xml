@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.5</version>
+		<version>3.2.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>at.ymeri</groupId>
-	<artifactId>finance</artifactId>
+	<groupId>at.ymeri.my-finance</groupId>
+	<artifactId>parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>My Finance</name>
@@ -22,9 +22,10 @@
 	</modules>
     <properties>
 		<java.version>21</java.version>
-		<api-package>at.ymeri.finance.controller</api-package>
-		<model-package>at.ymeri.finance.data</model-package>
+		<api-package>at.ymeri.my.finance.application.controller</api-package>
+		<model-package>at.ymeri.my.finance.application.data</model-package>
 		<openapi-generator-maven-plugin-version>7.0.1</openapi-generator-maven-plugin-version>
+		<org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
 	</properties>
 	<dependencies>
 
@@ -85,21 +86,44 @@
 				<artifactId>swagger-jaxrs2</artifactId>
 				<version>2.2.17</version>
 			</dependency>
+
+
+			<!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
+			<dependency>
+				<groupId>org.mapstruct</groupId>
+				<artifactId>mapstruct</artifactId>
+				<version>${org.mapstruct.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
 				<configuration>
-					<excludes>
-						<exclude>
+					<source>21</source>
+					<target>21</target>
+					<annotationProcessorPaths>
+						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
+							<version>1.18.30</version>
+						</path>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>1.5.5.Final</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 		</plugins>

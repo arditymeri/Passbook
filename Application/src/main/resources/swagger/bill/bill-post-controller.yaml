@@ -1,0 +1,37 @@
+openapi: "3.0.0"
+tags:
+  - name: BillPostController
+    description: "API to create a new bill"
+info:
+  title: "Create Bill api"
+  description: "API to create new bill objects"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /createBill:
+    post:
+      summary: "Create a new bill"
+      tags:
+        - billCreate
+      operationId: createBill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "bill-model.yaml#/components/schemas/bill"
+
+      responses:
+        "200":
+          description: "Newly created bill"
+          content:
+            application/json:
+              schema:
+                $ref: "bill-model.yaml#/components/schemas/billResponseModel"
+        "400":
+          description: "Invalid"
+        "404":
+          description: "None found"
+        default:
+          description: "Unexpected error"

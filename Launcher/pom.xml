@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>at.ymeri</groupId>
-        <artifactId>finance</artifactId>
+        <groupId>at.ymeri.my-finance</groupId>
+        <artifactId>parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -13,21 +13,38 @@
 
     <dependencies>
         <dependency>
-            <groupId>at.ymeri</groupId>
-            <artifactId>Application</artifactId>
+            <groupId>at.ymeri.my-finance</groupId>
+            <artifactId>application</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>at.ymeri</groupId>
-            <artifactId>Domain</artifactId>
+            <groupId>at.ymeri.my-finance</groupId>
+            <artifactId>domain</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>at.ymeri</groupId>
-            <artifactId>Infrastructure</artifactId>
+            <groupId>at.ymeri.my-finance</groupId>
+            <artifactId>infrastructure</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 
 </project>

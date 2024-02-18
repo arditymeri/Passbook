@@ -1,4 +1,4 @@
-package at.ymeri;
+package at.ymeri.my.finance;
 
 public class Main {
     public static void main(String[] args) {

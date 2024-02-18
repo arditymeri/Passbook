@@ -4,16 +4,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>at.ymeri</groupId>
-        <artifactId>finance</artifactId>
+        <groupId>at.ymeri.my-finance</groupId>
+        <artifactId>parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>Application</artifactId>
+    <artifactId>application</artifactId>
 
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>at.ymeri.my-finance</groupId>
+            <artifactId>domain</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -31,6 +37,11 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -41,12 +52,103 @@
                 <version>${openapi-generator-maven-plugin-version}</version>
                 <executions>
                     <execution>
+                        <id>bill-get</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
                             <inputSpec>
                                 ${project.basedir}/src/main/resources/swagger/bill/bill-get-controller.yaml
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>${api-package}.bill</apiPackage>
+                            <modelPackage>${model-package}</modelPackage>
+                            <skipOverwrite>true</skipOverwrite>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <delegatePattern>true</delegatePattern>
+                                <additionalModelTypeAnnotation>
+                                    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                                </additionalModelTypeAnnotation>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <dateLibary>java8</dateLibary>
+                                <performBeanValidation>true</performBeanValidation>
+                                <useTags>true</useTags>
+                                <notNullJacksonAnnoation>true</notNullJacksonAnnoation>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bill-post</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/bill/bill-post-controller.yaml
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>${api-package}.bill</apiPackage>
+                            <modelPackage>${model-package}</modelPackage>
+                            <skipOverwrite>true</skipOverwrite>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <delegatePattern>true</delegatePattern>
+                                <additionalModelTypeAnnotation>
+                                    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                                </additionalModelTypeAnnotation>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <dateLibary>java8</dateLibary>
+                                <performBeanValidation>true</performBeanValidation>
+                                <useTags>true</useTags>
+                                <notNullJacksonAnnoation>true</notNullJacksonAnnoation>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>income-get</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/income/income-get-controller.yaml
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>${api-package}.bill</apiPackage>
+                            <modelPackage>${model-package}</modelPackage>
+                            <skipOverwrite>true</skipOverwrite>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <delegatePattern>true</delegatePattern>
+                                <additionalModelTypeAnnotation>
+                                    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                                </additionalModelTypeAnnotation>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <dateLibary>java8</dateLibary>
+                                <performBeanValidation>true</performBeanValidation>
+                                <useTags>true</useTags>
+                                <notNullJacksonAnnoation>true</notNullJacksonAnnoation>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>income-create</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/income/income-post-controller.yaml
                             </inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>${api-package}.bill</apiPackage>

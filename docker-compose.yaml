@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: my-finance-postgres-container
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: myfinance
+      POSTGRES_USER: diti
+      POSTGRES_PASSWORD: FinanceDbPassword
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: my-finance-pgadmin-container
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - postgres

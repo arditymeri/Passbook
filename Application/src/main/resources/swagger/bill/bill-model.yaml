@@ -3,7 +3,34 @@ components:
     billResponseModel:
       type: "object"
       properties:
+        common:
+          type: "object"
+          properties:
+            success:
+              type: "boolean"
+            message:
+              type: "string"
+        bill:
+          $ref: '#/components/schemas/bill'
+    billListResponseModel:
+      type: "object"
+      properties:
+        common:
+          type: "object"
+          properties:
+            success:
+              type: "boolean"
+            message:
+              type: "string"
+        bills:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/bill'
+    bill:
+      type: "object"
+      properties:
         id:
+          format: "uuid"
           type: "string"
         amount:
           type: "number"

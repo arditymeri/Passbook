@@ -1,0 +1,26 @@
+components:
+  schemas:
+    incomeResponseModel:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"
+        date:
+          type: "string"
+          format: "date"
+        incomeItems:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/incomeItem'
+
+    incomeItem:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"

@@ -1,0 +1,36 @@
+openapi: "3.0.0"
+tags:
+  - name: IncomePostController
+    description: "API to create a new income"
+info:
+  title: "Create Income api"
+  description: "API to create new income objects"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /createIncome:
+    post:
+      summary: "Create a new income"
+      tags:
+        - incomeCreate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "income-model.yaml#/components/schemas/incomeResponseModel"
+
+      responses:
+        "200":
+          description: "Newly created income"
+          content:
+            application/json:
+              schema:
+                $ref: "income-model.yaml#/components/schemas/incomeResponseModel"
+        "400":
+          description: "Invalid"
+        "404":
+          description: "None found"
+        default:
+          description: "Unexpected error"
