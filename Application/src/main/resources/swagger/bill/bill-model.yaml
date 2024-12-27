@@ -35,6 +35,11 @@ components:
         amount:
           type: "number"
           format: "double"
+        description:
+          type: "string"
+        time:
+          type: "string"
+          format: "date-time"
         date:
           type: "string"
           format: "date"
