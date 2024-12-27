@@ -2,21 +2,16 @@ package at.ymeri.my.finance.integration.tests;
 
 import at.ymeri.my.finance.MyFinanceApplication;
 import at.ymeri.my.finance.controller.bill.BillGetController;
-import at.ymeri.my.finance.domain.api.GetBillService;
 
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.kafka.KafkaContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 
