@@ -1,26 +1,85 @@
 components:
   schemas:
-    incomeResponseModel:
+    createIncomeRequest:
+      type: "object"
+      required:
+        - amount
+        - time
+      properties:
+        description:
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"
+        currency:
+          type: "string"
+        time:
+          type: "string"
+          format: "date-time"
+        source:
+          $ref: '#/components/schemas/incomeSource'
+        payer:
+          type: "string"
+        accountId:
+          type: "string"
+        notes:
+          type: "string"
+        recurring:
+          type: "boolean"
+        recurringFrequency:
+          $ref: '#/components/schemas/recurringFrequency'
+
+    incomeResponse:
       type: "object"
       properties:
         id:
           type: "string"
+          format: "uuid"
+        description:
+          type: "string"
         amount:
           type: "number"
           format: "double"
-        date:
+        currency:
           type: "string"
-          format: "date"
-        incomeItems:
-          type: "array"
-          items:
-            $ref: '#/components/schemas/incomeItem'
+        time:
+          type: "string"
+          format: "date-time"
+        source:
+          $ref: '#/components/schemas/incomeSource'
+        payer:
+          type: "string"
+        accountId:
+          type: "string"
+        notes:
+          type: "string"
+        recurring:
+          type: "boolean"
+        recurringFrequency:
+          $ref: '#/components/schemas/recurringFrequency'
 
-    incomeItem:
+    incomeListResponse:
       type: "object"
       properties:
-        name:
-          type: "string"
-        amount:
-          type: "number"
-          format: "double"
+        incomes:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/incomeResponse'
+
+    incomeSource:
+      type: "string"
+      enum:
+        - SALARY
+        - FREELANCE
+        - INVESTMENT
+        - RENTAL
+        - GIFT
+        - OTHER
+
+    recurringFrequency:
+      type: "string"
+      enum:
+        - DAILY
+        - WEEKLY
+        - MONTHLY
+        - YEARLY

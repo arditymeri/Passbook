@@ -121,7 +121,7 @@
                                 ${project.basedir}/src/main/resources/swagger/income/income-get-controller.yaml
                             </inputSpec>
                             <generatorName>spring</generatorName>
-                            <apiPackage>${api-package}.bill</apiPackage>
+                            <apiPackage>${api-package}.income</apiPackage>
                             <modelPackage>${model-package}</modelPackage>
                             <skipOverwrite>true</skipOverwrite>
                             <supportingFilesToGenerate>
@@ -151,7 +151,7 @@
                                 ${project.basedir}/src/main/resources/swagger/income/income-post-controller.yaml
                             </inputSpec>
                             <generatorName>spring</generatorName>
-                            <apiPackage>${api-package}.bill</apiPackage>
+                            <apiPackage>${api-package}.income</apiPackage>
                             <modelPackage>${model-package}</modelPackage>
                             <skipOverwrite>true</skipOverwrite>
                             <supportingFilesToGenerate>

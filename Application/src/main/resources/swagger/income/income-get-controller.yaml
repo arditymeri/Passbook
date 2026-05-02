@@ -1,10 +1,7 @@
 openapi: "3.0.0"
-tags:
-  - name: "IncomeGetController"
-    description: "API for retrieving incomes from the system"
 info:
-  title: "Personal Finance Service - Find incomes API"
-  description: "This API can be used to retrieve incomes from the system"
+  title: "Personal Finance Service - Find Incomes API"
+  description: "API to retrieve income entries from the system"
   version: "1.0.0"
 servers:
   - url: "http://localhost:8080/api/v1"
@@ -13,7 +10,7 @@ paths:
     get:
       summary: "List all incomes"
       operationId: listIncomes
-      description: "List all incomes of the current user"
+      description: "List all income entries"
       tags:
         - incomeGet
       parameters:
@@ -23,24 +20,22 @@ paths:
           schema:
             type: "string"
             format: "date"
-            example: '2023-10-26'
+            example: "2023-10-26"
       responses:
         "200":
           description: "OK"
           content:
             application/json:
               schema:
-                $ref: 'income-model.yaml#/components/schemas/incomeResponseModel'
+                $ref: "income-model.yaml#/components/schemas/incomeListResponse"
         "400":
-          description: "Invalid"
-        "404":
-          description: "None found"
+          description: "Invalid request"
         default:
           description: "Unexpected error"
-  /income/{id}:
+  /incomes/{id}:
     get:
       summary: "Get income by id"
-      operationId: "getById"
+      operationId: getIncomeById
       tags:
         - incomeGet
       parameters:
@@ -50,18 +45,16 @@ paths:
           description: "Income id"
           schema:
             type: string
-
       responses:
         "200":
-          description: "A income object"
+          description: "An income entry"
           content:
             application/json:
               schema:
-                $ref: 'income-model.yaml#/components/schemas/incomeResponseModel'
+                $ref: "income-model.yaml#/components/schemas/incomeResponse"
         "400":
-          description: "Invalid"
+          description: "Invalid request"
         "404":
           description: "Not found"
         default:
           description: "Unexpected error"
-
