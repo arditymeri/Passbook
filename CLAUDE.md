@@ -5,6 +5,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Run Commands
 
 ```bash
+# --- Frontend ---
+# Install dependencies
+cd frontend && npm install
+
+# Start dev server (http://localhost:5173)
+cd frontend && npm run dev
+
+# Production build
+cd frontend && npm run build
+
+# --- Backend ---
 # Build all modules
 ./mvnw clean package
 
@@ -33,10 +44,11 @@ docker-compose up
 
 ## Architecture Overview
 
-This is a **Hexagonal Architecture (Ports & Adapters)** Spring Boot 3.4.0 / Java 21 personal finance app, split into Maven modules:
+This is a **Hexagonal Architecture (Ports & Adapters)** Spring Boot 3.4.0 / Java 21 personal finance app with a React frontend, split into Maven modules (backend) and a separate frontend app:
 
 ```
-parent (pom.xml)
+root/
+├── frontend/       — React 18 + TypeScript SPA (Vite)
 ├── Domain          — Business logic, service interfaces (API ports), DTOs, persistence ports (SPI)
 ├── Application     — REST controllers (generated from OpenAPI YAML), MapStruct mappers (DTO ↔ API model)
 ├── Infrastructure  — Persistence adapters (SPI implementations), JPA entities, Spring Data repositories
@@ -68,3 +80,23 @@ The `Events` module contains a `BookingConsumer` annotated with `@KafkaListener`
 - Hibernate DDL auto: `update` (schema managed automatically)
 - Swagger UI available at `/swagger-ui.html` when app is running
 - pgAdmin at `:5050`, Kafdrop at `:9000`, Confluent Control Center at `:9021`
+
+## Frontend
+
+Located in `frontend/`. Built with **React 18 + TypeScript** using **Vite**.
+
+```
+frontend/
+├── src/
+│   ├── assets/       — Static assets
+│   ├── App.tsx       — Root component
+│   └── main.tsx      — Entry point
+├── public/           — Public static files
+├── index.html
+├── vite.config.ts
+└── tsconfig.json
+```
+
+- Dev server runs at `http://localhost:5173`
+- Communicates with the Spring Boot backend at `http://localhost:8080`
+- Add new pages/components under `src/`; configure the Vite dev proxy in `vite.config.ts` to forward `/api` requests to the backend
