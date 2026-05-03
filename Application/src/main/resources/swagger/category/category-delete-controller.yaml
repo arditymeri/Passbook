@@ -1,0 +1,28 @@
+openapi: "3.0.0"
+info:
+  title: "Delete Category API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /categories/{id}:
+    delete:
+      summary: "Delete a category"
+      operationId: deleteCategory
+      tags:
+        - categoryDelete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: "Deleted successfully"
+        "404":
+          description: "Not found"
+        "409":
+          description: "Category is referenced by a bill or income"
+        default:
+          description: "Unexpected error"

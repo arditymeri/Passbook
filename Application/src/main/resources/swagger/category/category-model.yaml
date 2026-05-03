@@ -1,0 +1,61 @@
+components:
+  schemas:
+    createCategoryRequest:
+      type: "object"
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: "string"
+        type:
+          $ref: '#/components/schemas/categoryType'
+        color:
+          type: "string"
+        parentCategoryId:
+          type: "string"
+
+    updateCategoryRequest:
+      type: "object"
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: "string"
+        type:
+          $ref: '#/components/schemas/categoryType'
+        color:
+          type: "string"
+        parentCategoryId:
+          type: "string"
+
+    categoryResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        type:
+          $ref: '#/components/schemas/categoryType'
+        color:
+          type: "string"
+        parentCategoryId:
+          type: "string"
+
+    categoryListResponse:
+      type: "object"
+      properties:
+        categories:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/categoryResponse'
+
+    categoryType:
+      type: "string"
+      enum:
+        - EXPENSE
+        - INCOME
+        - BOTH

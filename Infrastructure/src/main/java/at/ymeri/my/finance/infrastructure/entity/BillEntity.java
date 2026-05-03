@@ -24,4 +24,7 @@ public class BillEntity {
 
     @Column(name = "time")
     private OffsetDateTime time;
+
+    @Column(name = "category_id")
+    private String categoryId;
 }

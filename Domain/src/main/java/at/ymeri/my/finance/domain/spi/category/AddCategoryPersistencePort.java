@@ -6,3 +6,4 @@ public interface AddCategoryPersistencePort {
 
     CategoryDto addCategory(CategoryDto categoryDto);
 }
+

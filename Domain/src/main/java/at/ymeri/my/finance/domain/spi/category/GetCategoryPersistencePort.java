@@ -13,4 +13,8 @@ public interface GetCategoryPersistencePort {
     List<CategoryDto> getAll();
 
     List<CategoryDto> getByType(CategoryType type);
+
+    boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, String id);
 }

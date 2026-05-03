@@ -45,4 +45,7 @@ public class IncomeEntity {
 
     @Column(name = "recurring_frequency")
     private String recurringFrequency;
+
+    @Column(name = "category_id")
+    private String categoryId;
 }

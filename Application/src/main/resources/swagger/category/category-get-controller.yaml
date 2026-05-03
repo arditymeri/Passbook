@@ -1,0 +1,52 @@
+openapi: "3.0.0"
+info:
+  title: "Get Category API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /categories:
+    get:
+      summary: "List all categories"
+      operationId: listCategories
+      tags:
+        - categoryGet
+      parameters:
+        - name: "type"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            enum: [EXPENSE, INCOME, BOTH]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "category-model.yaml#/components/schemas/categoryListResponse"
+        default:
+          description: "Unexpected error"
+  /categories/{id}:
+    get:
+      summary: "Get category by id"
+      operationId: getCategoryById
+      tags:
+        - categoryGet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "A category"
+          content:
+            application/json:
+              schema:
+                $ref: "category-model.yaml#/components/schemas/categoryResponse"
+        "404":
+          description: "Not found"
+        default:
+          description: "Unexpected error"

@@ -1,0 +1,40 @@
+openapi: "3.0.0"
+info:
+  title: "Update Category API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /categories/{id}:
+    put:
+      summary: "Update a category"
+      operationId: updateCategory
+      tags:
+        - categoryUpdate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "category-model.yaml#/components/schemas/updateCategoryRequest"
+      responses:
+        "200":
+          description: "Updated category"
+          content:
+            application/json:
+              schema:
+                $ref: "category-model.yaml#/components/schemas/categoryResponse"
+        "400":
+          description: "Invalid request"
+        "404":
+          description: "Not found"
+        "409":
+          description: "Category name already exists"
+        default:
+          description: "Unexpected error"
