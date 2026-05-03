@@ -1,0 +1,32 @@
+openapi: "3.0.0"
+info:
+  title: "Create Account API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /accounts:
+    post:
+      summary: "Create a new account"
+      tags:
+        - accountCreate
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "account-model.yaml#/components/schemas/createAccountRequest"
+      responses:
+        "201":
+          description: "Newly created account"
+          content:
+            application/json:
+              schema:
+                $ref: "account-model.yaml#/components/schemas/accountResponse"
+        "400":
+          description: "Invalid request"
+        "409":
+          description: "Account name already exists"
+        default:
+          description: "Unexpected error"

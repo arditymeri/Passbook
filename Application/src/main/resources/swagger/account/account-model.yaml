@@ -1,0 +1,90 @@
+components:
+  schemas:
+    createAccountRequest:
+      type: "object"
+      required:
+        - name
+        - type
+        - currencies
+        - defaultCurrency
+      properties:
+        name:
+          type: "string"
+        type:
+          $ref: '#/components/schemas/accountType'
+        currencies:
+          type: "array"
+          items:
+            type: "string"
+          minItems: 1
+        defaultCurrency:
+          type: "string"
+        balance:
+          type: "number"
+          format: "double"
+        institution:
+          type: "string"
+
+    updateAccountRequest:
+      type: "object"
+      required:
+        - name
+        - type
+        - currencies
+        - defaultCurrency
+      properties:
+        name:
+          type: "string"
+        type:
+          $ref: '#/components/schemas/accountType'
+        currencies:
+          type: "array"
+          items:
+            type: "string"
+          minItems: 1
+        defaultCurrency:
+          type: "string"
+        balance:
+          type: "number"
+          format: "double"
+        institution:
+          type: "string"
+
+    accountResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        type:
+          $ref: '#/components/schemas/accountType'
+        currencies:
+          type: "array"
+          items:
+            type: "string"
+        defaultCurrency:
+          type: "string"
+        balance:
+          type: "number"
+          format: "double"
+        institution:
+          type: "string"
+
+    accountListResponse:
+      type: "object"
+      properties:
+        accounts:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/accountResponse'
+
+    accountType:
+      type: "string"
+      enum:
+        - CHECKING
+        - SAVINGS
+        - CREDIT_CARD
+        - CASH
+        - INVESTMENT

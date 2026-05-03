@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface BillRepository extends JpaRepository<BillEntity, UUID> {
 
     boolean existsByCategoryId(String categoryId);
+
+    boolean existsByAccountId(String accountId);
 }

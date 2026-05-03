@@ -25,4 +25,9 @@ public class GetAccountServiceImpl implements GetAccountService {
     public List<AccountDto> getAll() {
         return getAccountPersistencePort.getAll();
     }
+
+    @Override
+    public List<AccountDto> getByType(String type) {
+        return getAccountPersistencePort.getByType(type);
+    }
 }

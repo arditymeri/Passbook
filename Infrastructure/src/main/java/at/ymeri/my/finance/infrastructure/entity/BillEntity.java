@@ -27,4 +27,7 @@ public class BillEntity {
 
     @Column(name = "category_id")
     private String categoryId;
+
+    @Column(name = "account_id")
+    private String accountId;
 }

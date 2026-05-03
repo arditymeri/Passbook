@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface IncomeRepository extends JpaRepository<IncomeEntity, UUID> {
 
     boolean existsByCategoryId(String categoryId);
+
+    boolean existsByAccountId(String accountId);
 }

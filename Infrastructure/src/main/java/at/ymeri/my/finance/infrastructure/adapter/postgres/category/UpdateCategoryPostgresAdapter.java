@@ -20,8 +20,11 @@ public class UpdateCategoryPostgresAdapter implements UpdateCategoryPersistenceP
 
     @Override
     public CategoryDto updateCategory(String id, CategoryDto categoryDto) {
-        CategoryEntity entity = CategoryMapper.INSTANCE.map(categoryDto);
-        entity.setId(UUID.fromString(id));
+        CategoryEntity entity = categoryRepository.findById(UUID.fromString(id)).orElseThrow();
+        entity.setName(categoryDto.getName());
+        entity.setType(categoryDto.getType() != null ? categoryDto.getType().name() : null);
+        entity.setColor(categoryDto.getColor());
+        entity.setParentCategoryId(categoryDto.getParentCategoryId());
         return CategoryMapper.INSTANCE.map(categoryRepository.save(entity));
     }
 }

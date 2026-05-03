@@ -10,4 +10,10 @@ public interface GetAccountPersistencePort {
     Optional<AccountDto> getAccountById(String id);
 
     List<AccountDto> getAll();
+
+    List<AccountDto> getByType(String type);
+
+    boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, String id);
 }

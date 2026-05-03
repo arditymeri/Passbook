@@ -1,7 +1,7 @@
 # Spec: Account
 
 **Sprint:** 1  
-**Status:** Draft — awaiting review
+**Status:** Implemented
 
 ---
 
@@ -186,13 +186,13 @@ Allow a user to create and manage accounts (e.g. bank account, cash wallet, cred
 
 ## Implementation Checklist
 
-- [ ] OpenAPI spec (`account-model.yaml`, `account-post-controller.yaml`, `account-get-controller.yaml`, `account-put-controller.yaml`, `account-delete-controller.yaml`)
-- [ ] Domain unit tests (`AddAccountServiceImplTest`, `UpdateAccountServiceImplTest`, `DeleteAccountServiceImplTest`)
-- [ ] `AddAccountService`, `GetAccountService`, `UpdateAccountService`, `DeleteAccountService` API ports
-- [ ] `AddAccountPersistencePort`, `GetAccountPersistencePort`, `UpdateAccountPersistencePort`, `DeleteAccountPersistencePort` SPI ports
-- [ ] Service implementations with validation
-- [ ] `AccountEntity`, `AccountRepository`, `AccountMapper` (Infrastructure)
-- [ ] Persistence adapters (add, get, update, delete)
-- [ ] `AccountMapper` (Application)
-- [ ] `AccountCreateController`, `AccountGetController`, `AccountUpdateController`, `AccountDeleteController`
-- [ ] Integration test (`AccountControllerIntegrationTest`)
+- [x] OpenAPI spec (`account-model.yaml`, `account-post-controller.yaml`, `account-get-controller.yaml`, `account-put-controller.yaml`, `account-delete-controller.yaml`)
+- [x] Domain unit tests (`AddAccountServiceImplTest`, `UpdateAccountServiceImplTest`, `DeleteAccountServiceImplTest`) — 18 tests, all green
+- [x] `AddAccountService`, `GetAccountService`, `UpdateAccountService`, `DeleteAccountService` API ports
+- [x] `AddAccountPersistencePort`, `GetAccountPersistencePort`, `UpdateAccountPersistencePort`, `DeleteAccountPersistencePort` SPI ports
+- [x] Service implementations with validation
+- [x] `AccountEntity`, `AccountRepository`, `AccountMapper` (Infrastructure)
+- [x] Persistence adapters (add, get, update, delete)
+- [x] `AccountMapper` (Application)
+- [x] `AccountCreateController`, `AccountGetController`, `AccountUpdateController`, `AccountDeleteController`
+- [x] Integration test (`AccountControllerIntegrationTest`) — needs Docker to run

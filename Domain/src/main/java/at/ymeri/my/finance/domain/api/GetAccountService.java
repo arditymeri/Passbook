@@ -9,4 +9,6 @@ public interface GetAccountService {
     AccountDto getAccountById(String id);
 
     List<AccountDto> getAll();
+
+    List<AccountDto> getByType(String type);
 }

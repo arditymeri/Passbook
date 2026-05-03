@@ -1,0 +1,52 @@
+openapi: "3.0.0"
+info:
+  title: "Get Account API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /accounts:
+    get:
+      summary: "List all accounts"
+      operationId: listAccounts
+      tags:
+        - accountGet
+      parameters:
+        - name: "type"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            enum: [CHECKING, SAVINGS, CREDIT_CARD, CASH, INVESTMENT]
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "account-model.yaml#/components/schemas/accountListResponse"
+        default:
+          description: "Unexpected error"
+  /accounts/{id}:
+    get:
+      summary: "Get account by id"
+      operationId: getAccountById
+      tags:
+        - accountGet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "An account"
+          content:
+            application/json:
+              schema:
+                $ref: "account-model.yaml#/components/schemas/accountResponse"
+        "404":
+          description: "Not found"
+        default:
+          description: "Unexpected error"

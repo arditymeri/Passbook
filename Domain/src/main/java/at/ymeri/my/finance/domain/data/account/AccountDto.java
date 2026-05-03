@@ -3,6 +3,7 @@ package at.ymeri.my.finance.domain.data.account;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class AccountDto {
@@ -11,6 +12,7 @@ public class AccountDto {
     private String name;
     private AccountType type;
     private BigDecimal balance;
-    private String currency;
+    private List<String> currencies;
+    private String defaultCurrency;
     private String institution;
 }
