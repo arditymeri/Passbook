@@ -1,7 +1,7 @@
 # Spec: Category
 
 **Sprint:** 1  
-**Status:** Draft — awaiting review
+**Status:** Implemented
 
 ---
 
@@ -163,13 +163,13 @@ Allow a user to create, retrieve, update, and delete categories so that bills an
 
 ## Implementation Checklist
 
-- [ ] OpenAPI spec (`category-model.yaml`, `category-post-controller.yaml`, `category-get-controller.yaml`, `category-put-controller.yaml`, `category-delete-controller.yaml`)
-- [ ] Domain unit tests (`AddCategoryServiceImplTest`, `UpdateCategoryServiceImplTest`, `DeleteCategoryServiceImplTest`)
-- [ ] `AddCategoryService`, `GetCategoryService`, `UpdateCategoryService`, `DeleteCategoryService` API ports
-- [ ] `AddCategoryPersistencePort`, `GetCategoryPersistencePort`, `UpdateCategoryPersistencePort`, `DeleteCategoryPersistencePort` SPI ports
-- [ ] Service implementations with validation
-- [ ] `CategoryEntity`, `CategoryRepository`, `CategoryMapper` (Infrastructure)
-- [ ] Persistence adapters (add, get, update, delete)
-- [ ] `CategoryMapper` (Application)
-- [ ] `CategoryCreateController`, `CategoryGetController`, `CategoryUpdateController`, `CategoryDeleteController`
-- [ ] Integration test (`CategoryControllerIntegrationTest`)
+- [x] OpenAPI spec (`category-model.yaml`, `category-post-controller.yaml`, `category-get-controller.yaml`, `category-put-controller.yaml`, `category-delete-controller.yaml`)
+- [x] Domain unit tests (`AddCategoryServiceImplTest`, `UpdateCategoryServiceImplTest`, `DeleteCategoryServiceImplTest`) — 13 tests, all green
+- [x] `AddCategoryService`, `GetCategoryService`, `UpdateCategoryService`, `DeleteCategoryService` API ports
+- [x] `AddCategoryPersistencePort`, `GetCategoryPersistencePort`, `UpdateCategoryPersistencePort`, `DeleteCategoryPersistencePort` SPI ports
+- [x] Service implementations with validation
+- [x] `CategoryEntity`, `CategoryRepository`, `CategoryMapper` (Infrastructure)
+- [x] Persistence adapters (add, get, update, delete)
+- [x] `CategoryMapper` (Application)
+- [x] `CategoryCreateController`, `CategoryGetController`, `CategoryUpdateController`, `CategoryDeleteController`
+- [x] Integration test (`CategoryControllerIntegrationTest`) — needs Docker to run
