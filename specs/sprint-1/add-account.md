@@ -13,14 +13,14 @@ Allow a user to create and manage accounts (e.g. bank account, cash wallet, cred
 
 ## User Story
 
-> As a user, I want to manage my financial accounts with a name, type, and currency, so that I can track which account each bill or income belongs to.
+> As a user, I want to manage my financial accounts with a name, type, and one or more currencies, so that I can track which account each bill or income belongs to.
 
 ---
 
 ## Acceptance Criteria
 
 ### Create — happy path
-- **Given** a valid request with a non-blank `name`, a `type`, and a `currency`  
+- **Given** a valid request with a non-blank `name`, a `type`, at least one valid ISO 4217 currency in `currencies`, and a `defaultCurrency` that is present in `currencies`  
   **When** `POST /api/v1/accounts` is called  
   **Then** the response is `201 Created` with the saved account including a generated `id`
 
@@ -37,7 +37,15 @@ Allow a user to create and manage accounts (e.g. bank account, cash wallet, cred
   **When** `POST /api/v1/accounts` is called  
   **Then** the response is `400 Bad Request`
 
-- **Given** a request with no `currency`  
+- **Given** a request with an empty `currencies` list  
+  **When** `POST /api/v1/accounts` is called  
+  **Then** the response is `400 Bad Request`
+
+- **Given** a request with a currency code that is not valid ISO 4217 (e.g. `"XYZ"`)  
+  **When** `POST /api/v1/accounts` is called  
+  **Then** the response is `400 Bad Request`
+
+- **Given** a `defaultCurrency` that is not present in the `currencies` list  
   **When** `POST /api/v1/accounts` is called  
   **Then** the response is `400 Bad Request`
 
@@ -62,15 +70,15 @@ Allow a user to create and manage accounts (e.g. bank account, cash wallet, cred
   **Then** the response is `200 OK` with only accounts of that type
 
 ### Update
-- **Given** an account exists and the new `name` is non-blank and not taken by another account  
-  **When** `PUT /api/v1/accounts/{id}` is called with a valid request body  
+- **Given** an account exists and the request is valid  
+  **When** `PUT /api/v1/accounts/{id}` is called  
   **Then** the response is `200 OK` with the updated account
 
 - **Given** no account exists with that id  
   **When** `PUT /api/v1/accounts/{id}` is called  
   **Then** the response is `404 Not Found`
 
-- **Given** a request with a blank `name`, no `type`, or no `currency`  
+- **Given** a blank `name`, missing `type`, empty `currencies`, invalid currency code, or `defaultCurrency` not in `currencies`  
   **When** `PUT /api/v1/accounts/{id}` is called  
   **Then** the response is `400 Bad Request`
 
@@ -99,13 +107,14 @@ Allow a user to create and manage accounts (e.g. bank account, cash wallet, cred
 
 **Request body** (`createAccountRequest`):
 
-| Field         | Type   | Required | Notes                                              |
-|---------------|--------|----------|----------------------------------------------------|
-| `name`        | string | ✅       | Must be non-blank, unique                          |
-| `type`        | enum   | ✅       | CHECKING, SAVINGS, CREDIT_CARD, CASH, INVESTMENT   |
-| `currency`    | string | ✅       | e.g. `EUR`, `USD`                                  |
-| `balance`     | number | —        | Initial balance; defaults to 0 if not provided     |
-| `institution` | string | —        | e.g. bank name                                     |
+| Field             | Type            | Required | Notes                                              |
+|-------------------|-----------------|----------|----------------------------------------------------|
+| `name`            | string          | ✅       | Must be non-blank, unique                          |
+| `type`            | enum            | ✅       | CHECKING, SAVINGS, CREDIT_CARD, CASH, INVESTMENT   |
+| `currencies`      | array of string | ✅       | At least one entry; each must be a valid ISO 4217 code (e.g. `EUR`, `USD`) |
+| `defaultCurrency` | string          | ✅       | Must be present in `currencies`                    |
+| `balance`         | number          | —        | Initial balance; defaults to `0` if not provided   |
+| `institution`     | string          | —        | e.g. bank name                                     |
 
 **Responses:**
 - `201 Created` — returns `accountResponse`
@@ -116,9 +125,9 @@ Allow a user to create and manage accounts (e.g. bank account, cash wallet, cred
 
 **Query parameters:**
 
-| Param  | Type | Required | Notes                                                       |
-|--------|------|----------|-------------------------------------------------------------|
-| `type` | enum | —        | Filter by CHECKING, SAVINGS, CREDIT_CARD, CASH, INVESTMENT  |
+| Param  | Type | Required | Notes                                                      |
+|--------|------|----------|------------------------------------------------------------|
+| `type` | enum | —        | Filter by CHECKING, SAVINGS, CREDIT_CARD, CASH, INVESTMENT |
 
 **Responses:**
 - `200 OK` — returns `accountListResponse`
@@ -133,13 +142,14 @@ Allow a user to create and manage accounts (e.g. bank account, cash wallet, cred
 
 **Request body** (`updateAccountRequest`):
 
-| Field         | Type   | Required | Notes                 |
-|---------------|--------|----------|-----------------------|
-| `name`        | string | ✅       | Must be non-blank, unique |
-| `type`        | enum   | ✅       |                       |
-| `currency`    | string | ✅       |                       |
-| `balance`     | number | —        |                       |
-| `institution` | string | —        |                       |
+| Field             | Type            | Required | Notes                              |
+|-------------------|-----------------|----------|------------------------------------|
+| `name`            | string          | ✅       | Must be non-blank, unique          |
+| `type`            | enum            | ✅       |                                    |
+| `currencies`      | array of string | ✅       | At least one valid ISO 4217 code   |
+| `defaultCurrency` | string          | ✅       | Must be present in `currencies`    |
+| `balance`         | number          | —        |                                    |
+| `institution`     | string          | —        |                                    |
 
 **Responses:**
 - `200 OK` — returns `accountResponse`
@@ -160,16 +170,17 @@ Allow a user to create and manage accounts (e.g. bank account, cash wallet, cred
 
 1. `name` is required, must be non-blank, and must be unique across all accounts
 2. `type` is required — valid values: `CHECKING`, `SAVINGS`, `CREDIT_CARD`, `CASH`, `INVESTMENT`
-3. `currency` is required — no format validation at domain level
-4. `balance` defaults to `0` if not provided
-5. An account cannot be deleted if it is referenced by any bill or income
-6. The `id` is generated by the database (UUID)
+3. `currencies` must contain at least one entry; each code must be a valid ISO 4217 currency code
+4. `defaultCurrency` is required and must be one of the values in `currencies`
+5. `balance` defaults to `0` if not provided
+6. An account cannot be deleted if it is referenced by any bill or income
+7. The `id` is generated by the database (UUID)
 
 ---
 
 ## Open Questions
 
-- Should updating an account's `currency` be allowed if it already has transactions?
+- Should updating `currencies` be allowed if the account already has transactions in a currency being removed?
 
 ---
 
