@@ -47,7 +47,8 @@
       "Read(//Library/Java/JavaVirtualMachines/**)",
       "Bash(/usr/libexec/java_home -V)",
       "Bash(JAVA_HOME=/opt/homebrew/Cellar/openjdk/25/libexec/openjdk.jdk/Contents/Home ./mvnw -pl Domain compile -q)",
-      "Bash(JAVA_HOME=/opt/homebrew/Cellar/openjdk/25/libexec/openjdk.jdk/Contents/Home ./mvnw -pl Domain compile -X)"
+      "Bash(JAVA_HOME=/opt/homebrew/Cellar/openjdk/25/libexec/openjdk.jdk/Contents/Home ./mvnw -pl Domain compile -X)",
+      "Bash(npm run *)"
     ]
   }
 }
