@@ -1,0 +1,75 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Budget Get API"
+  description: "Retrieve budget entries and budget vs actual status"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /budgets:
+    get:
+      summary: "List budgets for a month"
+      operationId: listBudgets
+      description: "Returns all budget entries for the specified year and month"
+      tags:
+        - budgetGet
+      parameters:
+        - name: "year"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            example: 2026
+        - name: "month"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 12
+            example: 5
+      responses:
+        "200":
+          description: "Budget list returned"
+          content:
+            application/json:
+              schema:
+                $ref: "budget-model.yaml#/components/schemas/budgetListResponse"
+        "400":
+          description: "Invalid year or month"
+        default:
+          description: "Unexpected error"
+
+  /budgets/status:
+    get:
+      summary: "Get budget vs actual status for a month"
+      operationId: getBudgetStatus
+      description: "Returns a combined view of budgeted amounts and actual spending per category for the specified month"
+      tags:
+        - budgetGet
+      parameters:
+        - name: "year"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            example: 2026
+        - name: "month"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 12
+            example: 5
+      responses:
+        "200":
+          description: "Budget status returned"
+          content:
+            application/json:
+              schema:
+                $ref: "budget-model.yaml#/components/schemas/budgetStatusResponse"
+        "400":
+          description: "Invalid year or month"
+        default:
+          description: "Unexpected error"
