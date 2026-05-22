@@ -45,13 +45,13 @@ any user story work begins.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T001 Add `findByTimeBetween(OffsetDateTime start, OffsetDateTime end)` derived query to `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/BillRepository.java`
-- [ ] T002 [P] Add `findByTimeBetween(OffsetDateTime start, OffsetDateTime end)` derived query to `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/IncomeRepository.java`
-- [ ] T003 Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/analysis/GetSpendingAnalysisPostgresAdapter.java` implementing `GetSpendingAnalysisPersistencePort` — use `BillRepository.findByTimeBetween` and `IncomeRepository.findByTimeBetween`, convert `LocalDate` to `OffsetDateTime` at UTC midnight / end-of-day, map entities to DTOs using existing `BillMapper` and `IncomeMapper`
-- [ ] T004 Copy `specs/001-spending-analysis-api/contracts/analysis-model.yaml` to `Application/src/main/resources/swagger/analysis/analysis-model.yaml`
-- [ ] T005 [P] Copy `specs/001-spending-analysis-api/contracts/analysis-get-controller.yaml` to `Application/src/main/resources/swagger/analysis/analysis-get-controller.yaml`
-- [ ] T006 Run `./mvnw -pl Application generate-sources` to generate `AnalysisGetApi`, `AnalysisGetApiDelegate`, `MonthlySummary`, `MonthlySummaryResponse`, and `MonthlySummaryListResponse` into `Application/target/generated-sources/`
-- [ ] T007 Create `Application/src/main/java/at/ymeri/my/finance/application/mapper/AnalysisMapper.java` — MapStruct `@Mapper` mapping `MonthlySummaryDto` ↔ generated `MonthlySummary` API model; handle `Map<String, BigDecimal>` → `Map<String, BigDecimal>` pass-through for `spendingByCategory`
+- [x] T001 Add `findByTimeBetween(OffsetDateTime start, OffsetDateTime end)` derived query to `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/BillRepository.java`
+- [x] T002 [P] Add `findByTimeBetween(OffsetDateTime start, OffsetDateTime end)` derived query to `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/IncomeRepository.java`
+- [x] T003 Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/analysis/GetSpendingAnalysisPostgresAdapter.java` implementing `GetSpendingAnalysisPersistencePort` — use `BillRepository.findByTimeBetween` and `IncomeRepository.findByTimeBetween`, convert `LocalDate` to `OffsetDateTime` at UTC midnight / end-of-day, map entities to DTOs using existing `BillMapper` and `IncomeMapper`
+- [x] T004 Copy `specs/001-spending-analysis-api/contracts/analysis-model.yaml` to `Application/src/main/resources/swagger/analysis/analysis-model.yaml`
+- [x] T005 [P] Copy `specs/001-spending-analysis-api/contracts/analysis-get-controller.yaml` to `Application/src/main/resources/swagger/analysis/analysis-get-controller.yaml`
+- [x] T006 Run `./mvnw -pl Application generate-sources` to generate `AnalysisGetApi`, `AnalysisGetApiDelegate`, `MonthlySummary`, `MonthlySummaryResponse`, and `MonthlySummaryListResponse` into `Application/target/generated-sources/`
+- [x] T007 Create `Application/src/main/java/at/ymeri/my/finance/application/mapper/AnalysisMapper.java` — MapStruct `@Mapper` mapping `MonthlySummaryDto` ↔ generated `MonthlySummary` API model; handle `Map<String, BigDecimal>` → `Map<String, BigDecimal>` pass-through for `spendingByCategory`
 
 **Checkpoint**: Foundation ready — US1 and US2 can now proceed.
 
@@ -65,9 +65,9 @@ summary (totalIncome, totalExpenses, netBalance, spendingByCategory).
 **Independent test**: Start app, `POST` a bill and an income with dates in May 2026,
 call `GET /api/v1/analysis/monthly?year=2026&month=5`, verify correct totals and category map.
 
-- [ ] T008 [US1] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/analysis/GetSpendingAnalysisServiceImplTest.java` — unit tests using mock `GetSpendingAnalysisPersistencePort`: (a) correct BigDecimal aggregation, (b) netBalance = totalIncome − totalExpenses, (c) uncategorised bills excluded from spendingByCategory map but counted in totalExpenses, (d) empty month returns all-zero summary
-- [ ] T009 [US1] Create `Application/src/main/java/at/ymeri/my/finance/controller/analysis/AnalysisGetController.java` implementing generated `AnalysisGetApiDelegate` — implement `getMonthlySummary(Integer year, Integer month)`: validate month in [1,12] (return 400 if not), delegate to `GetSpendingAnalysisService.getMonthlySummary()`, map result via `AnalysisMapper`, return `ResponseEntity<MonthlySummaryResponse>` with `200 OK`
-- [ ] T010 [US1] Write integration test `integration-tests/src/test/java/at/ymeri/my/finance/AnalysisGetControllerIntegrationTest.java` using TestContainers: (a) seed bill + income for a month, verify `GET /analysis/monthly` returns correct totals; (b) empty month returns zeros; (c) month=13 returns 400
+- [x] T008 [US1] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/analysis/GetSpendingAnalysisServiceImplTest.java` — unit tests using mock `GetSpendingAnalysisPersistencePort`: (a) correct BigDecimal aggregation, (b) netBalance = totalIncome − totalExpenses, (c) uncategorised bills excluded from spendingByCategory map but counted in totalExpenses, (d) empty month returns all-zero summary
+- [x] T009 [US1] Create `Application/src/main/java/at/ymeri/my/finance/controller/analysis/AnalysisGetController.java` implementing generated `AnalysisGetApiDelegate` — implement `getMonthlySummary(Integer year, Integer month)`: validate month in [1,12] (return 400 if not), delegate to `GetSpendingAnalysisService.getMonthlySummary()`, map result via `AnalysisMapper`, return `ResponseEntity<MonthlySummaryResponse>` with `200 OK`
+- [x] T010 [US1] Write integration test `integration-tests/src/test/java/at/ymeri/my/finance/AnalysisGetControllerIntegrationTest.java` using TestContainers: (a) seed bill + income for a month, verify `GET /analysis/monthly` returns correct totals; (b) empty month returns zeros; (c) month=13 returns 400
 
 ---
 
@@ -79,16 +79,16 @@ one per calendar month in the range.
 **Independent test**: Call `GET /api/v1/analysis/period?from=2026-01-01&to=2026-03-31` with data
 seeded across three months — verify three entries returned in order with correct per-month totals.
 
-- [ ] T011 [US2] Implement `getPeriodSummary(LocalDate from, LocalDate to)` in `Application/src/main/java/at/ymeri/my/finance/controller/analysis/AnalysisGetController.java` — validate `from` is not after `to` (return 400 if so), delegate to `GetSpendingAnalysisService.getSummaryForPeriod()`, map list via `AnalysisMapper`, return `ResponseEntity<MonthlySummaryListResponse>` with `200 OK`
-- [ ] T012 [P] [US2] Add period endpoint tests to `integration-tests/src/test/java/at/ymeri/my/finance/AnalysisGetControllerIntegrationTest.java`: (a) multi-month range returns correct entry count and per-month totals; (b) from after to returns 400; (c) range with months having no data returns zero-value entries
+- [x] T011 [US2] Implement `getPeriodSummary(LocalDate from, LocalDate to)` in `Application/src/main/java/at/ymeri/my/finance/controller/analysis/AnalysisGetController.java` — validate `from` is not after `to` (return 400 if so), delegate to `GetSpendingAnalysisService.getSummaryForPeriod()`, map list via `AnalysisMapper`, return `ResponseEntity<MonthlySummaryListResponse>` with `200 OK`
+- [x] T012 [P] [US2] Add period endpoint tests to `integration-tests/src/test/java/at/ymeri/my/finance/AnalysisGetControllerIntegrationTest.java`: (a) multi-month range returns correct entry count and per-month totals; (b) from after to returns 400; (c) range with months having no data returns zero-value entries
 
 ---
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T013 Run `./mvnw clean package` and verify full build passes with all new tests green
-- [ ] T014 [P] Run `./mvnw -pl Domain test` and confirm `GetSpendingAnalysisServiceImplTest` passes
-- [ ] T015 [P] Verify Swagger UI at `http://localhost:8080/swagger-ui.html` shows the `analysisGet` tag with both endpoints documented
+- [ ] T013 Run `./mvnw clean package` and verify full build passes with all new tests green — BLOCKED: Java 21 not installed on this machine (jenv reports 21.0.8 missing); requires `! jenv add <path-to-jdk-21>` to unblock
+- [ ] T014 [P] Run `./mvnw -pl Domain test` and confirm `GetSpendingAnalysisServiceImplTest` passes — BLOCKED: same Java 21 env issue
+- [ ] T015 [P] Verify Swagger UI at `http://localhost:8080/swagger-ui.html` shows the `analysisGet` tag with both endpoints documented — BLOCKED: app cannot start without Java 21
 
 ---
 
