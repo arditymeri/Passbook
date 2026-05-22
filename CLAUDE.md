@@ -104,5 +104,5 @@ frontend/
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/002-budget-spending-limits/plan.md`.
+at `specs/003-frontend-dashboard/plan.md`.
 <!-- SPECKIT END -->
