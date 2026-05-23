@@ -1,9 +1,18 @@
-import type { Bill, BudgetStatusEntry, Category, Income, MonthlySummary } from '../types';
+import type { Bill, BudgetStatusEntry, Category, CreateBillRequest, CreateIncomeRequest, Income, MonthlySummary } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
   return res.json();
+}
+
+async function post(url: string, body: unknown): Promise<void> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
 }
 
 export async function fetchMonthlySummary(year: number, month: number): Promise<MonthlySummary> {
@@ -33,4 +42,12 @@ export async function fetchIncomes(): Promise<Income[]> {
 export async function fetchCategories(): Promise<Category[]> {
   const data = await request<Category[]>('/api/v1/categories');
   return Array.isArray(data) ? data : [];
+}
+
+export async function createBill(req: CreateBillRequest): Promise<void> {
+  await post('/api/v1/createBill', req);
+}
+
+export async function createIncome(req: CreateIncomeRequest): Promise<void> {
+  await post('/api/v1/incomes', req);
 }

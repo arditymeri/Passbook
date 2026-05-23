@@ -52,6 +52,22 @@ export interface Transaction {
 
 export type CategoryNameMap = Map<string, string>;
 
+export type IncomeSource = 'SALARY' | 'FREELANCE' | 'INVESTMENT' | 'RENTAL' | 'GIFT' | 'OTHER';
+
+export interface CreateBillRequest {
+  amount: number;
+  time: string;
+  description?: string;
+  categoryId?: string;
+}
+
+export interface CreateIncomeRequest {
+  amount: number;
+  time: string;
+  description?: string;
+  source?: IncomeSource;
+}
+
 export interface DashboardData {
   summary: MonthlySummary | null;
   summaryLoading: boolean;
@@ -66,5 +82,6 @@ export interface DashboardData {
   transactionsError: string | null;
 
   categoryNames: CategoryNameMap;
+  categories: Category[];
   categoriesLoading: boolean;
 }

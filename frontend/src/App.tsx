@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { AddBillForm } from './components/AddBillForm';
+import { AddIncomeForm } from './components/AddIncomeForm';
 import { BudgetStatus } from './components/BudgetStatus';
 import { CategorySpend } from './components/CategorySpend';
 import { MonthNav } from './components/MonthNav';
@@ -11,13 +13,16 @@ import './App.css';
 function App() {
   const now = new Date();
   const [period, setPeriod] = useState<Period>({ year: now.getFullYear(), month: now.getMonth() + 1 });
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [billFormOpen, setBillFormOpen] = useState(false);
+  const [incomeFormOpen, setIncomeFormOpen] = useState(false);
 
   const {
     summary, summaryLoading, summaryError,
     budgetEntries, budgetLoading, budgetError,
     transactions, transactionsLoading, transactionsError,
-    categoryNames,
-  } = useDashboardData(period.year, period.month);
+    categoryNames, categories,
+  } = useDashboardData(period.year, period.month, refreshKey);
 
   function handlePrevious() {
     setPeriod((p) =>
@@ -31,10 +36,18 @@ function App() {
     );
   }
 
+  function handleSaveSuccess() {
+    setRefreshKey((k) => k + 1);
+  }
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
         <h1>MyFinance Dashboard</h1>
+        <div className="action-buttons">
+          <button className="btn-primary" onClick={() => setBillFormOpen(true)}>+ Add Expense</button>
+          <button className="btn-primary" onClick={() => setIncomeFormOpen(true)}>+ Add Income</button>
+        </div>
       </header>
 
       <MonthNav
@@ -70,6 +83,19 @@ function App() {
         transactions={transactions}
         loading={transactionsLoading}
         error={transactionsError}
+      />
+
+      <AddBillForm
+        open={billFormOpen}
+        onClose={() => setBillFormOpen(false)}
+        onSuccess={handleSaveSuccess}
+        categories={categories}
+      />
+
+      <AddIncomeForm
+        open={incomeFormOpen}
+        onClose={() => setIncomeFormOpen(false)}
+        onSuccess={handleSaveSuccess}
       />
     </div>
   );

@@ -8,6 +8,7 @@ import {
 } from '../api/client';
 import type {
   BudgetStatusEntry,
+  Category,
   CategoryNameMap,
   DashboardData,
   MonthlySummary,
@@ -19,7 +20,7 @@ function inMonth(isoTime: string, year: number, month: number): boolean {
   return d.getFullYear() === year && d.getMonth() + 1 === month;
 }
 
-export function useDashboardData(year: number, month: number): DashboardData {
+export function useDashboardData(year: number, month: number, refreshKey: number = 0): DashboardData {
   const [summary, setSummary] = useState<MonthlySummary | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [summaryError, setSummaryError] = useState<string | null>(null);
@@ -33,12 +34,14 @@ export function useDashboardData(year: number, month: number): DashboardData {
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
   const [categoryNames, setCategoryNames] = useState<CategoryNameMap>(new Map());
+  const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   // Fetch categories once on mount
   useEffect(() => {
     fetchCategories()
       .then((cats) => {
+        setCategories(cats);
         const map: CategoryNameMap = new Map(cats.map((c) => [c.id, c.name]));
         setCategoryNames(map);
       })
@@ -46,7 +49,7 @@ export function useDashboardData(year: number, month: number): DashboardData {
       .finally(() => setCategoriesLoading(false));
   }, []);
 
-  // Fetch all period data in parallel when year/month changes
+  // Fetch all period data in parallel when year, month, or refreshKey changes
   useEffect(() => {
     setSummaryLoading(true);
     setSummaryError(null);
@@ -97,12 +100,12 @@ export function useDashboardData(year: number, month: number): DashboardData {
       }
       setTransactionsLoading(false);
     });
-  }, [year, month]);
+  }, [year, month, refreshKey]);
 
   return {
     summary, summaryLoading, summaryError,
     budgetEntries, budgetLoading, budgetError,
     transactions, transactionsLoading, transactionsError,
-    categoryNames, categoriesLoading,
+    categoryNames, categories, categoriesLoading,
   };
 }
