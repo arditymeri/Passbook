@@ -1,0 +1,63 @@
+components:
+  schemas:
+    monthlySummaryResponse:
+      type: "object"
+      properties:
+        common:
+          type: "object"
+          properties:
+            success:
+              type: "boolean"
+            message:
+              type: "string"
+        summary:
+          $ref: '#/components/schemas/monthlySummary'
+
+    monthlySummaryListResponse:
+      type: "object"
+      properties:
+        common:
+          type: "object"
+          properties:
+            success:
+              type: "boolean"
+            message:
+              type: "string"
+        summaries:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/monthlySummary'
+
+    monthlySummary:
+      type: "object"
+      properties:
+        year:
+          type: "integer"
+          description: "Calendar year"
+          example: 2026
+        month:
+          type: "integer"
+          description: "Calendar month (1–12)"
+          minimum: 1
+          maximum: 12
+          example: 5
+        totalIncome:
+          type: "number"
+          description: "Sum of all income amounts for the month"
+          example: 3500.00
+        totalExpenses:
+          type: "number"
+          description: "Sum of all bill amounts for the month"
+          example: 1200.50
+        netBalance:
+          type: "number"
+          description: "totalIncome minus totalExpenses"
+          example: 2299.50
+        spendingByCategory:
+          type: "object"
+          additionalProperties:
+            type: "number"
+          description: "Map of category ID to total amount spent in that category"
+          example:
+            "cat-uuid-groceries": 420.00
+            "cat-uuid-transport": 150.00

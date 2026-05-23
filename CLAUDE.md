@@ -100,3 +100,9 @@ frontend/
 - Dev server runs at `http://localhost:5173`
 - Communicates with the Spring Boot backend at `http://localhost:8080`
 - Add new pages/components under `src/`; configure the Vite dev proxy in `vite.config.ts` to forward `/api` requests to the backend
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+at `specs/005-ui-category-management/plan.md`.
+<!-- SPECKIT END -->

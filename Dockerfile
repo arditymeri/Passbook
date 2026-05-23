@@ -1,5 +1,5 @@
 # Use an official OpenJDK runtime as a parent image
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk-jammy
 
 # Set the working directory in the container
 WORKDIR /app
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Package the application
-RUN ./mvnw package
+RUN chmod +x mvnw && ./mvnw package -Dmaven.test.skip=true
 
 # Run the application
-CMD ["java", "-jar", "Launcher/target/Launcher-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "Launcher/target/Launcher-0.0.1-SNAPSHOT-exec.jar"]

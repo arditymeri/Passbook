@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         classes = {MyFinanceApplication.class, TestConfig.class, TestDataSourceConfig.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@EmbeddedKafka(partitions = 1, topics = {"booking.topic", "transaction.topic"})
+@EmbeddedKafka(partitions = 1, topics = {"booking.topic", "transaction.topic"}, bootstrapServersProperty = "spring.kafka.bootstrap-servers")
 public class CategoryControllerIntegrationTest {
 
     @Autowired
@@ -34,7 +34,7 @@ public class CategoryControllerIntegrationTest {
         CreateCategoryRequest request = new CreateCategoryRequest("Groceries", CategoryType.EXPENSE);
 
         ResponseEntity<CategoryResponse> response = restTemplate
-                .postForEntity("/api/v1/categories", request, CategoryResponse.class);
+                .postForEntity("/categories", request, CategoryResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody().getId()).isNotNull();
@@ -46,7 +46,7 @@ public class CategoryControllerIntegrationTest {
         CreateCategoryRequest request = new CreateCategoryRequest(null, CategoryType.EXPENSE);
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity("/api/v1/categories", request, String.class);
+                .postForEntity("/categories", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -56,7 +56,7 @@ public class CategoryControllerIntegrationTest {
         CreateCategoryRequest request = new CreateCategoryRequest("Transport", null);
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity("/api/v1/categories", request, String.class);
+                .postForEntity("/categories", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -64,10 +64,10 @@ public class CategoryControllerIntegrationTest {
     @Test
     void createCategory_duplicateName_returns409() {
         CreateCategoryRequest request = new CreateCategoryRequest("Salary", CategoryType.INCOME);
-        restTemplate.postForEntity("/api/v1/categories", request, CategoryResponse.class);
+        restTemplate.postForEntity("/categories", request, CategoryResponse.class);
 
         ResponseEntity<String> duplicate = restTemplate
-                .postForEntity("/api/v1/categories", request, String.class);
+                .postForEntity("/categories", request, String.class);
 
         assertThat(duplicate.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     }
@@ -78,10 +78,10 @@ public class CategoryControllerIntegrationTest {
     void getCategoryById_exists_returns200() {
         CreateCategoryRequest create = new CreateCategoryRequest("Entertainment", CategoryType.EXPENSE);
         CategoryResponse created = restTemplate
-                .postForEntity("/api/v1/categories", create, CategoryResponse.class).getBody();
+                .postForEntity("/categories", create, CategoryResponse.class).getBody();
 
         ResponseEntity<CategoryResponse> response = restTemplate
-                .getForEntity("/api/v1/categories/" + created.getId(), CategoryResponse.class);
+                .getForEntity("/categories/" + created.getId(), CategoryResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().getName()).isEqualTo("Entertainment");
@@ -90,7 +90,7 @@ public class CategoryControllerIntegrationTest {
     @Test
     void getCategoryById_notFound_returns404() {
         ResponseEntity<String> response = restTemplate
-                .getForEntity("/api/v1/categories/00000000-0000-0000-0000-000000000000", String.class);
+                .getForEntity("/categories/00000000-0000-0000-0000-000000000000", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
@@ -101,11 +101,11 @@ public class CategoryControllerIntegrationTest {
     void updateCategory_validRequest_returns200WithUpdatedData() {
         CreateCategoryRequest create = new CreateCategoryRequest("OldName", CategoryType.EXPENSE);
         CategoryResponse created = restTemplate
-                .postForEntity("/api/v1/categories", create, CategoryResponse.class).getBody();
+                .postForEntity("/categories", create, CategoryResponse.class).getBody();
 
         UpdateCategoryRequest update = new UpdateCategoryRequest("NewName", CategoryType.BOTH);
         ResponseEntity<CategoryResponse> response = restTemplate.exchange(
-                "/api/v1/categories/" + created.getId(),
+                "/categories/" + created.getId(),
                 HttpMethod.PUT,
                 new HttpEntity<>(update),
                 CategoryResponse.class
@@ -119,7 +119,7 @@ public class CategoryControllerIntegrationTest {
     void updateCategory_notFound_returns404() {
         UpdateCategoryRequest update = new UpdateCategoryRequest("X", CategoryType.EXPENSE);
         ResponseEntity<String> response = restTemplate.exchange(
-                "/api/v1/categories/00000000-0000-0000-0000-000000000000",
+                "/categories/00000000-0000-0000-0000-000000000000",
                 HttpMethod.PUT,
                 new HttpEntity<>(update),
                 String.class
@@ -134,10 +134,10 @@ public class CategoryControllerIntegrationTest {
     void deleteCategory_notReferenced_returns204() {
         CreateCategoryRequest create = new CreateCategoryRequest("ToDelete", CategoryType.EXPENSE);
         CategoryResponse created = restTemplate
-                .postForEntity("/api/v1/categories", create, CategoryResponse.class).getBody();
+                .postForEntity("/categories", create, CategoryResponse.class).getBody();
 
         ResponseEntity<Void> response = restTemplate.exchange(
-                "/api/v1/categories/" + created.getId(),
+                "/categories/" + created.getId(),
                 HttpMethod.DELETE,
                 null,
                 Void.class
@@ -149,7 +149,7 @@ public class CategoryControllerIntegrationTest {
     @Test
     void deleteCategory_notFound_returns404() {
         ResponseEntity<String> response = restTemplate.exchange(
-                "/api/v1/categories/00000000-0000-0000-0000-000000000000",
+                "/categories/00000000-0000-0000-0000-000000000000",
                 HttpMethod.DELETE,
                 null,
                 String.class

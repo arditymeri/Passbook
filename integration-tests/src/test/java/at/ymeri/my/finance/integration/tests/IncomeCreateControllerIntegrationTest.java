@@ -21,7 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 )
 @EmbeddedKafka(
         partitions = 1,
-        topics = {"booking.topic", "transaction.topic"}
+        topics = {"booking.topic", "transaction.topic"},
+        bootstrapServersProperty = "spring.kafka.bootstrap-servers"
 )
 public class IncomeCreateControllerIntegrationTest {
 
@@ -36,7 +37,7 @@ public class IncomeCreateControllerIntegrationTest {
         request.setDescription("Monthly salary");
 
         ResponseEntity<IncomeResponse> response = restTemplate
-                .postForEntity("/api/v1/incomes", request, IncomeResponse.class);
+                .postForEntity("/incomes", request, IncomeResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
@@ -51,7 +52,7 @@ public class IncomeCreateControllerIntegrationTest {
         request.setDescription("No amount");
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity("/api/v1/incomes", request, String.class);
+                .postForEntity("/incomes", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -63,7 +64,7 @@ public class IncomeCreateControllerIntegrationTest {
         request.setTime(OffsetDateTime.now());
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity("/api/v1/incomes", request, String.class);
+                .postForEntity("/incomes", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -74,7 +75,7 @@ public class IncomeCreateControllerIntegrationTest {
         request.setAmount(1000.0);
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity("/api/v1/incomes", request, String.class);
+                .postForEntity("/incomes", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }

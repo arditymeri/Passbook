@@ -1,0 +1,82 @@
+openapi: "3.0.0"
+tags:
+  - name: "AnalysisGetController"
+    description: "API for retrieving spending analysis summaries"
+info:
+  title: "Personal Finance Service - Spending Analysis API"
+  description: "Endpoints for retrieving monthly and period-based financial summaries"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /analysis/monthly:
+    get:
+      summary: "Get monthly financial summary"
+      operationId: getMonthlySummary
+      description: "Returns total income, total expenses, net balance, and per-category spending for the specified year and month"
+      tags:
+        - analysisGet
+      parameters:
+        - name: "year"
+          in: "query"
+          required: true
+          description: "Calendar year (e.g. 2026)"
+          schema:
+            type: "integer"
+            example: 2026
+        - name: "month"
+          in: "query"
+          required: true
+          description: "Calendar month, 1–12"
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 12
+            example: 5
+      responses:
+        "200":
+          description: "Monthly summary returned successfully"
+          content:
+            application/json:
+              schema:
+                $ref: 'analysis-model.yaml#/components/schemas/monthlySummaryResponse'
+        "400":
+          description: "Invalid year or month value"
+        default:
+          description: "Unexpected error"
+
+  /analysis/period:
+    get:
+      summary: "Get financial summaries for a date range"
+      operationId: getPeriodSummary
+      description: "Returns a list of monthly financial summaries, one per calendar month within the specified date range (inclusive)"
+      tags:
+        - analysisGet
+      parameters:
+        - name: "from"
+          in: "query"
+          required: true
+          description: "Start date of the period (ISO 8601 date, e.g. 2026-01-01)"
+          schema:
+            type: "string"
+            format: "date"
+            example: "2026-01-01"
+        - name: "to"
+          in: "query"
+          required: true
+          description: "End date of the period (ISO 8601 date, e.g. 2026-05-31)"
+          schema:
+            type: "string"
+            format: "date"
+            example: "2026-05-31"
+      responses:
+        "200":
+          description: "Period summaries returned successfully"
+          content:
+            application/json:
+              schema:
+                $ref: 'analysis-model.yaml#/components/schemas/monthlySummaryListResponse'
+        "400":
+          description: "Invalid date range (e.g. from is after to)"
+        default:
+          description: "Unexpected error"

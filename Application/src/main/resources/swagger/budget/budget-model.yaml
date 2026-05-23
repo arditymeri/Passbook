@@ -1,0 +1,87 @@
+components:
+  schemas:
+    createBudgetRequest:
+      type: "object"
+      required:
+        - categoryId
+        - year
+        - month
+        - limitAmount
+      properties:
+        categoryId:
+          type: "string"
+          format: "uuid"
+          description: "ID of the category this budget applies to"
+        year:
+          type: "integer"
+          description: "Calendar year"
+          example: 2026
+        month:
+          type: "integer"
+          minimum: 1
+          maximum: 12
+          description: "Calendar month (1–12)"
+          example: 5
+        limitAmount:
+          type: "number"
+          description: "Monthly spending limit (must be greater than zero)"
+          example: 500.00
+
+    budgetResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+          description: "Unique budget ID"
+        categoryId:
+          type: "string"
+          format: "uuid"
+        year:
+          type: "integer"
+        month:
+          type: "integer"
+        limitAmount:
+          type: "number"
+
+    budgetListResponse:
+      type: "object"
+      properties:
+        budgets:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/budgetResponse'
+
+    budgetStatusEntry:
+      type: "object"
+      properties:
+        categoryId:
+          type: "string"
+          format: "uuid"
+        budgeted:
+          type: "number"
+          description: "Limit amount set by the user (0 if no budget defined)"
+        actual:
+          type: "number"
+          description: "Sum of bills for this category in the month"
+        remaining:
+          type: "number"
+          description: "budgeted minus actual (may be negative)"
+        status:
+          type: "string"
+          enum:
+            - UNDER_BUDGET
+            - OVER_BUDGET
+          description: "OVER_BUDGET if actual exceeds budgeted or no budget is set"
+
+    budgetStatusResponse:
+      type: "object"
+      properties:
+        year:
+          type: "integer"
+        month:
+          type: "integer"
+        entries:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/budgetStatusEntry'
