@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AddBillForm } from './components/AddBillForm';
 import { AddIncomeForm } from './components/AddIncomeForm';
 import { BudgetStatus } from './components/BudgetStatus';
+import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
 import { MonthNav } from './components/MonthNav';
 import { RecentTransactions } from './components/RecentTransactions';
@@ -12,10 +13,15 @@ import './App.css';
 
 function App() {
   const now = new Date();
+  const [view, setView] = useState<'dashboard' | 'categories'>('dashboard');
   const [period, setPeriod] = useState<Period>({ year: now.getFullYear(), month: now.getMonth() + 1 });
   const [refreshKey, setRefreshKey] = useState(0);
   const [billFormOpen, setBillFormOpen] = useState(false);
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
+
+  if (view === 'categories') {
+    return <CategoriesPage onBack={() => setView('dashboard')} />;
+  }
 
   const {
     summary, summaryLoading, summaryError,
@@ -45,6 +51,7 @@ function App() {
       <header className="dashboard-header">
         <h1>MyFinance Dashboard</h1>
         <div className="action-buttons">
+          <button className="btn-secondary" onClick={() => setView('categories')}>Categories</button>
           <button className="btn-primary" onClick={() => setBillFormOpen(true)}>+ Add Expense</button>
           <button className="btn-primary" onClick={() => setIncomeFormOpen(true)}>+ Add Income</button>
         </div>

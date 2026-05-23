@@ -37,9 +37,21 @@ export interface Income {
   time: string;
 }
 
+export type CategoryType = 'EXPENSE' | 'INCOME' | 'BOTH';
+
 export interface Category {
   id: string;
   name: string;
+  type: CategoryType;
+  color?: string;
+  parentCategoryId?: string;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  type: CategoryType;
+  color?: string;
+  parentCategoryId?: string;
 }
 
 export interface Transaction {
