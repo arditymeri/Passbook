@@ -60,6 +60,7 @@ export interface Transaction {
   amount: number;
   time: string;
   type: 'BILL' | 'INCOME';
+  categoryId?: string;
 }
 
 export type CategoryNameMap = Map<string, string>;

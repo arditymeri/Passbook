@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
 import { CategoryList } from './CategoryList';
 import { AddCategoryForm } from './AddCategoryForm';
@@ -15,6 +15,12 @@ export function CategoriesPage({ onBack }: CategoriesPageProps) {
   const [activeTypeFilter, setActiveTypeFilter] = useState<CategoryType | 'ALL'>('ALL');
 
   const displayCategories = localCategories ?? categories;
+
+  useEffect(() => {
+    if (!loading && displayCategories.length === 0) {
+      setAddFormOpen(true);
+    }
+  }, [loading, displayCategories.length]);
 
   function handleSuccess(created: Category) {
     setLocalCategories([...(localCategories ?? categories), created]);

@@ -19,16 +19,16 @@ function App() {
   const [billFormOpen, setBillFormOpen] = useState(false);
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
 
-  if (view === 'categories') {
-    return <CategoriesPage onBack={() => setView('dashboard')} />;
-  }
-
   const {
     summary, summaryLoading, summaryError,
     budgetEntries, budgetLoading, budgetError,
     transactions, transactionsLoading, transactionsError,
     categoryNames, categories,
   } = useDashboardData(period.year, period.month, refreshKey);
+
+  if (view === 'categories') {
+    return <CategoriesPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />;
+  }
 
   function handlePrevious() {
     setPeriod((p) =>
@@ -88,6 +88,7 @@ function App() {
 
       <RecentTransactions
         transactions={transactions}
+        categoryNames={categoryNames}
         loading={transactionsLoading}
         error={transactionsError}
       />

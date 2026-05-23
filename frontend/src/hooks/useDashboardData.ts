@@ -89,7 +89,7 @@ export function useDashboardData(year: number, month: number, refreshKey: number
       } else {
         const billTxns: Transaction[] = bills
           .filter((b) => inMonth(b.time, year, month))
-          .map((b) => ({ id: b.id, description: b.description, amount: b.amount, time: b.time, type: 'BILL' as const }));
+          .map((b) => ({ id: b.id, description: b.description, amount: b.amount, time: b.time, type: 'BILL' as const, categoryId: b.categoryId ?? undefined }));
         const incomeTxns: Transaction[] = incomes
           .filter((i) => inMonth(i.time, year, month))
           .map((i) => ({ id: i.id, description: i.description, amount: i.amount, time: i.time, type: 'INCOME' as const }));

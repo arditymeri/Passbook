@@ -1,7 +1,8 @@
-import type { Transaction } from '../types';
+import type { CategoryNameMap, Transaction } from '../types';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
+  categoryNames: CategoryNameMap;
   loading: boolean;
   error: string | null;
 }
@@ -9,10 +10,10 @@ interface RecentTransactionsProps {
 const amtFmt = new Intl.NumberFormat('de-AT', { style: 'currency', currency: 'EUR' });
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('default', { day: '2-digit', month: 'short' });
+  return new Date(iso).toLocaleDateString('default', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export function RecentTransactions({ transactions, loading, error }: RecentTransactionsProps) {
+export function RecentTransactions({ transactions, categoryNames, loading, error }: RecentTransactionsProps) {
   if (loading) return <div className="card"><p className="loading">Loading…</p></div>;
   if (error) return <div className="card"><p className="error">{error}</p></div>;
   if (transactions.length === 0) {
@@ -26,7 +27,12 @@ export function RecentTransactions({ transactions, loading, error }: RecentTrans
         {transactions.map((t) => (
           <li key={t.id} className="transaction-item">
             <span className="txn-date">{formatDate(t.time)}</span>
-            <span className="txn-description">{t.description ?? '—'}</span>
+            <div className="txn-main">
+              <span className="txn-description">{t.description ?? '—'}</span>
+              {t.categoryId && (
+                <span className="txn-category">{categoryNames.get(t.categoryId) ?? t.categoryId}</span>
+              )}
+            </div>
             <span className="txn-amount">{amtFmt.format(t.amount)}</span>
             <span className={`txn-badge ${t.type === 'INCOME' ? 'badge-green' : 'badge-red'}`}>
               {t.type === 'INCOME' ? 'INCOME' : 'EXPENSE'}

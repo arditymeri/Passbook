@@ -43,6 +43,8 @@ components:
         date:
           type: "string"
           format: "date"
+        categoryId:
+          type: "string"
         billItems:
           type: "array"
           items:

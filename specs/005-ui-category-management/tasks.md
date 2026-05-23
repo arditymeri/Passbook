@@ -80,7 +80,8 @@
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [x] T012 [P] Add CSS to `frontend/src/App.css` — styles for: category type badge (color-coded per type), color swatch circle, category list card layout, filter button group (active/inactive states), empty state message, CategoriesPage header layout
-- [x] T013 [P] Verify `fetchCategories()` fix in `frontend/src/api/client.ts` is backward-compatible with `frontend/src/hooks/useDashboardData.ts` — return type unchanged (`Promise<Category[]>`); additive `Category` fields do not break existing dashboard usage of `category.name` and `category.id`
+- [x] T013 [P] Verify `fetchCategories()` fix
+- [x] T014 Fix empty state UX in `frontend/src/components/CategoriesPage.tsx` — auto-open AddCategoryForm when categories finish loading and the list is empty, so the user immediately sees the form instead of a blank page in `frontend/src/api/client.ts` is backward-compatible with `frontend/src/hooks/useDashboardData.ts` — return type unchanged (`Promise<Category[]>`); additive `Category` fields do not break existing dashboard usage of `category.name` and `category.id`
 
 ---
 
