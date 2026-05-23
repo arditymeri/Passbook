@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         classes = {MyFinanceApplication.class, TestConfig.class, TestDataSourceConfig.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@EmbeddedKafka(partitions = 1, topics = {"booking.topic", "transaction.topic"})
+@EmbeddedKafka(partitions = 1, topics = {"booking.topic", "transaction.topic"}, bootstrapServersProperty = "spring.kafka.bootstrap-servers")
 public class AccountControllerIntegrationTest {
 
     @Autowired
@@ -37,7 +37,7 @@ public class AccountControllerIntegrationTest {
                 List.of("EUR"), "EUR");
 
         ResponseEntity<AccountResponse> response = restTemplate
-                .postForEntity("/api/v1/accounts", request, AccountResponse.class);
+                .postForEntity("/accounts", request, AccountResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody().getId()).isNotNull();
@@ -52,7 +52,7 @@ public class AccountControllerIntegrationTest {
                 List.of("EUR"), "EUR");
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity("/api/v1/accounts", request, String.class);
+                .postForEntity("/accounts", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -63,7 +63,7 @@ public class AccountControllerIntegrationTest {
                 List.of("XYZ"), "XYZ");
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity("/api/v1/accounts", request, String.class);
+                .postForEntity("/accounts", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -74,7 +74,7 @@ public class AccountControllerIntegrationTest {
                 List.of("EUR"), "USD");
 
         ResponseEntity<String> response = restTemplate
-                .postForEntity("/api/v1/accounts", request, String.class);
+                .postForEntity("/accounts", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -83,10 +83,10 @@ public class AccountControllerIntegrationTest {
     void createAccount_duplicateName_returns409() {
         CreateAccountRequest request = new CreateAccountRequest("Raiffeisen Savings", AccountType.SAVINGS,
                 List.of("EUR"), "EUR");
-        restTemplate.postForEntity("/api/v1/accounts", request, AccountResponse.class);
+        restTemplate.postForEntity("/accounts", request, AccountResponse.class);
 
         ResponseEntity<String> duplicate = restTemplate
-                .postForEntity("/api/v1/accounts", request, String.class);
+                .postForEntity("/accounts", request, String.class);
 
         assertThat(duplicate.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     }
@@ -98,10 +98,10 @@ public class AccountControllerIntegrationTest {
         CreateAccountRequest create = new CreateAccountRequest("Cash Wallet", AccountType.CASH,
                 List.of("EUR", "USD"), "EUR");
         AccountResponse created = restTemplate
-                .postForEntity("/api/v1/accounts", create, AccountResponse.class).getBody();
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
 
         ResponseEntity<AccountResponse> response = restTemplate
-                .getForEntity("/api/v1/accounts/" + created.getId(), AccountResponse.class);
+                .getForEntity("/accounts/" + created.getId(), AccountResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody().getCurrencies()).containsExactlyInAnyOrder("EUR", "USD");
@@ -110,7 +110,7 @@ public class AccountControllerIntegrationTest {
     @Test
     void getAccountById_notFound_returns404() {
         ResponseEntity<String> response = restTemplate
-                .getForEntity("/api/v1/accounts/00000000-0000-0000-0000-000000000000", String.class);
+                .getForEntity("/accounts/00000000-0000-0000-0000-000000000000", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
@@ -122,12 +122,12 @@ public class AccountControllerIntegrationTest {
         CreateAccountRequest create = new CreateAccountRequest("OldAccountName", AccountType.CHECKING,
                 List.of("EUR"), "EUR");
         AccountResponse created = restTemplate
-                .postForEntity("/api/v1/accounts", create, AccountResponse.class).getBody();
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
 
         UpdateAccountRequest update = new UpdateAccountRequest("NewAccountName", AccountType.SAVINGS,
                 List.of("EUR", "CHF"), "CHF");
         ResponseEntity<AccountResponse> response = restTemplate.exchange(
-                "/api/v1/accounts/" + created.getId(),
+                "/accounts/" + created.getId(),
                 HttpMethod.PUT,
                 new HttpEntity<>(update),
                 AccountResponse.class
@@ -145,10 +145,10 @@ public class AccountControllerIntegrationTest {
         CreateAccountRequest create = new CreateAccountRequest("ToDeleteAccount", AccountType.CASH,
                 List.of("EUR"), "EUR");
         AccountResponse created = restTemplate
-                .postForEntity("/api/v1/accounts", create, AccountResponse.class).getBody();
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
 
         ResponseEntity<Void> response = restTemplate.exchange(
-                "/api/v1/accounts/" + created.getId(),
+                "/accounts/" + created.getId(),
                 HttpMethod.DELETE, null, Void.class
         );
 
@@ -158,7 +158,7 @@ public class AccountControllerIntegrationTest {
     @Test
     void deleteAccount_notFound_returns404() {
         ResponseEntity<String> response = restTemplate.exchange(
-                "/api/v1/accounts/00000000-0000-0000-0000-000000000000",
+                "/accounts/00000000-0000-0000-0000-000000000000",
                 HttpMethod.DELETE, null, String.class
         );
 

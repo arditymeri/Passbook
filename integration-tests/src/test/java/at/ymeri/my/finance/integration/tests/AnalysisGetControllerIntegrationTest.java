@@ -24,7 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 )
 @EmbeddedKafka(
         partitions = 1,
-        topics = {"booking.topic", "transaction.topic"}
+        topics = {"booking.topic", "transaction.topic"},
+        bootstrapServersProperty = "spring.kafka.bootstrap-servers"
 )
 public class AnalysisGetControllerIntegrationTest {
 
@@ -38,15 +39,15 @@ public class AnalysisGetControllerIntegrationTest {
         Bill bill = new Bill();
         bill.setAmount(200.0);
         bill.setTime(MAY_2026);
-        restTemplate.postForEntity("/api/v1/bills", bill, Object.class);
+        restTemplate.postForEntity("/bills", bill, Object.class);
 
         CreateIncomeRequest income = new CreateIncomeRequest();
         income.setAmount(1000.0);
         income.setTime(MAY_2026);
-        restTemplate.postForEntity("/api/v1/incomes", income, Object.class);
+        restTemplate.postForEntity("/incomes", income, Object.class);
 
         ResponseEntity<MonthlySummaryResponse> response = restTemplate
-                .getForEntity("/api/v1/analysis/monthly?year=2026&month=5", MonthlySummaryResponse.class);
+                .getForEntity("/analysis/monthly?year=2026&month=5", MonthlySummaryResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -60,7 +61,7 @@ public class AnalysisGetControllerIntegrationTest {
     @Test
     void monthlySummary_emptyMonth_returnsZeroTotals() {
         ResponseEntity<MonthlySummaryResponse> response = restTemplate
-                .getForEntity("/api/v1/analysis/monthly?year=2000&month=1", MonthlySummaryResponse.class);
+                .getForEntity("/analysis/monthly?year=2000&month=1", MonthlySummaryResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -72,7 +73,7 @@ public class AnalysisGetControllerIntegrationTest {
     @Test
     void monthlySummary_invalidMonth_returns400() {
         ResponseEntity<String> response = restTemplate
-                .getForEntity("/api/v1/analysis/monthly?year=2026&month=13", String.class);
+                .getForEntity("/analysis/monthly?year=2026&month=13", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -80,7 +81,7 @@ public class AnalysisGetControllerIntegrationTest {
     @Test
     void periodSummary_multiMonthRange_returnsOneEntryPerMonth() {
         ResponseEntity<MonthlySummaryListResponse> response = restTemplate
-                .getForEntity("/api/v1/analysis/period?from=2000-01-01&to=2000-03-31", MonthlySummaryListResponse.class);
+                .getForEntity("/analysis/period?from=2000-01-01&to=2000-03-31", MonthlySummaryListResponse.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -93,7 +94,7 @@ public class AnalysisGetControllerIntegrationTest {
     @Test
     void periodSummary_fromAfterTo_returns400() {
         ResponseEntity<String> response = restTemplate
-                .getForEntity("/api/v1/analysis/period?from=2026-06-01&to=2026-01-01", String.class);
+                .getForEntity("/analysis/period?from=2026-06-01&to=2026-01-01", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
