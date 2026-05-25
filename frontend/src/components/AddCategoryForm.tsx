@@ -2,6 +2,15 @@ import { useState } from 'react';
 import { createCategory } from '../api/client';
 import type { Category, CategoryType, CreateCategoryRequest } from '../types';
 import { Modal } from './Modal';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Alert from '@mui/material/Alert';
 
 interface AddCategoryFormProps {
   open: boolean;
@@ -87,67 +96,61 @@ export function AddCategoryForm({ open, onClose, onSuccess, existingCategories }
   return (
     <Modal open={open} onClose={handleClose} title="Add Category">
       <form onSubmit={handleSubmit} noValidate>
-        {serverError && <div className="form-server-error">{serverError}</div>}
-
-        <div className="form-group">
-          <label htmlFor="cat-name">Name *</label>
-          <input
-            id="cat-name"
-            type="text"
+        <Stack spacing={2} sx={{ pt: 1 }}>
+          {serverError && <Alert severity="error">{serverError}</Alert>}
+          <TextField
+            label="Name *"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Groceries"
+            error={!!nameError}
+            helperText={nameError || ' '}
+            fullWidth
           />
-          {nameError && <span className="form-error">{nameError}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="cat-type">Type *</label>
-          <select
-            id="cat-type"
-            value={type}
-            onChange={(e) => setType(e.target.value as CategoryType | '')}
-          >
-            <option value="">Select a type</option>
-            {CATEGORY_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-          {typeError && <span className="form-error">{typeError}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="cat-color">Color</label>
-          <input
-            id="cat-color"
+          <FormControl fullWidth error={!!typeError}>
+            <InputLabel id="cat-type-label">Type *</InputLabel>
+            <Select
+              labelId="cat-type-label"
+              value={type}
+              label="Type *"
+              onChange={(e) => setType(e.target.value as CategoryType | '')}
+            >
+              <MenuItem value="">Select a type</MenuItem>
+              {CATEGORY_TYPES.map((t) => (
+                <MenuItem key={t} value={t}>{t}</MenuItem>
+              ))}
+            </Select>
+            {typeError && <FormHelperText>{typeError}</FormHelperText>}
+          </FormControl>
+          <TextField
+            label="Color"
             type="color"
             value={color}
             onChange={(e) => { setColor(e.target.value); setColorTouched(true); }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            fullWidth
           />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="cat-parent">Parent Category</label>
-          <select
-            id="cat-parent"
-            value={parentCategoryId}
-            onChange={(e) => setParentCategoryId(e.target.value)}
-          >
-            <option value="">None</option>
-            {existingCategories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={handleClose}>
-            Cancel
-          </button>
-          <button type="submit" className="btn-primary" disabled={submitting}>
-            {submitting ? 'Saving…' : 'Save'}
-          </button>
-        </div>
+          <FormControl fullWidth>
+            <InputLabel id="cat-parent-label">Parent Category</InputLabel>
+            <Select
+              labelId="cat-parent-label"
+              value={parentCategoryId}
+              label="Parent Category"
+              onChange={(e) => setParentCategoryId(e.target.value)}
+            >
+              <MenuItem value="">None</MenuItem>
+              {existingCategories.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+            <Button variant="outlined" onClick={handleClose}>Cancel</Button>
+            <Button variant="contained" type="submit" disabled={submitting}>
+              {submitting ? 'Saving…' : 'Save'}
+            </Button>
+          </Stack>
+        </Stack>
       </form>
     </Modal>
   );

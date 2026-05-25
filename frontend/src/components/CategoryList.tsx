@@ -1,4 +1,18 @@
 import type { Category, CategoryType } from '../types';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Skeleton from '@mui/material/Skeleton';
+import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import AddIcon from '@mui/icons-material/Add';
 
 interface CategoryListProps {
   categories: Category[];
@@ -24,52 +38,55 @@ export function CategoryList({
     : categories.filter((c) => c.type === activeTypeFilter);
 
   return (
-    <div className="category-list-container">
-      <div className="category-filter-bar">
-        {TYPE_FILTERS.map((f) => (
-          <button
-            key={f}
-            className={`btn-filter${activeTypeFilter === f ? ' btn-filter--active' : ''}`}
-            onClick={() => onTypeFilterChange(f)}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
+    <Stack spacing={2}>
+      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+        <ToggleButtonGroup
+          value={activeTypeFilter}
+          exclusive
+          onChange={(_, val) => { if (val !== null) onTypeFilterChange(val); }}
+          size="small"
+        >
+          {TYPE_FILTERS.map((f) => (
+            <ToggleButton key={f} value={f}>{f}</ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={onAddClick}>
+          Add Category
+        </Button>
+      </Stack>
 
-      {loading && <p className="state-message">Loading categories…</p>}
-
-      {!loading && error && (
-        <p className="state-message state-message--error">{error}</p>
+      {loading && (
+        <Stack spacing={1}>
+          {[0, 1, 2].map((i) => <Skeleton key={i} variant="rectangular" height={56} />)}
+        </Stack>
       )}
 
+      {!loading && error && <Alert severity="error">{error}</Alert>}
+
       {!loading && !error && filtered.length === 0 && (
-        <div className="empty-state">
-          <p>No categories yet.</p>
-          <button className="btn-primary" onClick={onAddClick}>
-            + Add your first category
-          </button>
-        </div>
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>No categories yet.</Typography>
+          <Button variant="contained" onClick={onAddClick}>+ Add your first category</Button>
+        </Box>
       )}
 
       {!loading && !error && filtered.length > 0 && (
-        <ul className="category-list">
+        <List disablePadding>
           {filtered.map((cat) => (
-            <li key={cat.id} className="category-item">
-              {cat.color && (
-                <span
-                  className="category-color-swatch"
-                  style={{ backgroundColor: cat.color }}
-                />
-              )}
-              <span className="category-name">{cat.name}</span>
-              <span className={`category-type-badge category-type-badge--${cat.type.toLowerCase()}`}>
-                {cat.type}
-              </span>
-            </li>
+            <ListItem key={cat.id} divider>
+              <ListItemAvatar>
+                <Avatar sx={{ bgcolor: cat.color ?? 'grey.400', width: 36, height: 36, fontSize: 14 }}>
+                  {cat.name[0].toUpperCase()}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={cat.name}
+                secondary={cat.type}
+              />
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
-    </div>
+    </Stack>
   );
 }

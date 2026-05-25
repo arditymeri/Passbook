@@ -1,4 +1,13 @@
 import { useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
 import { AddBillForm } from './components/AddBillForm';
 import { AddIncomeForm } from './components/AddIncomeForm';
 import { BudgetStatus } from './components/BudgetStatus';
@@ -8,8 +17,8 @@ import { MonthNav } from './components/MonthNav';
 import { RecentTransactions } from './components/RecentTransactions';
 import { SummaryCard } from './components/SummaryCard';
 import { useDashboardData } from './hooks/useDashboardData';
+import { theme } from './theme';
 import type { Period } from './types';
-import './App.css';
 
 function App() {
   const now = new Date();
@@ -27,7 +36,12 @@ function App() {
   } = useDashboardData(period.year, period.month, refreshKey);
 
   if (view === 'categories') {
-    return <CategoriesPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />;
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <CategoriesPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+      </ThemeProvider>
+    );
   }
 
   function handlePrevious() {
@@ -47,51 +61,69 @@ function App() {
   }
 
   return (
-    <div className="dashboard">
-      <header className="dashboard-header">
-        <h1>MyFinance Dashboard</h1>
-        <div className="action-buttons">
-          <button className="btn-secondary" onClick={() => setView('categories')}>Categories</button>
-          <button className="btn-primary" onClick={() => setBillFormOpen(true)}>+ Add Expense</button>
-          <button className="btn-primary" onClick={() => setIncomeFormOpen(true)}>+ Add Income</button>
-        </div>
-      </header>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AppBar position="static" color="primary" elevation={2}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
+            MyFinance Dashboard
+          </Typography>
+          <Stack direction="row" spacing={1}>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('categories')}>
+              Categories
+            </Button>
+            <Button color="inherit" variant="contained" sx={{ bgcolor: 'secondary.main' }} onClick={() => setBillFormOpen(true)}>
+              + Add Expense
+            </Button>
+            <Button color="inherit" variant="contained" sx={{ bgcolor: 'secondary.main' }} onClick={() => setIncomeFormOpen(true)}>
+              + Add Income
+            </Button>
+          </Stack>
+        </Toolbar>
+      </AppBar>
 
-      <MonthNav
-        year={period.year}
-        month={period.month}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-      />
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Stack spacing={2.5}>
+          <MonthNav
+            year={period.year}
+            month={period.month}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+          />
 
-      <SummaryCard
-        summary={summary}
-        loading={summaryLoading}
-        error={summaryError}
-      />
+          <SummaryCard
+            summary={summary}
+            loading={summaryLoading}
+            error={summaryError}
+          />
 
-      <div className="middle-row">
-        <CategorySpend
-          spendingByCategory={summary?.spendingByCategory ?? {}}
-          categoryNames={categoryNames}
-          loading={summaryLoading}
-          error={summaryError}
-        />
+          <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap' }}>
+            <Box sx={{ flex: 1, minWidth: 280 }}>
+              <CategorySpend
+                spendingByCategory={summary?.spendingByCategory ?? {}}
+                categoryNames={categoryNames}
+                loading={summaryLoading}
+                error={summaryError}
+              />
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 280 }}>
+              <BudgetStatus
+                entries={budgetEntries}
+                categoryNames={categoryNames}
+                loading={budgetLoading}
+                error={budgetError}
+              />
+            </Box>
+          </Box>
 
-        <BudgetStatus
-          entries={budgetEntries}
-          categoryNames={categoryNames}
-          loading={budgetLoading}
-          error={budgetError}
-        />
-      </div>
-
-      <RecentTransactions
-        transactions={transactions}
-        categoryNames={categoryNames}
-        loading={transactionsLoading}
-        error={transactionsError}
-      />
+          <RecentTransactions
+            transactions={transactions}
+            categoryNames={categoryNames}
+            loading={transactionsLoading}
+            error={transactionsError}
+          />
+        </Stack>
+      </Container>
 
       <AddBillForm
         open={billFormOpen}
@@ -105,7 +137,7 @@ function App() {
         onClose={() => setIncomeFormOpen(false)}
         onSuccess={handleSaveSuccess}
       />
-    </div>
+    </ThemeProvider>
   );
 }
 

@@ -1,3 +1,14 @@
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Skeleton from '@mui/material/Skeleton';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
 import type { CategoryNameMap, Transaction } from '../types';
 
 interface RecentTransactionsProps {
@@ -14,32 +25,66 @@ function formatDate(iso: string): string {
 }
 
 export function RecentTransactions({ transactions, categoryNames, loading, error }: RecentTransactionsProps) {
-  if (loading) return <div className="card"><p className="loading">Loading…</p></div>;
-  if (error) return <div className="card"><p className="error">{error}</p></div>;
+  if (loading) {
+    return (
+      <Paper sx={{ p: 2 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>Recent Transactions</Typography>
+        {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} variant="rectangular" height={36} sx={{ mb: 0.5 }} />)}
+      </Paper>
+    );
+  }
+  if (error) return <Alert severity="error">{error}</Alert>;
   if (transactions.length === 0) {
-    return <div className="card"><p className="empty">No transactions for this month.</p></div>;
+    return (
+      <Paper sx={{ p: 2 }}>
+        <Typography color="text.secondary">No transactions for this month.</Typography>
+      </Paper>
+    );
   }
 
   return (
-    <div className="card">
-      <h2 className="card-title">Recent Transactions</h2>
-      <ul className="transaction-list">
-        {transactions.map((t) => (
-          <li key={t.id} className="transaction-item">
-            <span className="txn-date">{formatDate(t.time)}</span>
-            <div className="txn-main">
-              <span className="txn-description">{t.description ?? '—'}</span>
-              {t.categoryId && (
-                <span className="txn-category">{categoryNames.get(t.categoryId) ?? t.categoryId}</span>
-              )}
-            </div>
-            <span className="txn-amount">{amtFmt.format(t.amount)}</span>
-            <span className={`txn-badge ${t.type === 'INCOME' ? 'badge-green' : 'badge-red'}`}>
-              {t.type === 'INCOME' ? 'INCOME' : 'EXPENSE'}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Paper sx={{ p: 2 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>Recent Transactions</Typography>
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Date</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Category</TableCell>
+              <TableCell align="right">Amount</TableCell>
+              <TableCell>Type</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {transactions.map((t) => (
+              <TableRow key={t.id} hover>
+                <TableCell>{formatDate(t.time)}</TableCell>
+                <TableCell>{t.description ?? '—'}</TableCell>
+                <TableCell>{t.categoryId ? (categoryNames.get(t.categoryId) ?? t.categoryId) : '—'}</TableCell>
+                <TableCell align="right">
+                  <Typography
+                    variant="body2"
+                    component="span"
+                    color={t.type === 'INCOME' ? 'success.main' : 'error.main'}
+                    sx={{ fontWeight: 600 }}
+                  >
+                    {amtFmt.format(t.amount)}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={t.type === 'INCOME' ? 'INCOME' : 'EXPENSE'}
+                    color={t.type === 'INCOME' ? 'success' : 'error'}
+                    size="small"
+                    variant="outlined"
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
   );
 }

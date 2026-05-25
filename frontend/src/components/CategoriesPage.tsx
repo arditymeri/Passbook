@@ -3,13 +3,18 @@ import { useCategories } from '../hooks/useCategories';
 import { CategoryList } from './CategoryList';
 import { AddCategoryForm } from './AddCategoryForm';
 import type { Category, CategoryType } from '../types';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 interface CategoriesPageProps {
   onBack: () => void;
 }
 
 export function CategoriesPage({ onBack }: CategoriesPageProps) {
-  const { categories, loading, error, refresh } = useCategories();
+  const { categories, loading, error } = useCategories();
   const [localCategories, setLocalCategories] = useState<Category[] | null>(null);
   const [addFormOpen, setAddFormOpen] = useState(false);
   const [activeTypeFilter, setActiveTypeFilter] = useState<CategoryType | 'ALL'>('ALL');
@@ -28,16 +33,13 @@ export function CategoriesPage({ onBack }: CategoriesPageProps) {
   }
 
   return (
-    <div className="categories-page">
-      <header className="dashboard-header">
-        <div className="header-left">
-          <button className="btn-secondary" onClick={onBack}>← Back</button>
-          <h1>Categories</h1>
-        </div>
-        <button className="btn-primary" onClick={() => setAddFormOpen(true)}>
-          + Add Category
-        </button>
-      </header>
+    <Box sx={{ p: 2 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
+        <IconButton onClick={onBack} aria-label="Back">
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>Categories</Typography>
+      </Stack>
 
       <CategoryList
         categories={displayCategories}
@@ -54,6 +56,6 @@ export function CategoriesPage({ onBack }: CategoriesPageProps) {
         onSuccess={handleSuccess}
         existingCategories={displayCategories}
       />
-    </div>
+    </Box>
   );
 }

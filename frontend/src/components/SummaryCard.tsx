@@ -1,3 +1,8 @@
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
+import Alert from '@mui/material/Alert';
 import type { MonthlySummary } from '../types';
 
 interface SummaryCardProps {
@@ -9,26 +14,42 @@ interface SummaryCardProps {
 const fmt = new Intl.NumberFormat('de-AT', { style: 'currency', currency: 'EUR' });
 
 export function SummaryCard({ summary, loading, error }: SummaryCardProps) {
-  if (loading) return <div className="summary-card"><p className="loading">Loading…</p></div>;
-  if (error) return <div className="summary-card"><p className="error">{error}</p></div>;
+  if (loading) {
+    return (
+      <Paper sx={{ p: 2 }}>
+        <Stack spacing={1.5}>
+          <Skeleton variant="rectangular" height={28} />
+          <Skeleton variant="rectangular" height={28} />
+          <Skeleton variant="rectangular" height={28} />
+        </Stack>
+      </Paper>
+    );
+  }
+  if (error) return <Alert severity="error">{error}</Alert>;
   if (!summary) return null;
 
-  const netColor = summary.netBalance >= 0 ? 'positive' : 'negative';
-
   return (
-    <div className="summary-card">
-      <div className="summary-item">
-        <span className="summary-label">Income</span>
-        <span className="summary-value positive">{fmt.format(summary.totalIncome)}</span>
-      </div>
-      <div className="summary-item">
-        <span className="summary-label">Expenses</span>
-        <span className="summary-value negative">{fmt.format(summary.totalExpenses)}</span>
-      </div>
-      <div className="summary-item">
-        <span className="summary-label">Net Balance</span>
-        <span className={`summary-value ${netColor}`}>{fmt.format(summary.netBalance)}</span>
-      </div>
-    </div>
+    <Paper sx={{ p: 2 }}>
+      <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flex: 1, minWidth: 160 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>Income</Typography>
+          <Typography variant="h6" color="success.main" sx={{ fontWeight: 700 }}>
+            {fmt.format(summary.totalIncome)}
+          </Typography>
+        </Stack>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flex: 1, minWidth: 160 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>Expenses</Typography>
+          <Typography variant="h6" color="error.main" sx={{ fontWeight: 700 }}>
+            {fmt.format(summary.totalExpenses)}
+          </Typography>
+        </Stack>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flex: 1, minWidth: 160 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>Net Balance</Typography>
+          <Typography variant="h6" color={summary.netBalance >= 0 ? 'success.main' : 'error.main'} sx={{ fontWeight: 700 }}>
+            {fmt.format(summary.netBalance)}
+          </Typography>
+        </Stack>
+      </Stack>
+    </Paper>
   );
 }
