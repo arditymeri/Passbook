@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { createIncome } from '../api/client';
 import type { CreateIncomeRequest, IncomeSource } from '../types';
 import { Modal } from './Modal';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Alert from '@mui/material/Alert';
 
 interface AddIncomeFormProps {
   open: boolean;
@@ -21,14 +29,16 @@ export function AddIncomeForm({ open, onClose, onSuccess }: AddIncomeFormProps) 
   const [description, setDescription] = useState('');
   const [source, setSource] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [amountError, setAmountError] = useState('');
+  const [serverError, setServerError] = useState<string | null>(null);
 
   function reset() {
     setAmount('');
     setDate(today());
     setDescription('');
     setSource('');
-    setError(null);
+    setAmountError('');
+    setServerError(null);
   }
 
   function handleClose() {
@@ -40,10 +50,11 @@ export function AddIncomeForm({ open, onClose, onSuccess }: AddIncomeFormProps) 
     e.preventDefault();
     const parsed = parseFloat(amount);
     if (!amount || isNaN(parsed) || parsed <= 0) {
-      setError('Amount must be greater than zero');
+      setAmountError('Amount must be greater than zero');
       return;
     }
-    setError(null);
+    setAmountError('');
+    setServerError(null);
     setSubmitting(true);
     try {
       const req: CreateIncomeRequest = {
@@ -57,7 +68,7 @@ export function AddIncomeForm({ open, onClose, onSuccess }: AddIncomeFormProps) 
       onSuccess();
       onClose();
     } catch {
-      setError('Could not save — please try again');
+      setServerError('Could not save — please try again');
     } finally {
       setSubmitting(false);
     }
@@ -66,65 +77,55 @@ export function AddIncomeForm({ open, onClose, onSuccess }: AddIncomeFormProps) 
   return (
     <Modal open={open} onClose={handleClose} title="Add Income">
       <form onSubmit={handleSubmit} noValidate>
-        <div className="form-group">
-          <label htmlFor="income-amount">Amount *</label>
-          <input
-            id="income-amount"
-            type="number"
-            step="0.01"
-            min="0.01"
+        <Stack spacing={2} sx={{ pt: 1 }}>
+          {serverError && <Alert severity="error">{serverError}</Alert>}
+          <TextField
+            label="Amount *"
+            type="text"
+            inputMode="decimal"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            required
+            error={!!amountError}
+            helperText={amountError || ' '}
+            fullWidth
           />
-          {error && <span className="form-error">{error}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="income-date">Date *</label>
-          <input
-            id="income-date"
+          <TextField
+            label="Date *"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            required
+            slotProps={{ inputLabel: { shrink: true } }}
+            fullWidth
           />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="income-desc">Description</label>
-          <input
-            id="income-desc"
-            type="text"
+          <TextField
+            label="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Optional"
+            fullWidth
           />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="income-source">Source</label>
-          <select
-            id="income-source"
-            value={source}
-            onChange={(e) => setSource(e.target.value)}
-          >
-            <option value="">No source</option>
-            {INCOME_SOURCES.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={handleClose}>
-            Cancel
-          </button>
-          <button type="submit" className="btn-primary" disabled={submitting}>
-            {submitting ? 'Saving…' : 'Save'}
-          </button>
-        </div>
+          <FormControl fullWidth>
+            <InputLabel id="income-source-label">Source</InputLabel>
+            <Select
+              labelId="income-source-label"
+              value={source}
+              label="Source"
+              onChange={(e) => setSource(e.target.value)}
+            >
+              <MenuItem value="">No source</MenuItem>
+              {INCOME_SOURCES.map((s) => (
+                <MenuItem key={s} value={s}>{s}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+            <Button variant="outlined" onClick={handleClose}>Cancel</Button>
+            <Button variant="contained" type="submit" disabled={submitting}>
+              {submitting ? 'Saving…' : 'Save'}
+            </Button>
+          </Stack>
+        </Stack>
       </form>
     </Modal>
   );

@@ -1,3 +1,10 @@
+import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+
 interface MonthNavProps {
   year: number;
   month: number;
@@ -12,10 +19,18 @@ export function MonthNav({ year, month, onPrevious, onNext }: MonthNavProps) {
   });
 
   return (
-    <div className="month-nav">
-      <button className="nav-btn" onClick={onPrevious} aria-label="Previous month">‹</button>
-      <span className="month-label">{label}</span>
-      <button className="nav-btn" onClick={onNext} aria-label="Next month">›</button>
-    </div>
+    <Paper variant="outlined" sx={{ px: 2, py: 1 }}>
+      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
+        <IconButton onClick={onPrevious} aria-label="Previous month" size="small">
+          <ChevronLeftIcon />
+        </IconButton>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          {label}
+        </Typography>
+        <IconButton onClick={onNext} aria-label="Next month" size="small">
+          <ChevronRightIcon />
+        </IconButton>
+      </Stack>
+    </Paper>
   );
 }
