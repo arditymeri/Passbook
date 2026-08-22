@@ -68,9 +68,9 @@
 
 **Independent Test**: Navigate to the Categories page (click "Categories" button). The list uses MUI List/Avatar. Filter buttons are MUI ToggleButtonGroup. Add Category form matches the Add Bill form style. Empty state shows a prompt to add a category.
 
-- [ ] T013 [P] [US3] Migrate `frontend/src/components/CategoryList.tsx` — replace filter buttons with MUI `ToggleButtonGroup` (exclusive, values ALL/EXPENSE/INCOME/BOTH); replace list with MUI `List` + `ListItem` + coloured `Avatar` (category.color or grey default) + `ListItemText primary={name} secondary={type}`; add "Add Category" `Button variant="contained" startIcon={<AddIcon />}`; `Skeleton` loading, `Alert` error, `Typography` empty states (per contracts)
-- [ ] T014 [P] [US3] Migrate `frontend/src/components/AddCategoryForm.tsx` — replace inputs with MUI `TextField` (name), `Select`+`MenuItem` (type: EXPENSE/INCOME/BOTH), `TextField type="color"` (colour), `Select` (parent category with "None" option); field errors on name/type via `helperText`; `Button variant="contained"` submit, `Button variant="outlined"` cancel; `Alert` server errors (per contracts)
-- [ ] T015 [US3] Migrate `frontend/src/components/CategoriesPage.tsx` — replace back button with MUI `IconButton` + ArrowBack icon; page title as MUI `Typography variant="h5"` "Categories"; wrap content in MUI `Box` layout (depends on T013 and T014 being complete)
+- [X] T013 [P] [US3] Migrate `frontend/src/components/CategoryList.tsx` — replace filter buttons with MUI `ToggleButtonGroup` (exclusive, values ALL/EXPENSE/INCOME/BOTH); replace list with MUI `List` + `ListItem` + coloured `Avatar` (category.color or grey default) + `ListItemText primary={name} secondary={type}`; add "Add Category" `Button variant="contained" startIcon={<AddIcon />}`; `Skeleton` loading, `Alert` error, `Typography` empty states (per contracts)
+- [X] T014 [P] [US3] Migrate `frontend/src/components/AddCategoryForm.tsx` — replace inputs with MUI `TextField` (name), `Select`+`MenuItem` (type: EXPENSE/INCOME/BOTH), `TextField type="color"` (colour), `Select` (parent category with "None" option); field errors on name/type via `helperText`; `Button variant="contained"` submit, `Button variant="outlined"` cancel; `Alert` server errors (per contracts)
+- [X] T015 [US3] Migrate `frontend/src/components/CategoriesPage.tsx` — replace back button with MUI `IconButton` + ArrowBack icon; page title as MUI `Typography variant="h5"` "Categories"; wrap content in MUI `Box` layout (depends on T013 and T014 being complete)
 
 **Checkpoint**: Categories page fully styled. All three pages (dashboard, forms, categories) share identical component shapes, spacing, and palette.
 
@@ -80,9 +80,9 @@
 
 **Purpose**: Remove all hand-written CSS, verify TypeScript compiles, and confirm no regressions.
 
-- [ ] T016 Delete `frontend/src/App.css`; reduce `frontend/src/index.css` to a minimal global reset (body margin: 0; box-sizing: border-box) — remove all component class selectors that are now handled by MUI
-- [ ] T017 Run `cd frontend && npm run build` — confirm TypeScript type-check and Vite build complete with zero errors
-- [ ] T018 Manual smoke-test: start `npm run dev`, open browser, verify all three pages (dashboard, Add Expense form, Add Income form, Categories page) render correctly with no console errors, all CRUD operations work end-to-end
+- [X] T016 Delete `frontend/src/App.css`; reduce `frontend/src/index.css` to a minimal global reset (body margin: 0; box-sizing: border-box) — remove all component class selectors that are now handled by MUI
+- [X] T017 Run `cd frontend && npm run build` — confirm TypeScript type-check and Vite build complete with zero errors
+- [X] T018 Manual smoke-test: start `npm run dev`, open browser, verify all three pages (dashboard, Add Expense form, Add Income form, Categories page) render correctly with no console errors, all CRUD operations work end-to-end
 
 ---
 
