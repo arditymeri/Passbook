@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createBill } from '../api/client';
-import type { Category, CreateBillRequest } from '../types';
+import type { Account, Category, CreateBillRequest } from '../types';
 import { Modal } from './Modal';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
@@ -16,17 +16,19 @@ interface AddBillFormProps {
   onClose: () => void;
   onSuccess: () => void;
   categories: Category[];
+  accounts: Account[];
 }
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function AddBillForm({ open, onClose, onSuccess, categories }: AddBillFormProps) {
+export function AddBillForm({ open, onClose, onSuccess, categories, accounts }: AddBillFormProps) {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(today());
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [accountId, setAccountId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [amountError, setAmountError] = useState('');
   const [serverError, setServerError] = useState<string | null>(null);
@@ -36,6 +38,7 @@ export function AddBillForm({ open, onClose, onSuccess, categories }: AddBillFor
     setDate(today());
     setDescription('');
     setCategoryId('');
+    setAccountId('');
     setAmountError('');
     setServerError(null);
   }
@@ -61,6 +64,7 @@ export function AddBillForm({ open, onClose, onSuccess, categories }: AddBillFor
         time: new Date(date).toISOString(),
         description: description.trim() || undefined,
         categoryId: categoryId || undefined,
+        accountId: accountId || undefined,
       };
       await createBill(req);
       reset();
@@ -115,6 +119,20 @@ export function AddBillForm({ open, onClose, onSuccess, categories }: AddBillFor
               <MenuItem value="">No category</MenuItem>
               {categories.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="bill-account-label">Account</InputLabel>
+            <Select
+              labelId="bill-account-label"
+              value={accountId}
+              label="Account"
+              onChange={(e) => setAccountId(e.target.value)}
+            >
+              <MenuItem value="">No account</MenuItem>
+              {accounts.map((acc) => (
+                <MenuItem key={acc.id} value={acc.id}>{acc.name}</MenuItem>
               ))}
             </Select>
           </FormControl>

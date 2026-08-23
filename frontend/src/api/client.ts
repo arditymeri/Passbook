@@ -1,4 +1,4 @@
-import type { Bill, BudgetStatusEntry, Category, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary } from '../types';
+import type { Account, Bill, BudgetStatusEntry, Category, CreateAccountRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -64,4 +64,13 @@ export async function createBill(req: CreateBillRequest): Promise<void> {
 
 export async function createIncome(req: CreateIncomeRequest): Promise<void> {
   await post('/api/v1/incomes', req);
+}
+
+export async function fetchAccounts(): Promise<Account[]> {
+  const data = await request<{ accounts: Account[] }>('/api/v1/accounts');
+  return data.accounts ?? [];
+}
+
+export async function createAccount(req: CreateAccountRequest): Promise<Account> {
+  return postAndReturn<Account>('/api/v1/accounts', req);
 }

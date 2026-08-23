@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createIncome } from '../api/client';
-import type { CreateIncomeRequest, IncomeSource } from '../types';
+import type { Account, CreateIncomeRequest, IncomeSource } from '../types';
 import { Modal } from './Modal';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
@@ -15,6 +15,7 @@ interface AddIncomeFormProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  accounts: Account[];
 }
 
 const INCOME_SOURCES: IncomeSource[] = ['SALARY', 'FREELANCE', 'INVESTMENT', 'RENTAL', 'GIFT', 'OTHER'];
@@ -23,11 +24,12 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function AddIncomeForm({ open, onClose, onSuccess }: AddIncomeFormProps) {
+export function AddIncomeForm({ open, onClose, onSuccess, accounts }: AddIncomeFormProps) {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(today());
   const [description, setDescription] = useState('');
   const [source, setSource] = useState('');
+  const [accountId, setAccountId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [amountError, setAmountError] = useState('');
   const [serverError, setServerError] = useState<string | null>(null);
@@ -37,6 +39,7 @@ export function AddIncomeForm({ open, onClose, onSuccess }: AddIncomeFormProps) 
     setDate(today());
     setDescription('');
     setSource('');
+    setAccountId('');
     setAmountError('');
     setServerError(null);
   }
@@ -62,6 +65,7 @@ export function AddIncomeForm({ open, onClose, onSuccess }: AddIncomeFormProps) 
         time: new Date(date).toISOString(),
         description: description.trim() || undefined,
         source: (source as IncomeSource) || undefined,
+        accountId: accountId || undefined,
       };
       await createIncome(req);
       reset();
@@ -116,6 +120,20 @@ export function AddIncomeForm({ open, onClose, onSuccess }: AddIncomeFormProps) 
               <MenuItem value="">No source</MenuItem>
               {INCOME_SOURCES.map((s) => (
                 <MenuItem key={s} value={s}>{s}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel id="income-account-label">Account</InputLabel>
+            <Select
+              labelId="income-account-label"
+              value={accountId}
+              label="Account"
+              onChange={(e) => setAccountId(e.target.value)}
+            >
+              <MenuItem value="">No account</MenuItem>
+              {accounts.map((acc) => (
+                <MenuItem key={acc.id} value={acc.id}>{acc.name}</MenuItem>
               ))}
             </Select>
           </FormControl>

@@ -3,7 +3,11 @@ package at.ymeri.my.finance.integration.tests;
 import at.ymeri.my.finance.MyFinanceApplication;
 import at.ymeri.my.finance.application.data.AccountResponse;
 import at.ymeri.my.finance.application.data.AccountType;
+import at.ymeri.my.finance.application.data.Bill;
+import at.ymeri.my.finance.application.data.BillResponseModel;
 import at.ymeri.my.finance.application.data.CreateAccountRequest;
+import at.ymeri.my.finance.application.data.CreateIncomeRequest;
+import at.ymeri.my.finance.application.data.IncomeResponse;
 import at.ymeri.my.finance.application.data.UpdateAccountRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -163,5 +168,91 @@ public class AccountControllerIntegrationTest {
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    // --- derived balance ---
+
+    @Test
+    void getAccountById_noLinkedTransactions_balanceEqualsStartingBalance() {
+        CreateAccountRequest create = new CreateAccountRequest("Balance Test Account", AccountType.CHECKING,
+                List.of("EUR"), "EUR").balance(1000.0);
+        AccountResponse created = restTemplate
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
+
+        AccountResponse fetched = restTemplate
+                .getForEntity("/accounts/" + created.getId(), AccountResponse.class).getBody();
+
+        assertThat(fetched.getBalance()).isEqualTo(1000.0);
+    }
+
+    @Test
+    void getAccountById_linkedIncome_balanceReflectsIncome() {
+        CreateAccountRequest create = new CreateAccountRequest("Income Linked Account", AccountType.CHECKING,
+                List.of("EUR"), "EUR").balance(1000.0);
+        AccountResponse account = restTemplate
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
+
+        CreateIncomeRequest income = new CreateIncomeRequest(200.0, OffsetDateTime.now())
+                .accountId(account.getId().toString());
+        restTemplate.postForEntity("/incomes", income, IncomeResponse.class);
+
+        AccountResponse fetched = restTemplate
+                .getForEntity("/accounts/" + account.getId(), AccountResponse.class).getBody();
+
+        assertThat(fetched.getBalance()).isEqualTo(1200.0);
+    }
+
+    @Test
+    void getAccountById_linkedBill_balanceReflectsBill() {
+        CreateAccountRequest create = new CreateAccountRequest("Bill Linked Account", AccountType.CHECKING,
+                List.of("EUR"), "EUR").balance(1000.0);
+        AccountResponse account = restTemplate
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
+
+        Bill bill = new Bill().amount(50.0).time(OffsetDateTime.now()).accountId(account.getId().toString());
+        restTemplate.postForEntity("/createBill", bill, BillResponseModel.class);
+
+        AccountResponse fetched = restTemplate
+                .getForEntity("/accounts/" + account.getId(), AccountResponse.class).getBody();
+
+        assertThat(fetched.getBalance()).isEqualTo(950.0);
+    }
+
+    @Test
+    void getAccountById_linkedBillAndIncome_balanceReflectsBoth() {
+        CreateAccountRequest create = new CreateAccountRequest("Mixed Linked Account", AccountType.CHECKING,
+                List.of("EUR"), "EUR").balance(1000.0);
+        AccountResponse account = restTemplate
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
+
+        Bill bill = new Bill().amount(50.0).time(OffsetDateTime.now()).accountId(account.getId().toString());
+        restTemplate.postForEntity("/createBill", bill, BillResponseModel.class);
+
+        CreateIncomeRequest income = new CreateIncomeRequest(200.0, OffsetDateTime.now())
+                .accountId(account.getId().toString());
+        restTemplate.postForEntity("/incomes", income, IncomeResponse.class);
+
+        AccountResponse fetched = restTemplate
+                .getForEntity("/accounts/" + account.getId(), AccountResponse.class).getBody();
+
+        assertThat(fetched.getBalance()).isEqualTo(1150.0);
+    }
+
+    @Test
+    void createBill_noAccountId_stillSucceedsWithoutAffectingAnyAccountBalance() {
+        CreateAccountRequest create = new CreateAccountRequest("Unaffected Account", AccountType.CHECKING,
+                List.of("EUR"), "EUR").balance(1000.0);
+        AccountResponse account = restTemplate
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
+
+        Bill bill = new Bill().amount(75.0).time(OffsetDateTime.now());
+        ResponseEntity<BillResponseModel> response = restTemplate.postForEntity("/createBill", bill, BillResponseModel.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        AccountResponse fetched = restTemplate
+                .getForEntity("/accounts/" + account.getId(), AccountResponse.class).getBody();
+
+        assertThat(fetched.getBalance()).isEqualTo(1000.0);
     }
 }
