@@ -72,6 +72,7 @@ export interface CreateBillRequest {
   time: string;
   description?: string;
   categoryId?: string;
+  accountId?: string;
 }
 
 export interface CreateIncomeRequest {
@@ -79,6 +80,28 @@ export interface CreateIncomeRequest {
   time: string;
   description?: string;
   source?: IncomeSource;
+  accountId?: string;
+}
+
+export type AccountType = 'CHECKING' | 'SAVINGS' | 'CREDIT_CARD' | 'CASH' | 'INVESTMENT';
+
+export interface Account {
+  id: string;
+  name: string;
+  type: AccountType;
+  currencies: string[];
+  defaultCurrency: string;
+  balance: number;
+  institution?: string;
+}
+
+export interface CreateAccountRequest {
+  name: string;
+  type: AccountType;
+  currencies: string[];
+  defaultCurrency: string;
+  balance?: number;
+  institution?: string;
 }
 
 export interface DashboardData {
@@ -97,4 +120,7 @@ export interface DashboardData {
   categoryNames: CategoryNameMap;
   categories: Category[];
   categoriesLoading: boolean;
+
+  accounts: Account[];
+  accountsLoading: boolean;
 }

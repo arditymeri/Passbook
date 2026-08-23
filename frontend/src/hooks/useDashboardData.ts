@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  fetchAccounts,
   fetchBills,
   fetchBudgetStatus,
   fetchCategories,
@@ -7,6 +8,7 @@ import {
   fetchMonthlySummary,
 } from '../api/client';
 import type {
+  Account,
   BudgetStatusEntry,
   Category,
   CategoryNameMap,
@@ -37,6 +39,9 @@ export function useDashboardData(year: number, month: number, refreshKey: number
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
 
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(true);
+
   // Fetch categories once on mount
   useEffect(() => {
     fetchCategories()
@@ -47,6 +52,14 @@ export function useDashboardData(year: number, month: number, refreshKey: number
       })
       .catch(() => {/* non-fatal: fallback to IDs */})
       .finally(() => setCategoriesLoading(false));
+  }, []);
+
+  // Fetch accounts once on mount
+  useEffect(() => {
+    fetchAccounts()
+      .then(setAccounts)
+      .catch(() => {/* non-fatal: forms fall back to "No account" only */})
+      .finally(() => setAccountsLoading(false));
   }, []);
 
   // Fetch all period data in parallel when year, month, or refreshKey changes
@@ -107,5 +120,6 @@ export function useDashboardData(year: number, month: number, refreshKey: number
     budgetEntries, budgetLoading, budgetError,
     transactions, transactionsLoading, transactionsError,
     categoryNames, categories, categoriesLoading,
+    accounts, accountsLoading,
   };
 }

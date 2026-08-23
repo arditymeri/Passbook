@@ -10,6 +10,7 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import { AddBillForm } from './components/AddBillForm';
 import { AddIncomeForm } from './components/AddIncomeForm';
+import { AccountsPage } from './components/AccountsPage';
 import { BudgetStatus } from './components/BudgetStatus';
 import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
@@ -22,7 +23,7 @@ import type { Period } from './types';
 
 function App() {
   const now = new Date();
-  const [view, setView] = useState<'dashboard' | 'categories'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts'>('dashboard');
   const [period, setPeriod] = useState<Period>({ year: now.getFullYear(), month: now.getMonth() + 1 });
   const [refreshKey, setRefreshKey] = useState(0);
   const [billFormOpen, setBillFormOpen] = useState(false);
@@ -33,6 +34,7 @@ function App() {
     budgetEntries, budgetLoading, budgetError,
     transactions, transactionsLoading, transactionsError,
     categoryNames, categories,
+    accounts,
   } = useDashboardData(period.year, period.month, refreshKey);
 
   if (view === 'categories') {
@@ -40,6 +42,15 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <CategoriesPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+      </ThemeProvider>
+    );
+  }
+
+  if (view === 'accounts') {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AccountsPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
       </ThemeProvider>
     );
   }
@@ -69,6 +80,9 @@ function App() {
             MyFinance Dashboard
           </Typography>
           <Stack direction="row" spacing={1}>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('accounts')}>
+              Accounts
+            </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('categories')}>
               Categories
             </Button>
@@ -130,12 +144,14 @@ function App() {
         onClose={() => setBillFormOpen(false)}
         onSuccess={handleSaveSuccess}
         categories={categories}
+        accounts={accounts}
       />
 
       <AddIncomeForm
         open={incomeFormOpen}
         onClose={() => setIncomeFormOpen(false)}
         onSuccess={handleSaveSuccess}
+        accounts={accounts}
       />
     </ThemeProvider>
   );

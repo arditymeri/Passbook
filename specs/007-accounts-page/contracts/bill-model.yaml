@@ -1,3 +1,7 @@
+# Contract snapshot: Application/src/main/resources/swagger/bill/bill-model.yaml
+# This is the TARGET state for this feature. Only the `bill` schema's `accountId`
+# property is new — everything else is unchanged from the current file.
+
 components:
   schemas:
     billResponseModel:
@@ -45,8 +49,9 @@ components:
           format: "date"
         categoryId:
           type: "string"
-        accountId:
-          type: "string"
+        accountId:               # NEW — optional, links this bill to an Account.id.
+          type: "string"         # Absent/blank means "no account association" (unchanged
+                                  # default behaviour for every bill created before this feature).
         billItems:
           type: "array"
           items:
