@@ -56,7 +56,8 @@ class DeleteAccountServiceImplTest {
 
         assertThatThrownBy(() -> deleteAccountService.deleteAccount("id-1"))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Account is referenced by a bill or income and cannot be deleted");
+                .hasMessage("Account is referenced by a bill or income (including removed or corrected ones, "
+                        + "which are retained permanently) and cannot be deleted");
     }
 
     private AccountDto existingAccount() {

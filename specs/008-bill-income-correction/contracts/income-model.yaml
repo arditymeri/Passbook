@@ -1,3 +1,6 @@
+# Contract snapshot: Application/src/main/resources/swagger/income/income-model.yaml
+# TARGET state for this feature. New/changed pieces are marked; everything else is unchanged.
+
 components:
   schemas:
     createIncomeRequest:
@@ -57,9 +60,9 @@ components:
           type: "boolean"
         recurringFrequency:
           $ref: '#/components/schemas/recurringFrequency'
-        correctsTransactionId:
+        correctsTransactionId:               # NEW — id of the income this row corrects/reverses, if any
           type: "string"
-        reversal:
+        reversal:                            # NEW — true only for a system-generated reversal row
           type: "boolean"
 
     incomeListResponse:
@@ -88,7 +91,7 @@ components:
         - MONTHLY
         - YEARLY
 
-    correctIncomeRequest:
+    correctIncomeRequest:                    # NEW — the corrected values for PUT /incomes/{id}
       type: "object"
       required:
         - amount
@@ -107,7 +110,7 @@ components:
         accountId:
           type: "string"
 
-    incomeHistoryResponse:
+    incomeHistoryResponse:                   # NEW — response for GET /incomes/{id}/history
       type: "object"
       properties:
         history:

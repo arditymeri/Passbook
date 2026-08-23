@@ -48,4 +48,10 @@ public class IncomeEntity {
 
     @Column(name = "category_id")
     private String categoryId;
+
+    @Column(name = "corrects_transaction_id")
+    private String correctsTransactionId;
+
+    @Column(name = "reversal")
+    private boolean reversal;
 }

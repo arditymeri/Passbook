@@ -5,6 +5,7 @@ import at.ymeri.my.finance.application.data.AccountResponse;
 import at.ymeri.my.finance.application.data.AccountType;
 import at.ymeri.my.finance.application.data.Bill;
 import at.ymeri.my.finance.application.data.BillResponseModel;
+import at.ymeri.my.finance.application.data.CorrectBillRequest;
 import at.ymeri.my.finance.application.data.CreateAccountRequest;
 import at.ymeri.my.finance.application.data.CreateIncomeRequest;
 import at.ymeri.my.finance.application.data.IncomeResponse;
@@ -21,6 +22,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -236,6 +238,48 @@ public class AccountControllerIntegrationTest {
                 .getForEntity("/accounts/" + account.getId(), AccountResponse.class).getBody();
 
         assertThat(fetched.getBalance()).isEqualTo(1150.0);
+    }
+
+    @Test
+    void correctBill_movesTheLinkedAccountsBalanceToTheCorrectedAmount() {
+        CreateAccountRequest create = new CreateAccountRequest("Correction Balance Account", AccountType.CHECKING,
+                List.of("EUR"), "EUR").balance(1000.0);
+        AccountResponse account = restTemplate
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
+
+        Bill bill = new Bill().amount(50.0).time(OffsetDateTime.now()).accountId(account.getId().toString());
+        UUID billId = restTemplate.postForEntity("/createBill", bill, BillResponseModel.class)
+                .getBody().getBill().getId();
+
+        CorrectBillRequest correction = new CorrectBillRequest(80.0, OffsetDateTime.now())
+                .accountId(account.getId().toString());
+        restTemplate.exchange("/bills/" + billId, HttpMethod.PUT,
+                new HttpEntity<>(correction), BillResponseModel.class);
+
+        AccountResponse fetched = restTemplate
+                .getForEntity("/accounts/" + account.getId(), AccountResponse.class).getBody();
+
+        // 1000 - 50 (original) + 50 (reversal) - 80 (corrected) = 920
+        assertThat(fetched.getBalance()).isEqualTo(920.0);
+    }
+
+    @Test
+    void removeBill_restoresTheLinkedAccountsBalance() {
+        CreateAccountRequest create = new CreateAccountRequest("Removal Balance Account", AccountType.CHECKING,
+                List.of("EUR"), "EUR").balance(1000.0);
+        AccountResponse account = restTemplate
+                .postForEntity("/accounts", create, AccountResponse.class).getBody();
+
+        Bill bill = new Bill().amount(75.0).time(OffsetDateTime.now()).accountId(account.getId().toString());
+        UUID billId = restTemplate.postForEntity("/createBill", bill, BillResponseModel.class)
+                .getBody().getBill().getId();
+
+        restTemplate.exchange("/bills/" + billId, HttpMethod.DELETE, null, Void.class);
+
+        AccountResponse fetched = restTemplate
+                .getForEntity("/accounts/" + account.getId(), AccountResponse.class).getBody();
+
+        assertThat(fetched.getBalance()).isEqualTo(1000.0);
     }
 
     @Test

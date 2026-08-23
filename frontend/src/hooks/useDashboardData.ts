@@ -102,10 +102,28 @@ export function useDashboardData(year: number, month: number, refreshKey: number
       } else {
         const billTxns: Transaction[] = bills
           .filter((b) => inMonth(b.time, year, month))
-          .map((b) => ({ id: b.id, description: b.description, amount: b.amount, time: b.time, type: 'BILL' as const, categoryId: b.categoryId ?? undefined }));
+          .map((b) => ({
+            id: b.id,
+            description: b.description,
+            amount: b.amount,
+            time: b.time,
+            type: 'BILL' as const,
+            categoryId: b.categoryId ?? undefined,
+            accountId: b.accountId ?? undefined,
+            correctsTransactionId: b.correctsTransactionId ?? undefined,
+          }));
         const incomeTxns: Transaction[] = incomes
           .filter((i) => inMonth(i.time, year, month))
-          .map((i) => ({ id: i.id, description: i.description, amount: i.amount, time: i.time, type: 'INCOME' as const }));
+          .map((i) => ({
+            id: i.id,
+            description: i.description,
+            amount: i.amount,
+            time: i.time,
+            type: 'INCOME' as const,
+            accountId: i.accountId ?? undefined,
+            source: i.source ?? undefined,
+            correctsTransactionId: i.correctsTransactionId ?? undefined,
+          }));
         const merged = [...billTxns, ...incomeTxns]
           .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
           .slice(0, 10);

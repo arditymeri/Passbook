@@ -28,6 +28,9 @@ export interface Bill {
   amount: number;
   time: string;
   categoryId: string | null;
+  accountId?: string | null;
+  correctsTransactionId?: string | null;
+  reversal?: boolean;
 }
 
 export interface Income {
@@ -35,6 +38,10 @@ export interface Income {
   description: string | null;
   amount: number;
   time: string;
+  source?: IncomeSource | null;
+  accountId?: string | null;
+  correctsTransactionId?: string | null;
+  reversal?: boolean;
 }
 
 export type CategoryType = 'EXPENSE' | 'INCOME' | 'BOTH';
@@ -61,6 +68,9 @@ export interface Transaction {
   time: string;
   type: 'BILL' | 'INCOME';
   categoryId?: string;
+  accountId?: string;
+  source?: IncomeSource;
+  correctsTransactionId?: string;
 }
 
 export type CategoryNameMap = Map<string, string>;
@@ -81,6 +91,29 @@ export interface CreateIncomeRequest {
   description?: string;
   source?: IncomeSource;
   accountId?: string;
+}
+
+export interface CorrectBillRequest {
+  amount: number;
+  time: string;
+  description?: string;
+  categoryId?: string;
+  accountId?: string;
+}
+
+export interface CorrectIncomeRequest {
+  amount: number;
+  time: string;
+  description?: string;
+  source?: IncomeSource;
+  accountId?: string;
+}
+
+export interface TransactionHistoryEntry {
+  id: string;
+  amount: number;
+  time: string;
+  description: string | null;
 }
 
 export type AccountType = 'CHECKING' | 'SAVINGS' | 'CREDIT_CARD' | 'CASH' | 'INVESTMENT';

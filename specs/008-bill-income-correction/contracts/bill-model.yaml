@@ -1,3 +1,7 @@
+# Contract snapshot: Application/src/main/resources/swagger/bill/bill-model.yaml
+# TARGET state for this feature. New/changed pieces are marked; everything else
+# (including the 007 `accountId` addition) is unchanged from the current file.
+
 components:
   schemas:
     billResponseModel:
@@ -47,9 +51,9 @@ components:
           type: "string"
         accountId:
           type: "string"
-        correctsTransactionId:
+        correctsTransactionId:               # NEW — id of the bill this row corrects/reverses, if any
           type: "string"
-        reversal:
+        reversal:                            # NEW — true only for a system-generated reversal row
           type: "boolean"
         billItems:
           type: "array"
@@ -65,7 +69,7 @@ components:
           type: "number"
           format: "double"
 
-    correctBillRequest:
+    correctBillRequest:                       # NEW — the corrected values for PUT /bills/{id}
       type: "object"
       required:
         - amount
@@ -84,7 +88,7 @@ components:
         accountId:
           type: "string"
 
-    billHistoryResponse:
+    billHistoryResponse:                      # NEW — response for GET /bills/{id}/history
       type: "object"
       properties:
         history:

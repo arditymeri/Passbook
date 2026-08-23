@@ -128,6 +128,66 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>bill-correction</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/bill/bill-correction-controller.yaml
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>${api-package}.bill</apiPackage>
+                            <modelPackage>${model-package}</modelPackage>
+                            <skipOverwrite>true</skipOverwrite>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <delegatePattern>true</delegatePattern>
+                                <additionalModelTypeAnnotation>
+                                    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                                </additionalModelTypeAnnotation>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <dateLibary>java8</dateLibary>
+                                <performBeanValidation>true</performBeanValidation>
+                                <useTags>true</useTags>
+                                <notNullJacksonAnnoation>true</notNullJacksonAnnoation>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>income-correction</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/income/income-correction-controller.yaml
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>${api-package}.income</apiPackage>
+                            <modelPackage>${model-package}</modelPackage>
+                            <skipOverwrite>true</skipOverwrite>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <delegatePattern>true</delegatePattern>
+                                <additionalModelTypeAnnotation>
+                                    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                                </additionalModelTypeAnnotation>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <dateLibary>java8</dateLibary>
+                                <performBeanValidation>true</performBeanValidation>
+                                <useTags>true</useTags>
+                                <notNullJacksonAnnoation>true</notNullJacksonAnnoation>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>income-get</id>
                         <goals>
                             <goal>generate</goal>

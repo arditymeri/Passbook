@@ -24,7 +24,9 @@ public class DeleteCategoryServiceImpl implements DeleteCategoryService {
         getCategoryPersistencePort.getCategoryById(id)
                 .orElseThrow(() -> new NoSuchElementException("Category not found: " + id));
         if (deleteCategoryPersistencePort.isReferencedByTransaction(id)) {
-            throw new IllegalStateException("Category is referenced by a bill or income and cannot be deleted");
+            throw new IllegalStateException(
+                    "Category is referenced by a bill or income (including removed or corrected ones, "
+                            + "which are retained permanently) and cannot be deleted");
         }
         deleteCategoryPersistencePort.deleteCategory(id);
     }

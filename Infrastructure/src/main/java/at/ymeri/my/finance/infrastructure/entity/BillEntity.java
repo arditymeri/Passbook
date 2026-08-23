@@ -30,4 +30,10 @@ public class BillEntity {
 
     @Column(name = "account_id")
     private String accountId;
+
+    @Column(name = "corrects_transaction_id")
+    private String correctsTransactionId;
+
+    @Column(name = "reversal")
+    private boolean reversal;
 }
