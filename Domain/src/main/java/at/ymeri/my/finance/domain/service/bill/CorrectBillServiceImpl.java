@@ -5,6 +5,7 @@ import at.ymeri.my.finance.domain.data.bill.BillDto;
 import at.ymeri.my.finance.domain.spi.bill.AddBillPersistencePort;
 import at.ymeri.my.finance.domain.spi.bill.GetBillPersistencePort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
@@ -22,7 +23,12 @@ public class CorrectBillServiceImpl implements CorrectBillService {
         this.getBillPersistencePort = getBillPersistencePort;
     }
 
+    /**
+     * Reversal and replacement are written as one unit: a failure between them would otherwise
+     * leave an orphan reversal that permanently zeroes the bill out with nothing replacing it.
+     */
     @Override
+    @Transactional
     public BillDto correctBill(UUID id, BillDto correctedValues) {
         BillDto current = getBillPersistencePort.getBillById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bill not found: " + id));

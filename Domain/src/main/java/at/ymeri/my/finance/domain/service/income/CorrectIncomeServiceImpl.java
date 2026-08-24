@@ -5,6 +5,7 @@ import at.ymeri.my.finance.domain.data.income.IncomeDto;
 import at.ymeri.my.finance.domain.spi.income.AddIncomePersistencePort;
 import at.ymeri.my.finance.domain.spi.income.GetIncomePersistencePort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
@@ -22,7 +23,12 @@ public class CorrectIncomeServiceImpl implements CorrectIncomeService {
         this.getIncomePersistencePort = getIncomePersistencePort;
     }
 
+    /**
+     * Reversal and replacement are written as one unit: a failure between them would otherwise
+     * leave an orphan reversal that permanently zeroes the income out with nothing replacing it.
+     */
     @Override
+    @Transactional
     public IncomeDto correctIncome(UUID id, IncomeDto correctedValues) {
         IncomeDto current = getIncomePersistencePort.getIncomeById(id)
                 .orElseThrow(() -> new NoSuchElementException("Income not found: " + id));

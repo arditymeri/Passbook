@@ -11,6 +11,12 @@
 
     <artifactId>domain</artifactId>
 
-
+    <dependencies>
+        <!-- Transaction boundaries for multi-write domain operations (e.g. corrections). -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
