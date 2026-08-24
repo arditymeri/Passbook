@@ -5,23 +5,41 @@
 
 ## Schema Changes
 
-### `bill` table — 2 new nullable columns
+### `bill` table — 1 new nullable column, 1 new NOT NULL column
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|--------------|
 | `corrects_transaction_id` | VARCHAR | Yes | Id of the bill this row corrects/reverses. `NULL` for an original, never-corrected bill. |
-| `reversal` | BOOLEAN | Yes (default `false`) | `true` for a system-generated reversal row (negative amount, never user-created, never shown in the transaction list). |
+| `reversal` | BOOLEAN | No (`NOT NULL DEFAULT false`) | `true` for a system-generated reversal row (negative amount, never user-created, never shown in the transaction list). |
 
-### `income` table — 2 new nullable columns
+### `income` table — 1 new nullable column, 1 new NOT NULL column
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|--------------|
 | `corrects_transaction_id` | VARCHAR | Yes | Same semantics as `bill.corrects_transaction_id`. |
-| `reversal` | BOOLEAN | Yes (default `false`) | Same semantics as `bill.reversal`. |
+| `reversal` | BOOLEAN | No (`NOT NULL DEFAULT false`) | Same semantics as `bill.reversal`. |
 
-No other tables change. No data migration is needed for existing rows — both new columns default to
-`NULL`/`false`, which is exactly the correct state for every bill/income that predates this feature
-(an untouched original with no correction history).
+No other tables change.
+
+**Existing rows do need a one-time backfill.** `reversal` maps to a Java primitive `boolean`, so a
+`NULL` in that column makes Hibernate fail to hydrate the entity (`Null value was assigned to a
+property of primitive type`) — every read of a pre-feature bill/income 500s. `ddl-auto=update` adds
+the column to an existing table as nullable with no default and does not backfill it, so any
+database that predates this feature must run:
+
+```sql
+UPDATE bill   SET reversal = false WHERE reversal IS NULL;
+UPDATE income SET reversal = false WHERE reversal IS NULL;
+ALTER TABLE bill   ALTER COLUMN reversal SET DEFAULT false;
+ALTER TABLE bill   ALTER COLUMN reversal SET NOT NULL;
+ALTER TABLE income ALTER COLUMN reversal SET DEFAULT false;
+ALTER TABLE income ALTER COLUMN reversal SET NOT NULL;
+```
+
+Freshly created databases need nothing: the entity declares
+`@Column(nullable = false) @ColumnDefault("false")`, so Hibernate creates the column as
+`boolean not null default false`. `corrects_transaction_id` stays nullable and needs no migration —
+`NULL` is the correct state for an original, never-corrected transaction.
 
 ## Entities
 

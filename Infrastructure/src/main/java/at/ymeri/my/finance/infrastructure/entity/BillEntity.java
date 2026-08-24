@@ -1,6 +1,7 @@
 package at.ymeri.my.finance.infrastructure.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ public class BillEntity {
     @Column(name = "corrects_transaction_id")
     private String correctsTransactionId;
 
-    @Column(name = "reversal")
+    @Column(name = "reversal", nullable = false)
+    @ColumnDefault("false")
     private boolean reversal;
 }
