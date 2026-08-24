@@ -26,11 +26,15 @@ public class CorrectIncomeServiceImpl implements CorrectIncomeService {
     /**
      * Reversal and replacement are written as one unit: a failure between them would otherwise
      * leave an orphan reversal that permanently zeroes the income out with nothing replacing it.
+     *
+     * <p>The read takes a write lock on the row being corrected, so concurrent corrections of the
+     * same income serialize: the second one sees the first one's reversal and fails the
+     * "not yet superseded" check instead of double-reversing.
      */
     @Override
     @Transactional
     public IncomeDto correctIncome(UUID id, IncomeDto correctedValues) {
-        IncomeDto current = getIncomePersistencePort.getIncomeById(id)
+        IncomeDto current = getIncomePersistencePort.lockIncomeById(id)
                 .orElseThrow(() -> new NoSuchElementException("Income not found: " + id));
 
         validate(correctedValues);

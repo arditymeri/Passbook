@@ -21,6 +21,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,8 +42,20 @@ class RemoveIncomeServiceImplTest {
     private RemoveIncomeServiceImpl service;
 
     @Test
+    void removeIncome_readsTheTargetUnderALockSoConcurrentRemovalsSerialize() {
+        when(getIncomePersistencePort.lockIncomeById(TARGET_ID))
+                .thenReturn(Optional.of(income("2000.00", null)));
+        when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.removeIncome(TARGET_ID);
+
+        verify(getIncomePersistencePort).lockIncomeById(TARGET_ID);
+        verify(getIncomePersistencePort, never()).getIncomeById(any());
+    }
+
+    @Test
     void removeIncome_writesExactlyOneReversalRowAndNoReplacement() {
-        when(getIncomePersistencePort.getIncomeById(TARGET_ID)).thenReturn(Optional.of(income("2000.00", null)));
+        when(getIncomePersistencePort.lockIncomeById(TARGET_ID)).thenReturn(Optional.of(income("2000.00", null)));
         when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.removeIncome(TARGET_ID);
@@ -62,7 +75,7 @@ class RemoveIncomeServiceImplTest {
     @Test
     void removeIncome_doesNotMutateTheOriginal() {
         IncomeDto original = income("2000.00", null);
-        when(getIncomePersistencePort.getIncomeById(TARGET_ID)).thenReturn(Optional.of(original));
+        when(getIncomePersistencePort.lockIncomeById(TARGET_ID)).thenReturn(Optional.of(original));
         when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.removeIncome(TARGET_ID);
@@ -75,7 +88,7 @@ class RemoveIncomeServiceImplTest {
     @Test
     void removeIncome_onAlreadyCorrectedRow_reversesItsCurrentValue() {
         IncomeDto secondGeneration = income("2500.00", UUID.randomUUID().toString());
-        when(getIncomePersistencePort.getIncomeById(TARGET_ID)).thenReturn(Optional.of(secondGeneration));
+        when(getIncomePersistencePort.lockIncomeById(TARGET_ID)).thenReturn(Optional.of(secondGeneration));
         when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.removeIncome(TARGET_ID);
@@ -87,7 +100,7 @@ class RemoveIncomeServiceImplTest {
 
     @Test
     void removeIncome_unknownId_throwsNoSuchElement() {
-        when(getIncomePersistencePort.getIncomeById(TARGET_ID)).thenReturn(Optional.empty());
+        when(getIncomePersistencePort.lockIncomeById(TARGET_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.removeIncome(TARGET_ID))
                 .isInstanceOf(NoSuchElementException.class);
@@ -99,7 +112,7 @@ class RemoveIncomeServiceImplTest {
         IncomeDto existingReversal = income("-2000.00", TARGET_ID.toString());
         existingReversal.setId(UUID.randomUUID().toString());
 
-        when(getIncomePersistencePort.getIncomeById(TARGET_ID)).thenReturn(Optional.of(target));
+        when(getIncomePersistencePort.lockIncomeById(TARGET_ID)).thenReturn(Optional.of(target));
         when(getIncomePersistencePort.getAll()).thenReturn(List.of(target, existingReversal));
 
         assertThatThrownBy(() -> service.removeIncome(TARGET_ID))

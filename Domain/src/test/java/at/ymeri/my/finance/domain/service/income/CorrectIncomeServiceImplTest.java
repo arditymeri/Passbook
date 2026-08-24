@@ -21,6 +21,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,9 +42,21 @@ class CorrectIncomeServiceImplTest {
     private CorrectIncomeServiceImpl service;
 
     @Test
+    void correctIncome_readsTheOriginalUnderALockSoConcurrentCorrectionsSerialize() {
+        when(getIncomePersistencePort.lockIncomeById(ORIGINAL_ID))
+                .thenReturn(Optional.of(original(new BigDecimal("2000.00"))));
+        when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.correctIncome(ORIGINAL_ID, corrected(new BigDecimal("2500.00")));
+
+        verify(getIncomePersistencePort).lockIncomeById(ORIGINAL_ID);
+        verify(getIncomePersistencePort, never()).getIncomeById(any());
+    }
+
+    @Test
     void correctIncome_doesNotMutateTheOriginal() {
         IncomeDto original = original(new BigDecimal("2000.00"));
-        when(getIncomePersistencePort.getIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(getIncomePersistencePort.lockIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(original));
         when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.correctIncome(ORIGINAL_ID, corrected(new BigDecimal("2500.00")));
@@ -57,7 +70,7 @@ class CorrectIncomeServiceImplTest {
     @Test
     void correctIncome_writesReversalWithNegatedAmountAndSameSourceAccountAndTime() {
         IncomeDto original = original(new BigDecimal("2000.00"));
-        when(getIncomePersistencePort.getIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(getIncomePersistencePort.lockIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(original));
         when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.correctIncome(ORIGINAL_ID, corrected(new BigDecimal("2500.00")));
@@ -77,7 +90,7 @@ class CorrectIncomeServiceImplTest {
     @Test
     void correctIncome_writesReplacementWithCorrectedValues() {
         IncomeDto original = original(new BigDecimal("2000.00"));
-        when(getIncomePersistencePort.getIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(getIncomePersistencePort.lockIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(original));
         when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
 
         IncomeDto correction = corrected(new BigDecimal("2500.00"));
@@ -98,7 +111,7 @@ class CorrectIncomeServiceImplTest {
     void correctIncome_onAlreadyCorrectedRow_reversesThatRowsAmount() {
         IncomeDto secondGeneration = original(new BigDecimal("2500.00"));
         secondGeneration.setCorrectsTransactionId(UUID.randomUUID().toString());
-        when(getIncomePersistencePort.getIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(secondGeneration));
+        when(getIncomePersistencePort.lockIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(secondGeneration));
         when(addIncomePersistencePort.addIncome(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.correctIncome(ORIGINAL_ID, corrected(new BigDecimal("3000.00")));
@@ -113,7 +126,7 @@ class CorrectIncomeServiceImplTest {
     @Test
     void correctIncome_amountZeroOrLess_isRejected() {
         IncomeDto original = original(new BigDecimal("2000.00"));
-        when(getIncomePersistencePort.getIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(getIncomePersistencePort.lockIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(original));
 
         assertThatThrownBy(() -> service.correctIncome(ORIGINAL_ID, corrected(BigDecimal.ZERO)))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -121,7 +134,7 @@ class CorrectIncomeServiceImplTest {
 
     @Test
     void correctIncome_unknownId_throwsNoSuchElement() {
-        when(getIncomePersistencePort.getIncomeById(ORIGINAL_ID)).thenReturn(Optional.empty());
+        when(getIncomePersistencePort.lockIncomeById(ORIGINAL_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.correctIncome(ORIGINAL_ID, corrected(new BigDecimal("2500.00"))))
                 .isInstanceOf(NoSuchElementException.class);
@@ -134,7 +147,7 @@ class CorrectIncomeServiceImplTest {
         replacement.setId(UUID.randomUUID().toString());
         replacement.setCorrectsTransactionId(ORIGINAL_ID.toString());
 
-        when(getIncomePersistencePort.getIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(superseded));
+        when(getIncomePersistencePort.lockIncomeById(ORIGINAL_ID)).thenReturn(Optional.of(superseded));
         when(getIncomePersistencePort.getAll()).thenReturn(List.of(superseded, replacement));
 
         assertThatThrownBy(() -> service.correctIncome(ORIGINAL_ID, corrected(new BigDecimal("3000.00"))))

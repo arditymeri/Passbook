@@ -26,11 +26,15 @@ public class CorrectBillServiceImpl implements CorrectBillService {
     /**
      * Reversal and replacement are written as one unit: a failure between them would otherwise
      * leave an orphan reversal that permanently zeroes the bill out with nothing replacing it.
+     *
+     * <p>The read takes a write lock on the row being corrected, so concurrent corrections of the
+     * same bill serialize: the second one sees the first one's reversal and fails the
+     * "not yet superseded" check instead of double-reversing.
      */
     @Override
     @Transactional
     public BillDto correctBill(UUID id, BillDto correctedValues) {
-        BillDto current = getBillPersistencePort.getBillById(id)
+        BillDto current = getBillPersistencePort.lockBillById(id)
                 .orElseThrow(() -> new NoSuchElementException("Bill not found: " + id));
 
         validate(correctedValues);

@@ -14,11 +14,19 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -117,6 +125,43 @@ public class BillCorrectionControllerIntegrationTest {
                 "/bills/" + originalId, HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void correctBill_concurrentCorrectionsOfTheSameRow_onlyOneWins() throws Exception {
+        UUID originalId = createBill("50.00", "2026-11-05T10:00:00Z", "cat-race");
+
+        CorrectBillRequest request =
+                new CorrectBillRequest(65.0, OffsetDateTime.parse("2026-11-05T10:00:00Z"))
+                        .categoryId("cat-race");
+
+        // Fire both corrections at the same instant. Without the row lock both would read the
+        // original as "not yet superseded" and each write its own reversal, netting the category
+        // to 50 - 50 - 50 + 65 + 65 = 80 instead of 65.
+        CyclicBarrier startTogether = new CyclicBarrier(2);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            List<Future<HttpStatusCode>> attempts = new ArrayList<>();
+            for (int i = 0; i < 2; i++) {
+                attempts.add(pool.submit(() -> {
+                    startTogether.await(10, TimeUnit.SECONDS);
+                    return restTemplate.exchange("/bills/" + originalId, HttpMethod.PUT,
+                            new HttpEntity<>(request), String.class).getStatusCode();
+                }));
+            }
+
+            List<HttpStatusCode> statuses = new ArrayList<>();
+            for (Future<HttpStatusCode> attempt : attempts) {
+                statuses.add(attempt.get(30, TimeUnit.SECONDS));
+            }
+
+            assertThat(statuses).filteredOn(HttpStatusCode::is2xxSuccessful).hasSize(1);
+            assertThat(statuses).contains(HttpStatus.CONFLICT);
+        } finally {
+            pool.shutdownNow();
+        }
+
+        assertThat(categorySpend(2026, 11, "cat-race")).isEqualTo(65.0);
     }
 
     @Test

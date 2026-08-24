@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,8 +41,19 @@ class RemoveBillServiceImplTest {
     private RemoveBillServiceImpl service;
 
     @Test
+    void removeBill_readsTheTargetUnderALockSoConcurrentRemovalsSerialize() {
+        when(getBillPersistencePort.lockBillById(TARGET_ID)).thenReturn(Optional.of(bill("40.00", null)));
+        when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.removeBill(TARGET_ID);
+
+        verify(getBillPersistencePort).lockBillById(TARGET_ID);
+        verify(getBillPersistencePort, never()).getBillById(any());
+    }
+
+    @Test
     void removeBill_writesExactlyOneReversalRowAndNoReplacement() {
-        when(getBillPersistencePort.getBillById(TARGET_ID)).thenReturn(Optional.of(bill("40.00", null)));
+        when(getBillPersistencePort.lockBillById(TARGET_ID)).thenReturn(Optional.of(bill("40.00", null)));
         when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.removeBill(TARGET_ID);
@@ -61,7 +73,7 @@ class RemoveBillServiceImplTest {
     @Test
     void removeBill_doesNotMutateTheOriginal() {
         BillDto original = bill("40.00", null);
-        when(getBillPersistencePort.getBillById(TARGET_ID)).thenReturn(Optional.of(original));
+        when(getBillPersistencePort.lockBillById(TARGET_ID)).thenReturn(Optional.of(original));
         when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.removeBill(TARGET_ID);
@@ -74,7 +86,7 @@ class RemoveBillServiceImplTest {
     @Test
     void removeBill_onAlreadyCorrectedRow_reversesItsCurrentValue() {
         BillDto secondGeneration = bill("45.50", UUID.randomUUID().toString());
-        when(getBillPersistencePort.getBillById(TARGET_ID)).thenReturn(Optional.of(secondGeneration));
+        when(getBillPersistencePort.lockBillById(TARGET_ID)).thenReturn(Optional.of(secondGeneration));
         when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.removeBill(TARGET_ID);
@@ -86,7 +98,7 @@ class RemoveBillServiceImplTest {
 
     @Test
     void removeBill_unknownId_throwsNoSuchElement() {
-        when(getBillPersistencePort.getBillById(TARGET_ID)).thenReturn(Optional.empty());
+        when(getBillPersistencePort.lockBillById(TARGET_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.removeBill(TARGET_ID))
                 .isInstanceOf(NoSuchElementException.class);
@@ -98,7 +110,7 @@ class RemoveBillServiceImplTest {
         BillDto existingReversal = bill("-40.00", TARGET_ID.toString());
         existingReversal.setId(UUID.randomUUID().toString());
 
-        when(getBillPersistencePort.getBillById(TARGET_ID)).thenReturn(Optional.of(target));
+        when(getBillPersistencePort.lockBillById(TARGET_ID)).thenReturn(Optional.of(target));
         when(getBillPersistencePort.getAll()).thenReturn(List.of(target, existingReversal));
 
         assertThatThrownBy(() -> service.removeBill(TARGET_ID))

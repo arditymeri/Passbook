@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,9 +41,21 @@ class CorrectBillServiceImplTest {
     private CorrectBillServiceImpl service;
 
     @Test
+    void correctBill_readsTheOriginalUnderALockSoConcurrentCorrectionsSerialize() {
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID))
+                .thenReturn(Optional.of(original(new BigDecimal("40.00"))));
+        when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.correctBill(ORIGINAL_ID, corrected(new BigDecimal("45.50")));
+
+        verify(getBillPersistencePort).lockBillById(ORIGINAL_ID);
+        verify(getBillPersistencePort, never()).getBillById(any());
+    }
+
+    @Test
     void correctBill_doesNotMutateTheOriginal() {
         BillDto original = original(new BigDecimal("40.00"));
-        when(getBillPersistencePort.getBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
         when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.correctBill(ORIGINAL_ID, corrected(new BigDecimal("45.50")));
@@ -56,7 +69,7 @@ class CorrectBillServiceImplTest {
     @Test
     void correctBill_writesReversalWithNegatedAmountAndSameCategoryAccountAndTime() {
         BillDto original = original(new BigDecimal("40.00"));
-        when(getBillPersistencePort.getBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
         when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.correctBill(ORIGINAL_ID, corrected(new BigDecimal("45.50")));
@@ -76,7 +89,7 @@ class CorrectBillServiceImplTest {
     @Test
     void correctBill_writesReplacementWithCorrectedValues() {
         BillDto original = original(new BigDecimal("40.00"));
-        when(getBillPersistencePort.getBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
         when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
 
         BillDto correction = corrected(new BigDecimal("45.50"));
@@ -97,7 +110,7 @@ class CorrectBillServiceImplTest {
     void correctBill_onAlreadyCorrectedRow_reversesThatRowsAmount() {
         BillDto secondGeneration = original(new BigDecimal("45.50"));
         secondGeneration.setCorrectsTransactionId(UUID.randomUUID().toString());
-        when(getBillPersistencePort.getBillById(ORIGINAL_ID)).thenReturn(Optional.of(secondGeneration));
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID)).thenReturn(Optional.of(secondGeneration));
         when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
 
         service.correctBill(ORIGINAL_ID, corrected(new BigDecimal("50.00")));
@@ -112,7 +125,7 @@ class CorrectBillServiceImplTest {
     @Test
     void correctBill_amountZeroOrLess_isRejected() {
         BillDto original = original(new BigDecimal("40.00"));
-        when(getBillPersistencePort.getBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
 
         assertThatThrownBy(() -> service.correctBill(ORIGINAL_ID, corrected(BigDecimal.ZERO)))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -120,7 +133,7 @@ class CorrectBillServiceImplTest {
 
     @Test
     void correctBill_unknownId_throwsNoSuchElement() {
-        when(getBillPersistencePort.getBillById(ORIGINAL_ID)).thenReturn(Optional.empty());
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.correctBill(ORIGINAL_ID, corrected(new BigDecimal("45.50"))))
                 .isInstanceOf(NoSuchElementException.class);
@@ -133,7 +146,7 @@ class CorrectBillServiceImplTest {
         replacement.setId(UUID.randomUUID().toString());
         replacement.setCorrectsTransactionId(ORIGINAL_ID.toString());
 
-        when(getBillPersistencePort.getBillById(ORIGINAL_ID)).thenReturn(Optional.of(superseded));
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID)).thenReturn(Optional.of(superseded));
         when(getBillPersistencePort.getAll()).thenReturn(List.of(superseded, replacement));
 
         assertThatThrownBy(() -> service.correctBill(ORIGINAL_ID, corrected(new BigDecimal("50.00"))))
