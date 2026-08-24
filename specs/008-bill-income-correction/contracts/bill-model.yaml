@@ -76,8 +76,13 @@ components:
         - time
       properties:
         amount:
-          type: "number"
-          format: "double"
+          # Decimal string, not a JSON number: Constitution Principle IV forbids floating-point
+          # for money on any layer, including `number` in JS/TS. Parsed to BigDecimal in the
+          # controller. Sign is excluded here — negative amounts are system-generated reversals
+          # only, never user input.
+          type: "string"
+          pattern: "^\\d+(\\.\\d{1,2})?$"
+          example: "45.50"
         description:
           type: "string"
         time:

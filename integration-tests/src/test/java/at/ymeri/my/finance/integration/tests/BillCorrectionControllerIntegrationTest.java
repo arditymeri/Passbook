@@ -46,7 +46,7 @@ public class BillCorrectionControllerIntegrationTest {
     void correctBill_leavesTheOriginalRowUntouched() {
         UUID originalId = createBill("50.00", "2026-03-05T10:00:00Z", "cat-untouched");
 
-        correct(originalId, 65.0, "2026-03-05T10:00:00Z", "cat-untouched");
+        correct(originalId, "65.00", "2026-03-05T10:00:00Z", "cat-untouched");
 
         Bill original = restTemplate
                 .getForEntity("/bill/" + originalId, BillResponseModel.class).getBody().getBill();
@@ -59,7 +59,7 @@ public class BillCorrectionControllerIntegrationTest {
     void correctBill_listShowsOnlyTheCorrectedValue() {
         UUID originalId = createBill("50.00", "2026-04-05T10:00:00Z", "cat-listcheck");
 
-        UUID correctedId = correct(originalId, 65.0, "2026-04-05T10:00:00Z", "cat-listcheck");
+        UUID correctedId = correct(originalId, "65.00", "2026-04-05T10:00:00Z", "cat-listcheck");
 
         BillListResponseModel list = restTemplate
                 .getForEntity("/bills", BillListResponseModel.class).getBody();
@@ -73,7 +73,7 @@ public class BillCorrectionControllerIntegrationTest {
         createBill("50.00", "2026-05-05T10:00:00Z", "cat-summary");
         UUID originalId = lastBillFor("cat-summary");
 
-        correct(originalId, 65.0, "2026-05-05T10:00:00Z", "cat-summary");
+        correct(originalId, "65.00", "2026-05-05T10:00:00Z", "cat-summary");
 
         // 50 (original) - 50 (reversal) + 65 (replacement) = 65, not 115
         assertThat(categorySpend(2026, 5, "cat-summary")).isEqualTo(65.0);
@@ -83,8 +83,8 @@ public class BillCorrectionControllerIntegrationTest {
     void correctBill_twice_chainsOntoTheMostRecentValue() {
         UUID originalId = createBill("50.00", "2026-06-05T10:00:00Z", "cat-chain");
 
-        UUID firstCorrection = correct(originalId, 65.0, "2026-06-05T10:00:00Z", "cat-chain");
-        UUID secondCorrection = correct(firstCorrection, 80.0, "2026-06-05T10:00:00Z", "cat-chain");
+        UUID firstCorrection = correct(originalId, "65.00", "2026-06-05T10:00:00Z", "cat-chain");
+        UUID secondCorrection = correct(firstCorrection, "80.00", "2026-06-05T10:00:00Z", "cat-chain");
 
         assertThat(categorySpend(2026, 6, "cat-chain")).isEqualTo(80.0);
 
@@ -100,7 +100,7 @@ public class BillCorrectionControllerIntegrationTest {
         UUID originalId = createBill("50.00", "2026-07-05T10:00:00Z", "cat-crossmonth");
         assertThat(categorySpend(2026, 7, "cat-crossmonth")).isEqualTo(50.0);
 
-        correct(originalId, 50.0, "2026-08-05T10:00:00Z", "cat-crossmonth");
+        correct(originalId, "50.00", "2026-08-05T10:00:00Z", "cat-crossmonth");
 
         assertThat(categorySpend(2026, 7, "cat-crossmonth")).isEqualTo(0.0);
         assertThat(categorySpend(2026, 8, "cat-crossmonth")).isEqualTo(50.0);
@@ -108,7 +108,7 @@ public class BillCorrectionControllerIntegrationTest {
 
     @Test
     void correctBill_unknownId_returns404() {
-        CorrectBillRequest request = new CorrectBillRequest(65.0, OffsetDateTime.parse("2026-03-05T10:00:00Z"));
+        CorrectBillRequest request = new CorrectBillRequest("65.00", OffsetDateTime.parse("2026-03-05T10:00:00Z"));
         ResponseEntity<String> response = restTemplate.exchange(
                 "/bills/" + UUID.randomUUID(), HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
@@ -118,9 +118,9 @@ public class BillCorrectionControllerIntegrationTest {
     @Test
     void correctBill_alreadyCorrectedRow_returns409() {
         UUID originalId = createBill("50.00", "2026-09-05T10:00:00Z", "cat-conflict");
-        correct(originalId, 65.0, "2026-09-05T10:00:00Z", "cat-conflict");
+        correct(originalId, "65.00", "2026-09-05T10:00:00Z", "cat-conflict");
 
-        CorrectBillRequest request = new CorrectBillRequest(80.0, OffsetDateTime.parse("2026-09-05T10:00:00Z"));
+        CorrectBillRequest request = new CorrectBillRequest("80.00", OffsetDateTime.parse("2026-09-05T10:00:00Z"));
         ResponseEntity<String> response = restTemplate.exchange(
                 "/bills/" + originalId, HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
@@ -132,7 +132,7 @@ public class BillCorrectionControllerIntegrationTest {
         UUID originalId = createBill("50.00", "2026-11-05T10:00:00Z", "cat-race");
 
         CorrectBillRequest request =
-                new CorrectBillRequest(65.0, OffsetDateTime.parse("2026-11-05T10:00:00Z"))
+                new CorrectBillRequest("65.00", OffsetDateTime.parse("2026-11-05T10:00:00Z"))
                         .categoryId("cat-race");
 
         // Fire both corrections at the same instant. Without the row lock both would read the
@@ -168,7 +168,19 @@ public class BillCorrectionControllerIntegrationTest {
     void correctBill_amountZero_returns400() {
         UUID originalId = createBill("50.00", "2026-10-05T10:00:00Z", "cat-invalid");
 
-        CorrectBillRequest request = new CorrectBillRequest(0.0, OffsetDateTime.parse("2026-10-05T10:00:00Z"));
+        CorrectBillRequest request = new CorrectBillRequest("0.00", OffsetDateTime.parse("2026-10-05T10:00:00Z"));
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/bills/" + originalId, HttpMethod.PUT, new HttpEntity<>(request), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void correctBill_amountNotADecimalString_returns400() {
+        UUID originalId = createBill("50.00", "2026-12-05T10:00:00Z", "cat-badamount");
+
+        CorrectBillRequest request =
+                new CorrectBillRequest("not-a-number", OffsetDateTime.parse("2026-12-05T10:00:00Z"));
         ResponseEntity<String> response = restTemplate.exchange(
                 "/bills/" + originalId, HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
@@ -217,8 +229,8 @@ public class BillCorrectionControllerIntegrationTest {
     @Test
     void getBillHistory_afterTwoCorrections_returnsBothPriorValuesNewestFirst() {
         UUID originalId = createBill("50.00", "2027-01-05T10:00:00Z", "cat-history");
-        UUID firstCorrection = correct(originalId, 65.0, "2027-01-05T10:00:00Z", "cat-history");
-        UUID secondCorrection = correct(firstCorrection, 80.0, "2027-01-05T10:00:00Z", "cat-history");
+        UUID firstCorrection = correct(originalId, "65.00", "2027-01-05T10:00:00Z", "cat-history");
+        UUID secondCorrection = correct(firstCorrection, "80.00", "2027-01-05T10:00:00Z", "cat-history");
 
         BillHistoryResponse history = restTemplate
                 .getForEntity("/bills/" + secondCorrection + "/history", BillHistoryResponse.class).getBody();
@@ -250,7 +262,7 @@ public class BillCorrectionControllerIntegrationTest {
                 .getBody().getBill().getId();
     }
 
-    private UUID correct(UUID id, Double amount, String time, String categoryId) {
+    private UUID correct(UUID id, String amount, String time, String categoryId) {
         CorrectBillRequest request = new CorrectBillRequest(amount, OffsetDateTime.parse(time))
                 .categoryId(categoryId);
         return restTemplate.exchange("/bills/" + id, HttpMethod.PUT,

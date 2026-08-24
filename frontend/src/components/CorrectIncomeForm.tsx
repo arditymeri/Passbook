@@ -63,6 +63,8 @@ export function CorrectIncomeForm({
     e.preventDefault();
     if (!transaction) return;
 
+    // parseFloat validates only; the string itself goes on the wire so the amount is
+    // never round-tripped through a float (Constitution Principle IV).
     const parsed = parseFloat(amount);
     if (!amount || isNaN(parsed) || parsed <= 0) {
       setAmountError('Amount must be greater than zero');
@@ -73,7 +75,7 @@ export function CorrectIncomeForm({
     setSubmitting(true);
     try {
       const req: CorrectIncomeRequest = {
-        amount: parsed,
+        amount: amount.trim(),
         time: new Date(date).toISOString(),
         description: description.trim() || undefined,
         source: (source as IncomeSource) || undefined,

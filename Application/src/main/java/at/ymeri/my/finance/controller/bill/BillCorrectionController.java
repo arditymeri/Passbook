@@ -62,12 +62,21 @@ public class BillCorrectionController implements BillCorrectionApi {
 
     private static BillDto toDto(CorrectBillRequest request) {
         BillDto dto = new BillDto();
-        dto.setAmount(request.getAmount() != null ? BigDecimal.valueOf(request.getAmount()) : null);
+        dto.setAmount(toAmount(request.getAmount()));
         dto.setDescription(request.getDescription());
         dto.setTime(request.getTime());
         dto.setCategoryId(request.getCategoryId());
         dto.setAccountId(request.getAccountId());
         return dto;
+    }
+
+    /**
+     * Amounts arrive as a decimal string so no floating-point type ever touches a monetary value
+     * (Constitution Principle IV). A malformed string yields NumberFormatException — an
+     * IllegalArgumentException — which the handler below turns into a 400.
+     */
+    private static BigDecimal toAmount(String amount) {
+        return amount != null ? new BigDecimal(amount) : null;
     }
 
     @ExceptionHandler(NoSuchElementException.class)

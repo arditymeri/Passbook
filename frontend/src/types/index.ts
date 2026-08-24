@@ -94,7 +94,9 @@ export interface CreateIncomeRequest {
 }
 
 export interface CorrectBillRequest {
-  amount: number;
+  /** Decimal string, never a JS number — Constitution Principle IV forbids
+   *  floating-point for money at any layer. */
+  amount: string;
   time: string;
   description?: string;
   categoryId?: string;
@@ -102,7 +104,9 @@ export interface CorrectBillRequest {
 }
 
 export interface CorrectIncomeRequest {
-  amount: number;
+  /** Decimal string, never a JS number — Constitution Principle IV forbids
+   *  floating-point for money at any layer. */
+  amount: string;
   time: string;
   description?: string;
   source?: IncomeSource;

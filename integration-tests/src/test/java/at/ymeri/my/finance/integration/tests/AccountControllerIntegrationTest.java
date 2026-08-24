@@ -251,7 +251,7 @@ public class AccountControllerIntegrationTest {
         UUID billId = restTemplate.postForEntity("/createBill", bill, BillResponseModel.class)
                 .getBody().getBill().getId();
 
-        CorrectBillRequest correction = new CorrectBillRequest(80.0, OffsetDateTime.now())
+        CorrectBillRequest correction = new CorrectBillRequest("80.00", OffsetDateTime.now())
                 .accountId(account.getId().toString());
         restTemplate.exchange("/bills/" + billId, HttpMethod.PUT,
                 new HttpEntity<>(correction), BillResponseModel.class);

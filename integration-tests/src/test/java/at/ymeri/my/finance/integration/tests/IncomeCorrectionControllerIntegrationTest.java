@@ -39,7 +39,7 @@ public class IncomeCorrectionControllerIntegrationTest {
     void correctIncome_leavesTheOriginalRowUntouched() {
         UUID originalId = createIncome(2000.0, "2026-03-05T09:00:00Z");
 
-        correct(originalId, 2500.0, "2026-03-05T09:00:00Z");
+        correct(originalId, "2500.00", "2026-03-05T09:00:00Z");
 
         IncomeResponse original = restTemplate
                 .getForEntity("/incomes/" + originalId, IncomeResponse.class).getBody();
@@ -52,7 +52,7 @@ public class IncomeCorrectionControllerIntegrationTest {
     void correctIncome_listShowsOnlyTheCorrectedValue() {
         UUID originalId = createIncome(2100.0, "2026-04-05T09:00:00Z");
 
-        UUID correctedId = correct(originalId, 2600.0, "2026-04-05T09:00:00Z");
+        UUID correctedId = correct(originalId, "2600.00", "2026-04-05T09:00:00Z");
 
         IncomeListResponse list = restTemplate
                 .getForEntity("/incomes", IncomeListResponse.class).getBody();
@@ -66,7 +66,7 @@ public class IncomeCorrectionControllerIntegrationTest {
         Double before = totalIncome(2026, 5);
         UUID originalId = createIncome(2200.0, "2026-05-05T09:00:00Z");
 
-        correct(originalId, 2700.0, "2026-05-05T09:00:00Z");
+        correct(originalId, "2700.00", "2026-05-05T09:00:00Z");
 
         // 2200 (original) - 2200 (reversal) + 2700 (replacement) = +2700, not +4900
         assertThat(totalIncome(2026, 5)).isEqualTo(before + 2700.0);
@@ -77,8 +77,8 @@ public class IncomeCorrectionControllerIntegrationTest {
         Double before = totalIncome(2026, 6);
         UUID originalId = createIncome(2300.0, "2026-06-05T09:00:00Z");
 
-        UUID firstCorrection = correct(originalId, 2800.0, "2026-06-05T09:00:00Z");
-        UUID secondCorrection = correct(firstCorrection, 3300.0, "2026-06-05T09:00:00Z");
+        UUID firstCorrection = correct(originalId, "2800.00", "2026-06-05T09:00:00Z");
+        UUID secondCorrection = correct(firstCorrection, "3300.00", "2026-06-05T09:00:00Z");
 
         assertThat(totalIncome(2026, 6)).isEqualTo(before + 3300.0);
 
@@ -97,7 +97,7 @@ public class IncomeCorrectionControllerIntegrationTest {
         UUID originalId = createIncome(1500.0, "2026-07-05T09:00:00Z");
         assertThat(totalIncome(2026, 7)).isEqualTo(julyBefore + 1500.0);
 
-        correct(originalId, 1500.0, "2026-08-05T09:00:00Z");
+        correct(originalId, "1500.00", "2026-08-05T09:00:00Z");
 
         assertThat(totalIncome(2026, 7)).isEqualTo(julyBefore);
         assertThat(totalIncome(2026, 8)).isEqualTo(augustBefore + 1500.0);
@@ -105,7 +105,7 @@ public class IncomeCorrectionControllerIntegrationTest {
 
     @Test
     void correctIncome_unknownId_returns404() {
-        CorrectIncomeRequest request = new CorrectIncomeRequest(2500.0, OffsetDateTime.parse("2026-03-05T09:00:00Z"));
+        CorrectIncomeRequest request = new CorrectIncomeRequest("2500.00", OffsetDateTime.parse("2026-03-05T09:00:00Z"));
         ResponseEntity<String> response = restTemplate.exchange(
                 "/incomes/" + UUID.randomUUID(), HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
@@ -115,9 +115,9 @@ public class IncomeCorrectionControllerIntegrationTest {
     @Test
     void correctIncome_alreadyCorrectedRow_returns409() {
         UUID originalId = createIncome(2400.0, "2026-09-05T09:00:00Z");
-        correct(originalId, 2900.0, "2026-09-05T09:00:00Z");
+        correct(originalId, "2900.00", "2026-09-05T09:00:00Z");
 
-        CorrectIncomeRequest request = new CorrectIncomeRequest(3400.0, OffsetDateTime.parse("2026-09-05T09:00:00Z"));
+        CorrectIncomeRequest request = new CorrectIncomeRequest("3400.00", OffsetDateTime.parse("2026-09-05T09:00:00Z"));
         ResponseEntity<String> response = restTemplate.exchange(
                 "/incomes/" + originalId, HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
@@ -128,7 +128,7 @@ public class IncomeCorrectionControllerIntegrationTest {
     void correctIncome_amountZero_returns400() {
         UUID originalId = createIncome(2500.0, "2026-10-05T09:00:00Z");
 
-        CorrectIncomeRequest request = new CorrectIncomeRequest(0.0, OffsetDateTime.parse("2026-10-05T09:00:00Z"));
+        CorrectIncomeRequest request = new CorrectIncomeRequest("0.00", OffsetDateTime.parse("2026-10-05T09:00:00Z"));
         ResponseEntity<String> response = restTemplate.exchange(
                 "/incomes/" + originalId, HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
@@ -178,8 +178,8 @@ public class IncomeCorrectionControllerIntegrationTest {
     @Test
     void getIncomeHistory_afterTwoCorrections_returnsBothPriorValuesNewestFirst() {
         UUID originalId = createIncome(2000.0, "2027-01-05T09:00:00Z");
-        UUID firstCorrection = correct(originalId, 2500.0, "2027-01-05T09:00:00Z");
-        UUID secondCorrection = correct(firstCorrection, 3000.0, "2027-01-05T09:00:00Z");
+        UUID firstCorrection = correct(originalId, "2500.00", "2027-01-05T09:00:00Z");
+        UUID secondCorrection = correct(firstCorrection, "3000.00", "2027-01-05T09:00:00Z");
 
         IncomeHistoryResponse history = restTemplate
                 .getForEntity("/incomes/" + secondCorrection + "/history", IncomeHistoryResponse.class).getBody();
@@ -208,7 +208,7 @@ public class IncomeCorrectionControllerIntegrationTest {
         return restTemplate.postForEntity("/incomes", request, IncomeResponse.class).getBody().getId();
     }
 
-    private UUID correct(UUID id, Double amount, String time) {
+    private UUID correct(UUID id, String amount, String time) {
         CorrectIncomeRequest request = new CorrectIncomeRequest(amount, OffsetDateTime.parse(time))
                 .source(IncomeSource.SALARY);
         return restTemplate.exchange("/incomes/" + id, HttpMethod.PUT,

@@ -16,7 +16,7 @@ export interface Transaction {
 }
 
 export interface CorrectBillRequest {
-  amount: number;
+  amount: string;   // decimal string — Principle IV forbids JS `number` for money
   time: string;
   description?: string;
   categoryId?: string;
@@ -24,7 +24,7 @@ export interface CorrectBillRequest {
 }
 
 export interface CorrectIncomeRequest {
-  amount: number;
+  amount: string;   // decimal string — Principle IV forbids JS `number` for money
   time: string;
   description?: string;
   source?: IncomeSource;
