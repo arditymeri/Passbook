@@ -88,7 +88,11 @@
 ## Swagger UI
 
 ```
-http://localhost:8080/swagger-ui.html
+http://localhost:8080/api/v1/swagger-ui.html
 ```
 
-Look for the **BillCorrectionController** and **IncomeCorrectionController** tags.
+(The `/api/v1` prefix is the app's `server.servlet.context-path` — the bare
+`http://localhost:8080/swagger-ui.html` is a 404.)
+
+Look for the **billCorrection** and **incomeCorrection** tags — three endpoints each
+(`PUT`, `DELETE`, `GET .../history`).
