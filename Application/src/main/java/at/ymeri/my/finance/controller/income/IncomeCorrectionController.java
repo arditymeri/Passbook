@@ -36,6 +36,7 @@ public class IncomeCorrectionController implements IncomeCorrectionApi {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<IncomeResponse> correctIncome(String id, CorrectIncomeRequest request) {
         IncomeDto corrected = correctIncomeService.correctIncome(UUID.fromString(id), toDto(request));
         return ResponseEntity.ok(IncomeMapper.INSTANCE.map(corrected));
