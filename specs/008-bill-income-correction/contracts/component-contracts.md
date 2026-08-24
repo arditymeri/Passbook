@@ -59,8 +59,8 @@ export async function fetchBillHistory(id: string): Promise<TransactionHistoryEn
   return data.history ?? [];
 }
 
-export async function correctIncome(id: string, req: CorrectIncomeRequest): Promise<Income> {
-  return putAndReturn<Income>(`/api/v1/incomes/${id}`, req);
+export async function correctIncome(id: string, req: CorrectIncomeRequest): Promise<void> {
+  await putAndReturn<unknown>(`/api/v1/incomes/${id}`, req);
 }
 
 export async function removeIncome(id: string): Promise<void> {
