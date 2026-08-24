@@ -30,7 +30,7 @@ public class GetBillServiceImpl implements GetBillService {
     @Override
     public BillDto getBillById(UUID uuid) {
         return this.getBillPersistencePort.getBillById(uuid)
-                .orElseThrow();
+                .orElseThrow(() -> new NoSuchElementException("Bill not found: " + uuid));
     }
 
     /**
