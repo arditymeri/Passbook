@@ -46,8 +46,8 @@ no new fetch, just carrying three more fields from data it already has.
 ## API client additions (`frontend/src/api/client.ts`)
 
 ```ts
-export async function correctBill(id: string, req: CorrectBillRequest): Promise<Bill> {
-  return putAndReturn<Bill>(`/api/v1/bills/${id}`, req);
+export async function correctBill(id: string, req: CorrectBillRequest): Promise<void> {
+  await putAndReturn<unknown>(`/api/v1/bills/${id}`, req);
 }
 
 export async function removeBill(id: string): Promise<void> {
