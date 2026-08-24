@@ -4,8 +4,8 @@ import at.ymeri.my.finance.domain.api.CorrectBillService;
 import at.ymeri.my.finance.domain.data.bill.BillDto;
 import at.ymeri.my.finance.domain.spi.bill.AddBillPersistencePort;
 import at.ymeri.my.finance.domain.spi.bill.GetBillPersistencePort;
+import at.ymeri.my.finance.domain.spi.UnitOfWork;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
@@ -16,11 +16,14 @@ public class CorrectBillServiceImpl implements CorrectBillService {
 
     private final AddBillPersistencePort addBillPersistencePort;
     private final GetBillPersistencePort getBillPersistencePort;
+    private final UnitOfWork unitOfWork;
 
     public CorrectBillServiceImpl(AddBillPersistencePort addBillPersistencePort,
-                                  GetBillPersistencePort getBillPersistencePort) {
+                                  GetBillPersistencePort getBillPersistencePort,
+                                  UnitOfWork unitOfWork) {
         this.addBillPersistencePort = addBillPersistencePort;
         this.getBillPersistencePort = getBillPersistencePort;
+        this.unitOfWork = unitOfWork;
     }
 
     /**
@@ -32,16 +35,17 @@ public class CorrectBillServiceImpl implements CorrectBillService {
      * "not yet superseded" check instead of double-reversing.
      */
     @Override
-    @Transactional
     public BillDto correctBill(UUID id, BillDto correctedValues) {
-        BillDto current = getBillPersistencePort.lockBillById(id)
-                .orElseThrow(() -> new NoSuchElementException("Bill not found: " + id));
+        return unitOfWork.inTransaction(() -> {
+            BillDto current = getBillPersistencePort.lockBillById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Bill not found: " + id));
 
-        validate(correctedValues);
-        BillCorrections.assertNotSuperseded(getBillPersistencePort.getAll(), id, "Bill");
+            validate(correctedValues);
+            BillCorrections.assertNotSuperseded(getBillPersistencePort.getAll(), id, "Bill");
 
-        addBillPersistencePort.addBill(BillCorrections.reversalOf(current));
-        return addBillPersistencePort.addBill(replacement(current, correctedValues));
+            addBillPersistencePort.addBill(BillCorrections.reversalOf(current));
+            return addBillPersistencePort.addBill(replacement(current, correctedValues));
+        });
     }
 
     private static void validate(BillDto correctedValues) {

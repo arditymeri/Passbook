@@ -3,11 +3,14 @@ package at.ymeri.my.finance.domain.service.bill;
 import at.ymeri.my.finance.domain.data.bill.BillDto;
 import at.ymeri.my.finance.domain.spi.bill.AddBillPersistencePort;
 import at.ymeri.my.finance.domain.spi.bill.GetBillPersistencePort;
+import at.ymeri.my.finance.domain.spi.DirectUnitOfWork;
+import at.ymeri.my.finance.domain.spi.UnitOfWork;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -36,6 +39,9 @@ class CorrectBillServiceImplTest {
 
     @Mock
     private GetBillPersistencePort getBillPersistencePort;
+
+    @Spy
+    private UnitOfWork unitOfWork = new DirectUnitOfWork();
 
     @InjectMocks
     private CorrectBillServiceImpl service;

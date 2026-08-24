@@ -42,8 +42,12 @@ that has been superseded by a later correction.
   code path net reversals out with zero changes.
 - Domain module stays framework-free; correction/removal/history logic lives in new Domain services
   composed from the **existing** `AddBillPersistencePort`/`AddIncomePersistencePort` (to write the
-  reversal+replacement rows) and `GetBillPersistencePort`/`GetIncomePersistencePort` (to read) — no
-  new SPI ports are introduced (Principle VIII)
+  reversal+replacement rows) and `GetBillPersistencePort`/`GetIncomePersistencePort` (to read)
+  (Principle VIII). **Revised during PR review:** the SPI surface did grow — a correction writes two
+  rows, so it needs a transaction boundary and a locked read to stay correct under concurrency.
+  Both are expressed as ports rather than framework annotations in Domain: a new `UnitOfWork` port
+  (implemented by `SpringUnitOfWork` in Infrastructure) and `lockBillById`/`lockIncomeById` added to
+  the two existing get-ports. Domain imports no transaction API.
 - New endpoints follow the verb conventions the app already uses for Account (`PUT` = replace
   current value, `DELETE` = remove) rather than inventing custom action sub-resources, for API
   consistency (Principle VII: additive, non-breaking — no existing endpoint's contract changes
@@ -69,7 +73,7 @@ that has been superseded by a later correction.
 | V. Audit Trail | ✅ Pass | `correctsTransactionId` + `reversal` give a queryable, permanent trail from any corrected/removed row back to what it replaced. Dedicated structured logging of the mutation event itself is a pre-existing gap across all create endpoints in this app (not introduced or worsened here) — out of scope. **Note:** because retained rows keep their `accountId`/`categoryId` forever, the existing `DeleteAccountServiceImpl`/`DeleteCategoryServiceImpl` reference blocks remain correct after a removal and are deliberately left unchanged — a removed transaction still pins its account/category, preventing a dangling reference in the audit trail. Only the blocking *message* is clarified (see T067). |
 | VI. Test-First Development | ⚠ Required | New Domain logic (correction, removal, display filtering, history reconstruction) MUST have unit tests written first; integration tests MUST cover the full correct/remove/history flow against a real database. |
 | VII. API Contract Stability | ✅ Pass | All new endpoints defined in OpenAPI YAML first. `GET /bills`/`GET /incomes` response *schema* is unchanged (two new optional response fields, additive); only the *set of rows returned* changes, which is this feature's intended behavior. |
-| VIII. Hexagonal Architecture Compliance | ✅ Pass | New Domain services compose only existing SPI ports; no new ports, no framework leakage into Domain. |
+| VIII. Hexagonal Architecture Compliance | ✅ Pass (re-checked post-review) | Atomicity and row locking are mediated by ports — `UnitOfWork` (new, implemented in Infrastructure) and `lockBillById`/`lockIncomeById` on the existing get-ports — so Domain carries no `@Transactional` and no `spring-tx` dependency. An earlier fix annotated the Domain services directly and was reverted for violating this principle. **Pre-existing, out of scope:** all 22 Domain services still carry Spring's `@Service`, which VIII also forbids; that predates this feature and is unchanged here. |
 
 **Gate decision**: PASS. Test-First (VI) is mandatory, matching every prior backend-touching feature (001, 002, 007) in this project.
 

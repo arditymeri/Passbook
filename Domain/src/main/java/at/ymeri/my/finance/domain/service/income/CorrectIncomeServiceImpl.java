@@ -4,8 +4,8 @@ import at.ymeri.my.finance.domain.api.CorrectIncomeService;
 import at.ymeri.my.finance.domain.data.income.IncomeDto;
 import at.ymeri.my.finance.domain.spi.income.AddIncomePersistencePort;
 import at.ymeri.my.finance.domain.spi.income.GetIncomePersistencePort;
+import at.ymeri.my.finance.domain.spi.UnitOfWork;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
@@ -16,11 +16,14 @@ public class CorrectIncomeServiceImpl implements CorrectIncomeService {
 
     private final AddIncomePersistencePort addIncomePersistencePort;
     private final GetIncomePersistencePort getIncomePersistencePort;
+    private final UnitOfWork unitOfWork;
 
     public CorrectIncomeServiceImpl(AddIncomePersistencePort addIncomePersistencePort,
-                                    GetIncomePersistencePort getIncomePersistencePort) {
+                                    GetIncomePersistencePort getIncomePersistencePort,
+                                  UnitOfWork unitOfWork) {
         this.addIncomePersistencePort = addIncomePersistencePort;
         this.getIncomePersistencePort = getIncomePersistencePort;
+        this.unitOfWork = unitOfWork;
     }
 
     /**
@@ -32,16 +35,17 @@ public class CorrectIncomeServiceImpl implements CorrectIncomeService {
      * "not yet superseded" check instead of double-reversing.
      */
     @Override
-    @Transactional
     public IncomeDto correctIncome(UUID id, IncomeDto correctedValues) {
-        IncomeDto current = getIncomePersistencePort.lockIncomeById(id)
-                .orElseThrow(() -> new NoSuchElementException("Income not found: " + id));
+        return unitOfWork.inTransaction(() -> {
+            IncomeDto current = getIncomePersistencePort.lockIncomeById(id)
+                    .orElseThrow(() -> new NoSuchElementException("Income not found: " + id));
 
-        validate(correctedValues);
-        IncomeCorrections.assertNotSuperseded(getIncomePersistencePort.getAll(), id, "Income");
+            validate(correctedValues);
+            IncomeCorrections.assertNotSuperseded(getIncomePersistencePort.getAll(), id, "Income");
 
-        addIncomePersistencePort.addIncome(IncomeCorrections.reversalOf(current));
-        return addIncomePersistencePort.addIncome(replacement(current, correctedValues));
+            addIncomePersistencePort.addIncome(IncomeCorrections.reversalOf(current));
+            return addIncomePersistencePort.addIncome(replacement(current, correctedValues));
+        });
     }
 
     private static void validate(IncomeDto correctedValues) {
