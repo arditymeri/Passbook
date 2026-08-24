@@ -1,0 +1,125 @@
+# Contract snapshot: Application/src/main/resources/swagger/income/income-model.yaml
+# TARGET state for this feature. New/changed pieces are marked; everything else is unchanged.
+
+components:
+  schemas:
+    createIncomeRequest:
+      type: "object"
+      required:
+        - amount
+        - time
+      properties:
+        description:
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"
+        currency:
+          type: "string"
+        time:
+          type: "string"
+          format: "date-time"
+        source:
+          $ref: '#/components/schemas/incomeSource'
+        payer:
+          type: "string"
+        accountId:
+          type: "string"
+        notes:
+          type: "string"
+        recurring:
+          type: "boolean"
+        recurringFrequency:
+          $ref: '#/components/schemas/recurringFrequency'
+
+    incomeResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        description:
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"
+        currency:
+          type: "string"
+        time:
+          type: "string"
+          format: "date-time"
+        source:
+          $ref: '#/components/schemas/incomeSource'
+        payer:
+          type: "string"
+        accountId:
+          type: "string"
+        notes:
+          type: "string"
+        recurring:
+          type: "boolean"
+        recurringFrequency:
+          $ref: '#/components/schemas/recurringFrequency'
+        correctsTransactionId:               # NEW — id of the income this row corrects/reverses, if any
+          type: "string"
+        reversal:                            # NEW — true only for a system-generated reversal row
+          type: "boolean"
+
+    incomeListResponse:
+      type: "object"
+      properties:
+        incomes:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/incomeResponse'
+
+    incomeSource:
+      type: "string"
+      enum:
+        - SALARY
+        - FREELANCE
+        - INVESTMENT
+        - RENTAL
+        - GIFT
+        - OTHER
+
+    recurringFrequency:
+      type: "string"
+      enum:
+        - DAILY
+        - WEEKLY
+        - MONTHLY
+        - YEARLY
+
+    correctIncomeRequest:                    # NEW — the corrected values for PUT /incomes/{id}
+      type: "object"
+      required:
+        - amount
+        - time
+      properties:
+        description:
+          type: "string"
+        amount:
+          # Decimal string, not a JSON number: Constitution Principle IV forbids floating-point
+          # for money on any layer, including `number` in JS/TS. Parsed to BigDecimal in the
+          # controller. Sign is excluded here — negative amounts are system-generated reversals
+          # only, never user input.
+          type: "string"
+          pattern: "^\\d+(\\.\\d{1,2})?$"
+          example: "45.50"
+        time:
+          type: "string"
+          format: "date-time"
+        source:
+          $ref: '#/components/schemas/incomeSource'
+        accountId:
+          type: "string"
+
+    incomeHistoryResponse:                   # NEW — response for GET /incomes/{id}/history
+      type: "object"
+      properties:
+        history:
+          type: "array"
+          description: "Prior values of this income, newest first, ending with the original (reversal rows excluded)"
+          items:
+            $ref: '#/components/schemas/incomeResponse'

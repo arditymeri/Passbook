@@ -25,6 +25,11 @@ public class GetIncomePostgresAdapter implements GetIncomePersistencePort {
     }
 
     @Override
+    public Optional<IncomeDto> lockIncomeById(UUID id) {
+        return this.incomeRepository.findByIdForUpdate(id).map(IncomeMapper.INSTANCE::map);
+    }
+
+    @Override
     public List<IncomeDto> getAll() {
         return IncomeMapper.INSTANCE.map(incomeRepository.findAll());
     }

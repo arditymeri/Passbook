@@ -1,4 +1,4 @@
-import type { Account, Bill, BudgetStatusEntry, Category, CreateAccountRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary } from '../types';
+import type { Account, Bill, BudgetStatusEntry, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary, TransactionHistoryEntry } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -23,6 +23,21 @@ async function postAndReturn<T>(url: string, body: unknown): Promise<T> {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
   return res.json();
+}
+
+async function putAndReturn<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+  return res.json();
+}
+
+async function del(url: string): Promise<void> {
+  const res = await fetch(url, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
 }
 
 export async function fetchMonthlySummary(year: number, month: number): Promise<MonthlySummary> {
@@ -73,4 +88,30 @@ export async function fetchAccounts(): Promise<Account[]> {
 
 export async function createAccount(req: CreateAccountRequest): Promise<Account> {
   return postAndReturn<Account>('/api/v1/accounts', req);
+}
+
+export async function correctBill(id: string, req: CorrectBillRequest): Promise<void> {
+  await putAndReturn<unknown>(`/api/v1/bills/${id}`, req);
+}
+
+export async function removeBill(id: string): Promise<void> {
+  await del(`/api/v1/bills/${id}`);
+}
+
+export async function fetchBillHistory(id: string): Promise<TransactionHistoryEntry[]> {
+  const data = await request<{ history: TransactionHistoryEntry[] }>(`/api/v1/bills/${id}/history`);
+  return data.history ?? [];
+}
+
+export async function correctIncome(id: string, req: CorrectIncomeRequest): Promise<void> {
+  await putAndReturn<unknown>(`/api/v1/incomes/${id}`, req);
+}
+
+export async function removeIncome(id: string): Promise<void> {
+  await del(`/api/v1/incomes/${id}`);
+}
+
+export async function fetchIncomeHistory(id: string): Promise<TransactionHistoryEntry[]> {
+  const data = await request<{ history: TransactionHistoryEntry[] }>(`/api/v1/incomes/${id}/history`);
+  return data.history ?? [];
 }

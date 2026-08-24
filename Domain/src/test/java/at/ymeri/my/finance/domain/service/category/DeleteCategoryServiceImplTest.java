@@ -55,7 +55,8 @@ class DeleteCategoryServiceImplTest {
 
         assertThatThrownBy(() -> deleteCategoryService.deleteCategory("id-1"))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Category is referenced by a bill or income and cannot be deleted");
+                .hasMessage("Category is referenced by a bill or income (including removed or corrected ones, "
+                        + "which are retained permanently) and cannot be deleted");
     }
 
     private CategoryDto existingCategory() {

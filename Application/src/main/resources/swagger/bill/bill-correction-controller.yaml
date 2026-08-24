@@ -1,0 +1,97 @@
+openapi: "3.0.0"
+tags:
+  - name: "BillCorrectionController"
+    description: "API for correcting, removing, and viewing the correction history of a bill"
+info:
+  title: "Bill Correction API"
+  description: "Correct or remove a previously recorded bill via a compensating reversal entry, per Constitution Principle I"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /bills/{id}:
+    put:
+      summary: "Correct a bill's current value"
+      operationId: correctBill
+      description: >
+        Replaces the bill's current value with the given corrected values. Internally posts a
+        reversal of the current value plus a new entry carrying the corrected values; the original
+        row referenced by {id} is never modified.
+      tags:
+        - billCorrection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "Id of the bill's current (visible) value to correct"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "bill-model.yaml#/components/schemas/correctBillRequest"
+      responses:
+        "200":
+          description: "The new corrected bill"
+          content:
+            application/json:
+              schema:
+                $ref: "bill-model.yaml#/components/schemas/billResponseModel"
+        "400":
+          description: "Invalid request"
+        "404":
+          description: "Not found"
+        "409":
+          description: "The bill has already been corrected or removed by another request — reload and retry"
+        default:
+          description: "Unexpected error"
+    delete:
+      summary: "Remove a bill"
+      operationId: removeBill
+      description: >
+        Posts a reversal that cancels out the bill's current value, with no replacement. The
+        original row referenced by {id} is never modified or deleted.
+      tags:
+        - billCorrection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "Id of the bill's current (visible) value to remove"
+          schema:
+            type: string
+      responses:
+        "204":
+          description: "Removed successfully"
+        "404":
+          description: "Not found"
+        "409":
+          description: "The bill has already been corrected or removed by another request — reload and retry"
+        default:
+          description: "Unexpected error"
+  /bills/{id}/history:
+    get:
+      summary: "Get a bill's correction history"
+      operationId: getBillHistory
+      tags:
+        - billCorrection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "Id of the bill's current (visible) value"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "The bill's prior values, newest first, ending with the original"
+          content:
+            application/json:
+              schema:
+                $ref: "bill-model.yaml#/components/schemas/billHistoryResponse"
+        "404":
+          description: "Not found"
+        default:
+          description: "Unexpected error"

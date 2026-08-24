@@ -1,0 +1,97 @@
+openapi: "3.0.0"
+tags:
+  - name: "IncomeCorrectionController"
+    description: "API for correcting, removing, and viewing the correction history of an income"
+info:
+  title: "Income Correction API"
+  description: "Correct or remove a previously recorded income via a compensating reversal entry, per Constitution Principle I"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /incomes/{id}:
+    put:
+      summary: "Correct an income's current value"
+      operationId: correctIncome
+      description: >
+        Replaces the income's current value with the given corrected values. Internally posts a
+        reversal of the current value plus a new entry carrying the corrected values; the original
+        row referenced by {id} is never modified.
+      tags:
+        - incomeCorrection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "Id of the income's current (visible) value to correct"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "income-model.yaml#/components/schemas/correctIncomeRequest"
+      responses:
+        "200":
+          description: "The new corrected income"
+          content:
+            application/json:
+              schema:
+                $ref: "income-model.yaml#/components/schemas/incomeResponse"
+        "400":
+          description: "Invalid request"
+        "404":
+          description: "Not found"
+        "409":
+          description: "The income has already been corrected or removed by another request — reload and retry"
+        default:
+          description: "Unexpected error"
+    delete:
+      summary: "Remove an income"
+      operationId: removeIncome
+      description: >
+        Posts a reversal that cancels out the income's current value, with no replacement. The
+        original row referenced by {id} is never modified or deleted.
+      tags:
+        - incomeCorrection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "Id of the income's current (visible) value to remove"
+          schema:
+            type: string
+      responses:
+        "204":
+          description: "Removed successfully"
+        "404":
+          description: "Not found"
+        "409":
+          description: "The income has already been corrected or removed by another request — reload and retry"
+        default:
+          description: "Unexpected error"
+  /incomes/{id}/history:
+    get:
+      summary: "Get an income's correction history"
+      operationId: getIncomeHistory
+      tags:
+        - incomeCorrection
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "Id of the income's current (visible) value"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "The income's prior values, newest first, ending with the original"
+          content:
+            application/json:
+              schema:
+                $ref: "income-model.yaml#/components/schemas/incomeHistoryResponse"
+        "404":
+          description: "Not found"
+        default:
+          description: "Unexpected error"
