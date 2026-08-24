@@ -186,8 +186,8 @@ nothing.
 - [X] T062 [P] Run `./mvnw -pl Domain test` — confirm all new correction/removal/filter/history unit tests and every pre-existing Domain test pass
 - [X] T063 [P] Run `./mvnw -pl integration-tests test` — confirm the two new correction integration test classes and all pre-existing integration tests (including the 007 account-balance ones) pass
 - [X] T064 [P] Run `cd frontend && npm run build` — confirm TypeScript type-check and Vite build complete with zero errors
-- [ ] T065 Manual smoke-test per `quickstart.md` — verify correction, removal, history, the cross-month correction edge case (change a transaction's date into another month and confirm both months' totals adjust), and that account balances follow corrections/removals
-- [ ] T066 [P] Verify Swagger UI at `http://localhost:8080/swagger-ui.html` shows the `billCorrection` and `incomeCorrection` tags with all six new endpoints
+- [X] T065 Manual smoke-test per `quickstart.md` — verify correction, removal, history, the cross-month correction edge case (change a transaction's date into another month and confirm both months' totals adjust), and that account balances follow corrections/removals
+- [X] T066 [P] Verify Swagger UI at `http://localhost:8080/swagger-ui.html` shows the `billCorrection` and `incomeCorrection` tags with all six new endpoints
 - [X] T067 [P] Clarify the deletion-blocked messages in `Domain/src/main/java/at/ymeri/my/finance/domain/service/account/DeleteAccountServiceImpl.java` and `Domain/src/main/java/at/ymeri/my/finance/domain/service/category/DeleteCategoryServiceImpl.java` — a removed/corrected transaction still pins its account/category (retained permanently per Principle I), so the message must say so rather than implying a visible transaction exists (per `/speckit-analyze` finding F1; the blocking behaviour itself is intentional and unchanged — see plan.md Principle V note)
 
 ---
