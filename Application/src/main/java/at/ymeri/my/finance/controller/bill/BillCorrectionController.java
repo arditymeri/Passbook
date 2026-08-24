@@ -37,6 +37,7 @@ public class BillCorrectionController implements BillCorrectionApi {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<BillResponseModel> correctBill(String id, CorrectBillRequest request) {
         BillDto corrected = correctBillService.correctBill(UUID.fromString(id), toDto(request));
 
