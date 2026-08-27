@@ -132,6 +132,32 @@ export interface Transaction {
 
 export type CategoryNameMap = Map<string, string>;
 
+export type TransactionTypeFilter = 'ALL' | 'BILL' | 'INCOME';
+
+export interface TransactionFilters {
+  searchText: string;
+  categoryId?: string;
+  source?: IncomeSource;
+  accountId?: string;
+  startDate?: string;
+  endDate?: string;
+  minAmount?: number;
+  maxAmount?: number;
+  type: TransactionTypeFilter;
+}
+
+export const EMPTY_TRANSACTION_FILTERS: TransactionFilters = {
+  searchText: '',
+  categoryId: undefined,
+  source: undefined,
+  accountId: undefined,
+  startDate: undefined,
+  endDate: undefined,
+  minAmount: undefined,
+  maxAmount: undefined,
+  type: 'ALL',
+};
+
 export type IncomeSource = 'SALARY' | 'FREELANCE' | 'INVESTMENT' | 'RENTAL' | 'GIFT' | 'OTHER';
 
 export interface CreateBillRequest {
@@ -276,6 +302,7 @@ export interface DashboardData {
   budgetError: string | null;
 
   transactions: Transaction[];
+  allTransactions: Transaction[];
   transactionsLoading: boolean;
   transactionsError: string | null;
 

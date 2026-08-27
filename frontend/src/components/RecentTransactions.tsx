@@ -27,6 +27,7 @@ interface RecentTransactionsProps {
   onCorrect: (t: Transaction) => void;
   onRemove: (t: Transaction) => void;
   onHistory: (t: Transaction) => void;
+  emptyMessage?: string;
 }
 
 const amtFmt = new Intl.NumberFormat('de-AT', { style: 'currency', currency: 'EUR' });
@@ -43,6 +44,7 @@ export function RecentTransactions({
   onCorrect,
   onRemove,
   onHistory,
+  emptyMessage = 'No transactions for this month.',
 }: RecentTransactionsProps) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [menuTarget, setMenuTarget] = useState<Transaction | null>(null);
@@ -74,7 +76,7 @@ export function RecentTransactions({
   if (transactions.length === 0) {
     return (
       <Paper sx={{ p: 2 }}>
-        <Typography color="text.secondary">No transactions for this month.</Typography>
+        <Typography color="text.secondary">{emptyMessage}</Typography>
       </Paper>
     );
   }
