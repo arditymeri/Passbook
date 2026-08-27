@@ -119,7 +119,7 @@ and the view returns to the default month-scoped list.
 
 ### Implementation for User Story 4
 
-- [ ] T009 [US4] Extend `frontend/src/components/TransactionFilterBar.tsx`: add a transaction-type control ("All" / "Bills only" / "Income only", mapping to `TransactionFilters.type`) and a "Clear filters" button that calls `onFiltersChange` with the all-cleared `TransactionFilters` shape (depends on T004, T006)
+- [X] T009 [US4] Extend `frontend/src/components/TransactionFilterBar.tsx`: add a transaction-type control ("All" / "Bills only" / "Income only", mapping to `TransactionFilters.type`) and a "Clear filters" button that calls `onFiltersChange` with the all-cleared `TransactionFilters` shape (depends on T004, T006)
 
 **Checkpoint**: All four user stories are independently functional — the full search/filter experience works end to end.
 

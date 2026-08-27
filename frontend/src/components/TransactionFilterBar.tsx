@@ -8,7 +8,18 @@ import ListSubheader from '@mui/material/ListSubheader';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Stack from '@mui/material/Stack';
-import type { Account, Category, IncomeSource, TransactionFilters } from '../types';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Button from '@mui/material/Button';
+import { EMPTY_TRANSACTION_FILTERS } from '../types';
+import type { Account, Category, IncomeSource, TransactionFilters, TransactionTypeFilter } from '../types';
+
+const TYPE_FILTERS: TransactionTypeFilter[] = ['ALL', 'BILL', 'INCOME'];
+const TYPE_FILTER_LABELS: Record<TransactionTypeFilter, string> = {
+  ALL: 'All',
+  BILL: 'Bills only',
+  INCOME: 'Income only',
+};
 
 interface TransactionFilterBarProps {
   filters: TransactionFilters;
@@ -130,6 +141,23 @@ export function TransactionFilterBar({ filters, onFiltersChange, categories, acc
               maxAmount: e.target.value === '' ? undefined : Number(e.target.value),
             })}
           />
+
+          <ToggleButtonGroup
+            value={filters.type}
+            exclusive
+            size="small"
+            onChange={(_, val: TransactionTypeFilter | null) => {
+              if (val !== null) onFiltersChange({ ...filters, type: val });
+            }}
+          >
+            {TYPE_FILTERS.map((f) => (
+              <ToggleButton key={f} value={f}>{TYPE_FILTER_LABELS[f]}</ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+
+          <Button variant="outlined" size="small" onClick={() => onFiltersChange(EMPTY_TRANSACTION_FILTERS)}>
+            Clear filters
+          </Button>
         </Stack>
       </Stack>
     </Paper>
