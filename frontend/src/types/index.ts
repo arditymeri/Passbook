@@ -198,6 +198,74 @@ export interface CreateAccountRequest {
   institution?: string;
 }
 
+export type RecurringFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+export type RecurringTransactionType = 'BILL' | 'INCOME';
+export type RecurringSeriesStatusValue = 'PROPOSED' | 'CONFIRMED' | 'DISMISSED';
+
+export interface RecurringSeries {
+  id: string;
+  transactionType: RecurringTransactionType;
+  groupKey: string;
+  description: string;
+  frequency: RecurringFrequency;
+  status: RecurringSeriesStatusValue;
+  createdAt: string;
+}
+
+export interface UpcomingRecurringItem {
+  seriesId: string;
+  transactionType: RecurringTransactionType;
+  groupKey: string;
+  description: string;
+  predictedDate: string;
+  predictedAmount: number;
+  overdue: boolean;
+}
+
+export interface PriceChangeAlert {
+  transactionId: string;
+  transactionType: RecurringTransactionType;
+  groupKey: string;
+  description: string;
+  priorAmount: number;
+  newAmount: number;
+  delta: number;
+}
+
+export interface RecurringDashboard {
+  upcoming: UpcomingRecurringItem[];
+  recentPriceChanges: PriceChangeAlert[];
+}
+
+export type PaceStatusValue = 'ON_PACE' | 'BEHIND_PACE' | 'OVERDUE';
+
+export interface SavingsGoalStatus {
+  id: string;
+  name: string;
+  targetAmount: number;
+  targetDate?: string;
+  accountId: string;
+  createdAt: string;
+  savedAmount: number;
+  percentComplete: number;
+  remainingAmount: number;
+  achieved: boolean;
+  paceStatus?: PaceStatusValue;
+}
+
+export interface CreateSavingsGoalRequest {
+  name: string;
+  targetAmount: number;
+  targetDate?: string;
+  accountId: string;
+}
+
+export interface UpdateSavingsGoalRequest {
+  name: string;
+  targetAmount: number;
+  targetDate?: string;
+}
+
 export interface DashboardData {
   summary: MonthlySummary | null;
   summaryLoading: boolean;

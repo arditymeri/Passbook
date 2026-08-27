@@ -1,0 +1,34 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Savings Goal Create API"
+  description: "Create a new savings goal"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /savings-goals:
+    post:
+      summary: "Create a new savings goal"
+      operationId: createSavingsGoal
+      description: "Creates a goal linked to one account. Rejected if the account is already linked to another goal, or if the account does not exist."
+      tags:
+        - goalAdd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "goal-model.yaml#/components/schemas/createSavingsGoalRequest"
+      responses:
+        "201":
+          description: "Newly created savings goal, with derived progress"
+          content:
+            application/json:
+              schema:
+                $ref: "goal-model.yaml#/components/schemas/savingsGoalResponse"
+        "400":
+          description: "Invalid request, or the account is already linked to another goal"
+        "404":
+          description: "Account not found"
+        default:
+          description: "Unexpected error"

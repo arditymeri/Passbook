@@ -1,0 +1,30 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Recurring Series Detect API"
+  description: "Scan transaction history for new recurring series"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /recurring-series/detect:
+    post:
+      summary: "Detect new recurring series from transaction history"
+      operationId: detectRecurringSeries
+      description: >
+        Scans bills and incomes for groups of three or more (two, if at least one is already
+        marked with the existing `recurring` flag) matching occurrences — same category, same
+        description, a consistent cadence and amount within tolerance — and persists a new
+        PROPOSED series for each group not already covered by an existing series in any status.
+        Safe to call repeatedly; already-covered groups are not re-proposed. Returns the full,
+        updated list of recurring series (same shape as GET /recurring-series).
+      tags:
+        - recurringDetect
+      responses:
+        "200":
+          description: "Detection run; current recurring series list returned"
+          content:
+            application/json:
+              schema:
+                $ref: "recurring-model.yaml#/components/schemas/recurringSeriesListResponse"
+        default:
+          description: "Unexpected error"

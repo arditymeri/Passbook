@@ -1,0 +1,35 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Recurring Series Confirm API"
+  description: "Confirm a proposed recurring series"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /recurring-series/{id}/confirm:
+    post:
+      summary: "Confirm a proposed recurring series"
+      operationId: confirmRecurringSeries
+      description: "Moves a PROPOSED series to CONFIRMED, so it starts appearing in the upcoming dashboard and produces price-change alerts."
+      tags:
+        - recurringConfirm
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: "Series confirmed"
+          content:
+            application/json:
+              schema:
+                $ref: "recurring-model.yaml#/components/schemas/recurringSeriesResponse"
+        "400":
+          description: "Series is not in PROPOSED status"
+        "404":
+          description: "Series not found"
+        default:
+          description: "Unexpected error"

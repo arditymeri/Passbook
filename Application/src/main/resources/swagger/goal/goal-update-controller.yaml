@@ -1,0 +1,41 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Savings Goal Update API"
+  description: "Update a savings goal's name, target amount, or target date"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /savings-goals/{id}:
+    put:
+      summary: "Update a savings goal"
+      operationId: updateSavingsGoal
+      description: "Updates name, targetAmount, and/or targetDate. The linked account cannot be changed — delete and recreate the goal to fund it from a different account."
+      tags:
+        - goalUpdate
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "goal-model.yaml#/components/schemas/updateSavingsGoalRequest"
+      responses:
+        "200":
+          description: "Updated savings goal, with derived progress"
+          content:
+            application/json:
+              schema:
+                $ref: "goal-model.yaml#/components/schemas/savingsGoalResponse"
+        "400":
+          description: "Invalid request"
+        "404":
+          description: "Goal not found"
+        default:
+          description: "Unexpected error"

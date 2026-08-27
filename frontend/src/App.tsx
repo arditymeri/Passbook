@@ -21,6 +21,10 @@ import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
 import { MonthNav } from './components/MonthNav';
 import { RecentTransactions } from './components/RecentTransactions';
+import { PriceChangeAlerts } from './components/PriceChangeAlerts';
+import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
+import { SavingsGoalsPage } from './components/SavingsGoalsPage';
+import { UpcomingRecurring } from './components/UpcomingRecurring';
 import { SummaryCard } from './components/SummaryCard';
 import { useDashboardData } from './hooks/useDashboardData';
 import { fetchBillHistory, fetchIncomeHistory, removeBill, removeIncome } from './api/client';
@@ -29,7 +33,7 @@ import type { Period, Transaction, TransactionHistoryEntry } from './types';
 
 function App() {
   const now = new Date();
-  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts' | 'budgeting'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts' | 'budgeting' | 'goals'>('dashboard');
   const [period, setPeriod] = useState<Period>({ year: now.getFullYear(), month: now.getMonth() + 1 });
   const [refreshKey, setRefreshKey] = useState(0);
   const [billFormOpen, setBillFormOpen] = useState(false);
@@ -40,6 +44,7 @@ function App() {
   const [viewingHistoryFor, setViewingHistoryFor] = useState<Transaction | null>(null);
   const [history, setHistory] = useState<TransactionHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [recurringProposalsOpen, setRecurringProposalsOpen] = useState(false);
 
   const {
     summary, summaryLoading, summaryError,
@@ -72,6 +77,15 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BudgetingPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+      </ThemeProvider>
+    );
+  }
+
+  if (view === 'goals') {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <SavingsGoalsPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
       </ThemeProvider>
     );
   }
@@ -134,6 +148,12 @@ function App() {
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('budgeting')}>
               Budgeting
             </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setRecurringProposalsOpen(true)}>
+              Recurring
+            </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('goals')}>
+              Goals
+            </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('categories')}>
               Categories
             </Button>
@@ -178,6 +198,12 @@ function App() {
                 loading={budgetLoading}
                 error={budgetError}
               />
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 280 }}>
+              <Stack spacing={2.5}>
+                <UpcomingRecurring categories={categories} refreshKey={refreshKey} />
+                <PriceChangeAlerts categories={categories} refreshKey={refreshKey} />
+              </Stack>
             </Box>
           </Box>
 
@@ -239,6 +265,13 @@ function App() {
         history={history}
         loading={historyLoading}
         onClose={() => setViewingHistoryFor(null)}
+      />
+
+      <RecurringSeriesProposals
+        open={recurringProposalsOpen}
+        onClose={() => setRecurringProposalsOpen(false)}
+        onChanged={handleSaveSuccess}
+        categories={categories}
       />
     </ThemeProvider>
   );
