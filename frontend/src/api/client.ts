@@ -1,4 +1,4 @@
-import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse } from '../types';
+import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, Income, MonthlySummary, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -97,6 +97,23 @@ export async function dismissRecurringSeries(id: string): Promise<RecurringSerie
 
 export async function fetchRecurringDashboard(): Promise<RecurringDashboard> {
   return request<RecurringDashboard>('/api/v1/recurring-series/dashboard');
+}
+
+export async function createSavingsGoal(req: CreateSavingsGoalRequest): Promise<SavingsGoalStatus> {
+  return postAndReturn<SavingsGoalStatus>('/api/v1/savings-goals', req);
+}
+
+export async function fetchSavingsGoals(): Promise<SavingsGoalStatus[]> {
+  const data = await request<{ goals: SavingsGoalStatus[] }>('/api/v1/savings-goals');
+  return data.goals ?? [];
+}
+
+export async function updateSavingsGoal(id: string, req: UpdateSavingsGoalRequest): Promise<SavingsGoalStatus> {
+  return putAndReturn<SavingsGoalStatus>(`/api/v1/savings-goals/${id}`, req);
+}
+
+export async function deleteSavingsGoal(id: string): Promise<void> {
+  await del(`/api/v1/savings-goals/${id}`);
 }
 
 export async function fetchBills(): Promise<Bill[]> {

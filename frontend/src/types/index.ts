@@ -237,6 +237,35 @@ export interface RecurringDashboard {
   recentPriceChanges: PriceChangeAlert[];
 }
 
+export type PaceStatusValue = 'ON_PACE' | 'BEHIND_PACE' | 'OVERDUE';
+
+export interface SavingsGoalStatus {
+  id: string;
+  name: string;
+  targetAmount: number;
+  targetDate?: string;
+  accountId: string;
+  createdAt: string;
+  savedAmount: number;
+  percentComplete: number;
+  remainingAmount: number;
+  achieved: boolean;
+  paceStatus?: PaceStatusValue;
+}
+
+export interface CreateSavingsGoalRequest {
+  name: string;
+  targetAmount: number;
+  targetDate?: string;
+  accountId: string;
+}
+
+export interface UpdateSavingsGoalRequest {
+  name: string;
+  targetAmount: number;
+  targetDate?: string;
+}
+
 export interface DashboardData {
   summary: MonthlySummary | null;
   summaryLoading: boolean;
