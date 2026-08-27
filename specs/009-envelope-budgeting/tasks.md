@@ -200,12 +200,12 @@ entry equal to the source amount, added on top of any existing/carried balance.
 
 **Purpose**: Full-stack verification once all stories are implemented
 
-- [ ] T056 Run `./mvnw clean package` and verify the full build passes with all new/updated tests green
-- [ ] T057 [P] Run `./mvnw -pl Domain test` and confirm `EnvelopeBalancesTest`, `GetBudgetStatusServiceImplTest`, `SetBudgetServiceImplTest`, `MoveAllocationServiceImplTest`, and `RepeatAllocationsServiceImplTest` all pass
-- [ ] T058 [P] Run `./mvnw -pl integration-tests test` and confirm all `BudgetControllerIntegrationTest` cases pass
-- [ ] T059 [P] Run `cd frontend && npx tsc --noEmit` and confirm no type errors across the new components/hook/types
-- [ ] T060 Execute `specs/009-envelope-budgeting/quickstart.md` end to end in the browser
-- [ ] T061 [P] Verify Swagger UI at `http://localhost:8080/swagger-ui.html` shows `budgetTransfer` and `budgetRepeat` tags, and that `budgetGet`'s status schema includes `unallocated`/`envelopeBalance`
+- [ ] T056 Run `./mvnw clean package` and verify the full build passes with all new/updated tests green — BLOCKED (partial): `./mvnw clean package -pl '!integration-tests'` passes clean (Application, Domain, Infrastructure, Launcher, Events all build and test green); the full reactor build fails at `integration-tests` only because no Docker daemon is available in this environment (`docker ps` reports no socket) — same class of environment gap 001/002 hit with a missing Java 21, not a code defect. Re-run in an environment with Docker to close this out.
+- [X] T057 [P] Run `./mvnw -pl Domain test` and confirm `EnvelopeBalancesTest`, `GetBudgetStatusServiceImplTest`, `SetBudgetServiceImplTest`, `MoveAllocationServiceImplTest`, and `RepeatAllocationsServiceImplTest` all pass
+- [ ] T058 [P] Run `./mvnw -pl integration-tests test` and confirm all `BudgetControllerIntegrationTest` cases pass — BLOCKED: requires a Docker daemon (TestContainers) not available in this environment. All new cases (009 US1-US4 sections) compile cleanly against the real generated API models; not executed.
+- [X] T059 [P] Run `cd frontend && npx tsc --noEmit` and confirm no type errors across the new components/hook/types
+- [ ] T060 Execute `specs/009-envelope-budgeting/quickstart.md` end to end in the browser — BLOCKED: requires the full Docker Compose stack (Postgres) not available in this environment.
+- [ ] T061 [P] Verify Swagger UI at `http://localhost:8080/swagger-ui.html` shows `budgetTransfer` and `budgetRepeat` tags, and that `budgetGet`'s status schema includes `unallocated`/`envelopeBalance` — BLOCKED: requires a running app instance (same Docker gap as T058/T060). The underlying OpenAPI specs (`Application/src/main/resources/swagger/budget/*.yaml`) were verified directly and generate the expected `BudgetTransferApi`/`BudgetRepeatApi` and schema fields (confirmed via `generate-sources` output).
 
 ---
 
