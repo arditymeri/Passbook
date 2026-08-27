@@ -219,13 +219,17 @@ public class RecurringSeriesControllerIntegrationTest {
     @Test
     void dashboard_lastOccurrenceAmountJumpsBeyondTolerance_reportsAPriceChangeAlert() {
         String catId = createCategory("Broadband-IT-010-US3a");
-        OffsetDateTime first = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(2);
+        // the series is first recognized from three consistent occurrences — a run whose last
+        // step already jumped in price is not a series at all, so the price change has to be
+        // recorded onto an existing confirmed series (spec 010 US3)
+        OffsetDateTime first = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(3);
         createBillAt(catId, "Broadband-IT-010-US3a", first, 29.99);
         createBillAt(catId, "Broadband-IT-010-US3a", first.plusMonths(1), 29.99);
-        createBillAt(catId, "Broadband-IT-010-US3a", first.plusMonths(2), 39.99);
+        createBillAt(catId, "Broadband-IT-010-US3a", first.plusMonths(2), 29.99);
         restTemplate.postForEntity("/recurring-series/detect", null, RecurringSeriesListResponse.class);
         String seriesId = findSeriesId("broadband-it-010-us3a");
         restTemplate.postForEntity("/recurring-series/" + seriesId + "/confirm", null, RecurringSeriesResponse.class);
+        createBillAt(catId, "Broadband-IT-010-US3a", first.plusMonths(3), 39.99);
 
         ResponseEntity<RecurringDashboardResponse> response = restTemplate
                 .getForEntity("/recurring-series/dashboard", RecurringDashboardResponse.class);
