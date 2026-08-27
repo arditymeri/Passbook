@@ -172,19 +172,19 @@ transaction history are untouched.
 
 ### Tests for User Story 4
 
-- [ ] T042 [P] [US4] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/goal/UpdateSavingsGoalServiceImplTest.java`: updates `name`/`targetAmount`/`targetDate` and returns the refreshed `SavingsGoalStatusDto`; rejects a zero/negative `targetAmount`; rejects an unknown id (`NoSuchElementException`)
-- [ ] T043 [P] [US4] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/goal/DeleteSavingsGoalServiceImplTest.java`: deletes an existing goal; rejects an unknown id (`NoSuchElementException`)
+- [X] T042 [P] [US4] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/goal/UpdateSavingsGoalServiceImplTest.java`: updates `name`/`targetAmount`/`targetDate` and returns the refreshed `SavingsGoalStatusDto`; rejects a zero/negative `targetAmount`; rejects an unknown id (`NoSuchElementException`)
+- [X] T043 [P] [US4] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/goal/DeleteSavingsGoalServiceImplTest.java`: deletes an existing goal; rejects an unknown id (`NoSuchElementException`)
 
 ### Implementation for User Story 4
 
-- [ ] T044 [P] [US4] Create `Domain/src/main/java/at/ymeri/my/finance/domain/api/UpdateSavingsGoalService.java` and `DeleteSavingsGoalService.java` interfaces
-- [ ] T045 [US4] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/UpdateSavingsGoalServiceImpl.java`: loads by id (`NoSuchElementException` if missing), validates `targetAmount > 0`, persists via `UpdateSavingsGoalPersistencePort.update` (accountId unchanged, per research.md), returns `SavingsGoalProgress.of(updated, account.getBalance())` (depends on T014, T016, T020, T044, T042 must fail first)
-- [ ] T046 [US4] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/DeleteSavingsGoalServiceImpl.java`: loads by id (`NoSuchElementException` if missing), then `DeleteSavingsGoalPersistencePort.delete` (depends on T014, T017, T044, T043 must fail first)
-- [ ] T047 [US4] Create `Application/src/main/java/at/ymeri/my/finance/controller/goal/SavingsGoalUpdateController.java` and `SavingsGoalDeleteController.java` implementing the generated `GoalUpdateApi`/`GoalDeleteApi`, delegating to `UpdateSavingsGoalService`/`DeleteSavingsGoalService`, mapping `NoSuchElementException`→404 (depends on T045, T046, T007)
-- [ ] T048 [US4] Extend `Application/src/main/java/at/ymeri/my/finance/application/mapper/SavingsGoalMapper.java` with `updateSavingsGoalRequest` → update fields (depends on T047)
-- [ ] T049 [P] [US4] Add `updateSavingsGoal` and `deleteSavingsGoal` functions to `frontend/src/api/client.ts`
-- [ ] T050 [US4] Add edit (reusing `SavingsGoalForm` pre-filled with the selected goal) and delete (with a confirm step, mirroring `RemoveConfirmDialog`'s pattern) actions to `frontend/src/components/SavingsGoalsPage.tsx` (depends on T049, T036)
-- [ ] T051 [US4] Add cases to `SavingsGoalControllerIntegrationTest.java`: `PUT /savings-goals/{id}` updates name/targetAmount/targetDate and the change is reflected on the next `GET`; `PUT`/`DELETE` on an unknown id return 404; `DELETE /savings-goals/{id}` removes the goal while its linked account's balance and transactions are unaffected (depends on T047, T048)
+- [X] T044 [P] [US4] Create `Domain/src/main/java/at/ymeri/my/finance/domain/api/UpdateSavingsGoalService.java` and `DeleteSavingsGoalService.java` interfaces
+- [X] T045 [US4] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/UpdateSavingsGoalServiceImpl.java`: loads by id (`NoSuchElementException` if missing), validates `targetAmount > 0`, persists via `UpdateSavingsGoalPersistencePort.update` (accountId unchanged, per research.md), returns `SavingsGoalProgress.of(updated, account.getBalance())` (depends on T014, T016, T020, T044, T042 must fail first)
+- [X] T046 [US4] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/DeleteSavingsGoalServiceImpl.java`: loads by id (`NoSuchElementException` if missing), then `DeleteSavingsGoalPersistencePort.delete` (depends on T014, T017, T044, T043 must fail first)
+- [X] T047 [US4] Create `Application/src/main/java/at/ymeri/my/finance/controller/goal/SavingsGoalUpdateController.java` and `SavingsGoalDeleteController.java` implementing the generated `GoalUpdateApi`/`GoalDeleteApi`, delegating to `UpdateSavingsGoalService`/`DeleteSavingsGoalService`, mapping `NoSuchElementException`→404 (depends on T045, T046, T007)
+- [X] T048 [US4] Extend `Application/src/main/java/at/ymeri/my/finance/application/mapper/SavingsGoalMapper.java` with `updateSavingsGoalRequest` → update fields (depends on T047)
+- [X] T049 [P] [US4] Add `updateSavingsGoal` and `deleteSavingsGoal` functions to `frontend/src/api/client.ts`
+- [X] T050 [US4] Add edit (reusing `SavingsGoalForm` pre-filled with the selected goal) and delete (with a confirm step, mirroring `RemoveConfirmDialog`'s pattern) actions to `frontend/src/components/SavingsGoalsPage.tsx` (depends on T049, T036)
+- [X] T051 [US4] Add cases to `SavingsGoalControllerIntegrationTest.java`: `PUT /savings-goals/{id}` updates name/targetAmount/targetDate and the change is reflected on the next `GET`; `PUT`/`DELETE` on an unknown id return 404; `DELETE /savings-goals/{id}` removes the goal while its linked account's balance and transactions are unaffected (depends on T047, T048)
 
 **Checkpoint**: Full CRUD lifecycle works end to end — all four user stories are independently functional.
 

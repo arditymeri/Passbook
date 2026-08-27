@@ -9,10 +9,13 @@ import at.ymeri.my.finance.application.data.CreateSavingsGoalRequest;
 import at.ymeri.my.finance.application.data.IncomeResponse;
 import at.ymeri.my.finance.application.data.SavingsGoalListResponse;
 import at.ymeri.my.finance.application.data.SavingsGoalResponse;
+import at.ymeri.my.finance.application.data.UpdateSavingsGoalRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.test.context.EmbeddedKafka;
@@ -205,6 +208,66 @@ public class SavingsGoalControllerIntegrationTest {
         SavingsGoalResponse goal = findGoal("Rug Fund");
 
         assertThat(goal.getPaceStatus()).isNull();
+    }
+
+    // ── US4 (011): Manage a Goal ────────────────────────────────────────────
+
+    @Test
+    void updateSavingsGoal_validRequest_reflectedOnNextGet() {
+        UUID accountId = createAccount("Wedding-IT-011-US4a");
+        ResponseEntity<SavingsGoalResponse> created = restTemplate.postForEntity("/savings-goals",
+                new CreateSavingsGoalRequest("Wedding Fund", 5000.0, accountId), SavingsGoalResponse.class);
+        UUID goalId = created.getBody().getId();
+
+        UpdateSavingsGoalRequest update = new UpdateSavingsGoalRequest("Dream Wedding Fund", 7500.0);
+        ResponseEntity<SavingsGoalResponse> updateResponse = restTemplate.exchange(
+                "/savings-goals/" + goalId, HttpMethod.PUT, new HttpEntity<>(update), SavingsGoalResponse.class);
+
+        assertThat(updateResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(updateResponse.getBody().getName()).isEqualTo("Dream Wedding Fund");
+        assertThat(updateResponse.getBody().getTargetAmount()).isEqualByComparingTo(BigDecimal.valueOf(7500.0));
+
+        SavingsGoalResponse fetched = findGoal("Dream Wedding Fund");
+        assertThat(fetched.getTargetAmount()).isEqualByComparingTo(BigDecimal.valueOf(7500.0));
+    }
+
+    @Test
+    void updateSavingsGoal_unknownId_returns404() {
+        UpdateSavingsGoalRequest update = new UpdateSavingsGoalRequest("Name", 100.0);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/savings-goals/" + UUID.randomUUID(), HttpMethod.PUT, new HttpEntity<>(update), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void deleteSavingsGoal_unknownId_returns404() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/savings-goals/" + UUID.randomUUID(), HttpMethod.DELETE, null, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void deleteSavingsGoal_existingGoal_removesItWithoutTouchingAccount() {
+        UUID accountId = createAccount("Boat-IT-011-US4b");
+        ResponseEntity<SavingsGoalResponse> created = restTemplate.postForEntity("/savings-goals",
+                new CreateSavingsGoalRequest("Boat Fund", 20000.0, accountId), SavingsGoalResponse.class);
+        UUID goalId = created.getBody().getId();
+        recordIncome(accountId, 500.0);
+
+        ResponseEntity<Void> deleteResponse = restTemplate.exchange(
+                "/savings-goals/" + goalId, HttpMethod.DELETE, null, Void.class);
+
+        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        ResponseEntity<SavingsGoalListResponse> list = restTemplate
+                .getForEntity("/savings-goals", SavingsGoalListResponse.class);
+        assertThat(list.getBody().getGoals()).noneMatch(g -> "Boat Fund".equals(g.getName()));
+
+        AccountResponse account = restTemplate
+                .getForEntity("/accounts/" + accountId, AccountResponse.class).getBody();
+        assertThat(account.getBalance()).isEqualTo(500.0);
     }
 
     private void recordIncome(UUID accountId, double amount) {
