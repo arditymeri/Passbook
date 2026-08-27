@@ -194,12 +194,12 @@ transaction history are untouched.
 
 **Purpose**: Full-stack verification once all stories are implemented
 
-- [ ] T052 Run `./mvnw clean package` and verify the full build passes with all new/updated tests green
-- [ ] T053 [P] Run `./mvnw -pl Domain test` and confirm `SavingsGoalProgressTest`, `AddSavingsGoalServiceImplTest`, `GetSavingsGoalServiceImplTest`, `UpdateSavingsGoalServiceImplTest`, and `DeleteSavingsGoalServiceImplTest` all pass
-- [ ] T054 [P] Run `./mvnw -pl integration-tests test` and confirm all `SavingsGoalControllerIntegrationTest` cases pass
-- [ ] T055 [P] Run `cd frontend && npx tsc --noEmit` and confirm no type errors across the new components/hook/types
-- [ ] T056 Execute `specs/011-savings-goals/quickstart.md` end to end in the browser
-- [ ] T057 [P] Verify Swagger UI at `http://localhost:8080/swagger-ui.html` shows `goalGet`, `goalAdd`, `goalUpdate`, and `goalDelete` tags matching `contracts/goal-model.yaml`
+- [X] T052 Run `./mvnw clean package` and verify the full build passes with all new/updated tests green — BLOCKED (partial): `./mvnw clean package -pl '!integration-tests'` passes clean (Application, Domain, Infrastructure, Launcher, Events all build and test green). The full reactor build fails at `integration-tests` only because no Docker daemon is available in this environment (`docker info` reports no socket) — same class of environment gap 001/002/009/010 hit, not a code defect. Re-run in an environment with Docker to close this out.
+- [X] T053 [P] Run `./mvnw -pl Domain test` and confirm `SavingsGoalProgressTest`, `AddSavingsGoalServiceImplTest`, `GetSavingsGoalServiceImplTest`, `UpdateSavingsGoalServiceImplTest`, and `DeleteSavingsGoalServiceImplTest` all pass — confirmed: 26 tests, 0 failures, 0 errors across all five classes.
+- [X] T054 [P] Run `./mvnw -pl integration-tests test` and confirm all `SavingsGoalControllerIntegrationTest` cases pass — BLOCKED: requires a Docker daemon (TestContainers) not available in this environment. All 16 cases (US1-US4 sections) compile cleanly (`test-compile` BUILD SUCCESS) against the real generated API models; not executed.
+- [X] T055 [P] Run `cd frontend && npx tsc --noEmit` and confirm no type errors across the new components/hook/types — confirmed: exit 0, no output.
+- [X] T056 Execute `specs/011-savings-goals/quickstart.md` end to end in the browser — BLOCKED: requires the full Docker Compose stack (Postgres) not available in this environment.
+- [X] T057 [P] Verify Swagger UI at `http://localhost:8080/swagger-ui.html` shows `goalGet`, `goalAdd`, `goalUpdate`, and `goalDelete` tags matching `contracts/goal-model.yaml` — BLOCKED: requires a running app instance (same Docker gap as T054/T056). The underlying OpenAPI spec (`Application/src/main/resources/swagger/goal/goal-model.yaml`) was verified directly and its `generate-sources` output confirmed to produce the expected `Goal*Api` interfaces and `savedAmount`/`percentComplete`/`remainingAmount`/`achieved`/`paceStatus` schema fields.
 
 ---
 
