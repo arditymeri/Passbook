@@ -102,7 +102,7 @@ bounds appear. Combine with a search term or category filter; confirm all apply 
 
 ### Implementation for User Story 3
 
-- [ ] T008 [US3] Extend `frontend/src/components/TransactionFilterBar.tsx`: add start-date and end-date inputs (mirroring `AddBillForm.tsx`'s `type="date"` `TextField` pattern) and minimum/maximum amount number inputs, all calling `onFiltersChange` (depends on T004, T006)
+- [X] T008 [US3] Extend `frontend/src/components/TransactionFilterBar.tsx`: add start-date and end-date inputs (mirroring `AddBillForm.tsx`'s `type="date"` `TextField` pattern) and minimum/maximum amount number inputs, all calling `onFiltersChange` (depends on T004, T006)
 
 **Checkpoint**: Users can narrow by date range and amount range, combined with every filter from US1/US2.
 

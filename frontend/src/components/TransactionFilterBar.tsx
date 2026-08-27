@@ -90,6 +90,46 @@ export function TransactionFilterBar({ filters, onFiltersChange, categories, acc
               ))}
             </Select>
           </FormControl>
+
+          <TextField
+            label="From"
+            type="date"
+            size="small"
+            value={filters.startDate ?? ''}
+            onChange={(e) => onFiltersChange({ ...filters, startDate: e.target.value || undefined })}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+          <TextField
+            label="To"
+            type="date"
+            size="small"
+            value={filters.endDate ?? ''}
+            onChange={(e) => onFiltersChange({ ...filters, endDate: e.target.value || undefined })}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+
+          <TextField
+            label="Min amount"
+            type="number"
+            size="small"
+            sx={{ width: 130 }}
+            value={filters.minAmount ?? ''}
+            onChange={(e) => onFiltersChange({
+              ...filters,
+              minAmount: e.target.value === '' ? undefined : Number(e.target.value),
+            })}
+          />
+          <TextField
+            label="Max amount"
+            type="number"
+            size="small"
+            sx={{ width: 130 }}
+            value={filters.maxAmount ?? ''}
+            onChange={(e) => onFiltersChange({
+              ...filters,
+              maxAmount: e.target.value === '' ? undefined : Number(e.target.value),
+            })}
+          />
         </Stack>
       </Stack>
     </Paper>
