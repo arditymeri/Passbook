@@ -32,6 +32,7 @@ export function useDashboardData(year: number, month: number, refreshKey: number
   const [budgetError, setBudgetError] = useState<string | null>(null);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
@@ -99,35 +100,32 @@ export function useDashboardData(year: number, month: number, refreshKey: number
       if (billsResult.status === 'rejected' && incomesResult.status === 'rejected') {
         setTransactionsError('Could not load transactions');
         setTransactions([]);
+        setAllTransactions([]);
       } else {
-        const billTxns: Transaction[] = bills
-          .filter((b) => inMonth(b.time, year, month))
-          .map((b) => ({
-            id: b.id,
-            description: b.description,
-            amount: b.amount,
-            time: b.time,
-            type: 'BILL' as const,
-            categoryId: b.categoryId ?? undefined,
-            accountId: b.accountId ?? undefined,
-            correctsTransactionId: b.correctsTransactionId ?? undefined,
-          }));
-        const incomeTxns: Transaction[] = incomes
-          .filter((i) => inMonth(i.time, year, month))
-          .map((i) => ({
-            id: i.id,
-            description: i.description,
-            amount: i.amount,
-            time: i.time,
-            type: 'INCOME' as const,
-            accountId: i.accountId ?? undefined,
-            source: i.source ?? undefined,
-            correctsTransactionId: i.correctsTransactionId ?? undefined,
-          }));
+        const billTxns: Transaction[] = bills.map((b) => ({
+          id: b.id,
+          description: b.description,
+          amount: b.amount,
+          time: b.time,
+          type: 'BILL' as const,
+          categoryId: b.categoryId ?? undefined,
+          accountId: b.accountId ?? undefined,
+          correctsTransactionId: b.correctsTransactionId ?? undefined,
+        }));
+        const incomeTxns: Transaction[] = incomes.map((i) => ({
+          id: i.id,
+          description: i.description,
+          amount: i.amount,
+          time: i.time,
+          type: 'INCOME' as const,
+          accountId: i.accountId ?? undefined,
+          source: i.source ?? undefined,
+          correctsTransactionId: i.correctsTransactionId ?? undefined,
+        }));
         const merged = [...billTxns, ...incomeTxns]
-          .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-          .slice(0, 10);
-        setTransactions(merged);
+          .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        setAllTransactions(merged);
+        setTransactions(merged.filter((t) => inMonth(t.time, year, month)).slice(0, 10));
       }
       setTransactionsLoading(false);
     });
@@ -136,7 +134,7 @@ export function useDashboardData(year: number, month: number, refreshKey: number
   return {
     summary, summaryLoading, summaryError,
     budgetEntries, budgetLoading, budgetError,
-    transactions, transactionsLoading, transactionsError,
+    transactions, allTransactions, transactionsLoading, transactionsError,
     categoryNames, categories, categoriesLoading,
     accounts, accountsLoading,
   };
