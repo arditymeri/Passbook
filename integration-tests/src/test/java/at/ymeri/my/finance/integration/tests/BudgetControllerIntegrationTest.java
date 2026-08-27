@@ -263,4 +263,92 @@ public class BudgetControllerIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
+
+    // ── US3 (009): Move Money Between Categories ──────────────────────────────
+
+    private TransferAllocationRequest transferRequest(String from, String to, int year, int month, double amount) {
+        TransferAllocationRequest req = new TransferAllocationRequest();
+        req.setFromCategoryId(java.util.UUID.fromString(from));
+        req.setToCategoryId(java.util.UUID.fromString(to));
+        req.setYear(year);
+        req.setMonth(month);
+        req.setAmount(BigDecimal.valueOf(amount));
+        return req;
+    }
+
+    @Test
+    void transferAllocation_withinAvailableBalance_updatesBothCategories() {
+        String dining = createCategory("Dining-IT-009-US3a");
+        String groceries = createCategory("Groceries-IT-009-US3a");
+        restTemplate.postForEntity("/budgets", budgetRequest(dining, 2033, 1, 200.0), BudgetResponse.class);
+        restTemplate.postForEntity("/budgets", budgetRequest(groceries, 2033, 1, 300.0), BudgetResponse.class);
+
+        ResponseEntity<TransferAllocationResponse> response = restTemplate.postForEntity(
+                "/budgets/transfer", transferRequest(dining, groceries, 2033, 1, 50.0), TransferAllocationResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().getFromEnvelopeBalance()).isEqualByComparingTo(BigDecimal.valueOf(150.0));
+        assertThat(response.getBody().getToEnvelopeBalance()).isEqualByComparingTo(BigDecimal.valueOf(350.0));
+    }
+
+    @Test
+    void transferAllocation_exceedsAvailableBalance_returns400() {
+        String dining = createCategory("Dining-IT-009-US3b");
+        String groceries = createCategory("Groceries-IT-009-US3b");
+        restTemplate.postForEntity("/budgets", budgetRequest(dining, 2033, 2, 50.0), BudgetResponse.class);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "/budgets/transfer", transferRequest(dining, groceries, 2033, 2, 100.0), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    // ── US4 (009): Repeat Last Month's Assignments ────────────────────────────
+
+    private RepeatAllocationsRequest repeatRequest(int fromYear, int fromMonth, int toYear, int toMonth) {
+        RepeatAllocationsRequest req = new RepeatAllocationsRequest();
+        req.setFromYear(fromYear);
+        req.setFromMonth(fromMonth);
+        req.setToYear(toYear);
+        req.setToMonth(toMonth);
+        return req;
+    }
+
+    @Test
+    void repeatAllocations_intoEmptyTargetMonth_createsMatchingAllocations() {
+        String catId = createCategory("Groceries-IT-009-US4a");
+        restTemplate.postForEntity("/budgets", budgetRequest(catId, 2034, 1, 400.0), BudgetResponse.class);
+
+        ResponseEntity<RepeatAllocationsResponse> response = restTemplate.postForEntity(
+                "/budgets/repeat", repeatRequest(2034, 1, 2034, 2), RepeatAllocationsResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().getApplied())
+                .filteredOn(a -> catId.equals(a.getCategoryId().toString()))
+                .singleElement()
+                .satisfies(a -> assertThat(a.getNewMonthlyAmount()).isEqualByComparingTo(BigDecimal.valueOf(400.0)));
+    }
+
+    @Test
+    void repeatAllocations_intoMonthWithExistingAllocation_addsOnTop() {
+        String catId = createCategory("Dining-IT-009-US4b");
+        restTemplate.postForEntity("/budgets", budgetRequest(catId, 2034, 3, 150.0), BudgetResponse.class);
+        restTemplate.postForEntity("/budgets", budgetRequest(catId, 2034, 4, 60.0), BudgetResponse.class);
+
+        ResponseEntity<RepeatAllocationsResponse> response = restTemplate.postForEntity(
+                "/budgets/repeat", repeatRequest(2034, 3, 2034, 4), RepeatAllocationsResponse.class);
+
+        assertThat(response.getBody().getApplied())
+                .filteredOn(a -> catId.equals(a.getCategoryId().toString()))
+                .singleElement()
+                .satisfies(a -> assertThat(a.getNewMonthlyAmount()).isEqualByComparingTo(BigDecimal.valueOf(210.0)));
+    }
+
+    @Test
+    void repeatAllocations_emptySourceMonth_returns400() {
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "/budgets/repeat", repeatRequest(1998, 1, 2034, 5), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 }

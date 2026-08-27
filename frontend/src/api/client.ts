@@ -1,4 +1,4 @@
-import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary, TransactionHistoryEntry } from '../types';
+import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary, RepeatAllocationsRequest, RepeatAllocationsResponse, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -67,6 +67,14 @@ export async function fetchBudgets(year: number, month: number): Promise<Allocat
 
 export async function createOrUpdateBudget(req: CreateAllocationRequest): Promise<Allocation> {
   return postAndReturn<Allocation>('/api/v1/budgets', req);
+}
+
+export async function moveAllocation(req: TransferAllocationRequest): Promise<TransferAllocationResponse> {
+  return postAndReturn<TransferAllocationResponse>('/api/v1/budgets/transfer', req);
+}
+
+export async function repeatAllocations(req: RepeatAllocationsRequest): Promise<RepeatAllocationsResponse> {
+  return postAndReturn<RepeatAllocationsResponse>('/api/v1/budgets/repeat', req);
 }
 
 export async function fetchBills(): Promise<Bill[]> {

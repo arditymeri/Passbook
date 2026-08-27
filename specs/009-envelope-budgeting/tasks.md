@@ -148,20 +148,20 @@ unchanged; attempt to move more than the source's available balance and verify r
 
 ### Tests for User Story 3
 
-- [ ] T036 [P] [US3] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/MoveAllocationServiceImplTest.java`: successful move updates both categories' envelope balances and leaves unallocated unchanged; move exceeding the source's available balance throws; move with `fromCategoryId == toCategoryId` throws; move to/from a nonexistent category throws
+- [X] T036 [P] [US3] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/MoveAllocationServiceImplTest.java`: successful move updates both categories' envelope balances and leaves unallocated unchanged; move exceeding the source's available balance throws; move with `fromCategoryId == toCategoryId` throws; move to/from a nonexistent category throws
 
 ### Implementation for User Story 3
 
-- [ ] T037 [P] [US3] Add `AddAllocationTransferPersistencePort.java` to `Domain/src/main/java/at/ymeri/my/finance/domain/spi/budget/` with `AllocationTransferDto add(AllocationTransferDto transfer)`
-- [ ] T038 [US3] Implement `add()` in `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/budget/AllocationTransferPostgresAdapter.java` (now implements both `GetAllocationTransferPersistencePort` and `AddAllocationTransferPersistencePort`) (depends on T037, T013)
-- [ ] T039 [P] [US3] Create `Domain/src/main/java/at/ymeri/my/finance/domain/api/MoveAllocationService.java` (interface: `AllocationTransferDto moveAllocation(String fromCategoryId, String toCategoryId, int year, int month, BigDecimal amount)`)
-- [ ] T040 [US3] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/MoveAllocationServiceImpl.java`: validate amount > 0, categories differ and exist, amount ≤ `EnvelopeBalances.envelopeBalanceAsOf(fromCategoryId, ...)`, then persist via `AddAllocationTransferPersistencePort` (depends on T028, T037, T038, T039, T036 must fail first)
-- [ ] T041 [US3] Create `Application/src/main/java/at/ymeri/my/finance/controller/budget/BudgetTransferController.java` implementing the generated `BudgetTransferApi`, delegating to `MoveAllocationService` (depends on T040, T005)
-- [ ] T042 [US3] Extend `Application/src/main/java/at/ymeri/my/finance/application/mapper/BudgetMapper.java` with `TransferAllocationRequest` → `MoveAllocationService` call params and `AllocationTransferDto` → `TransferAllocationResponse` mappings (including post-move `fromEnvelopeBalance`/`toEnvelopeBalance`, sourced from `GetBudgetStatusService`) (depends on T041)
-- [ ] T043 [P] [US3] Add `moveAllocation(request)` to `frontend/src/api/client.ts` (`POST /api/v1/budgets/transfer`)
-- [ ] T044 [US3] Create `frontend/src/components/MoveAllocationDialog.tsx` — source/destination category pickers, amount field, inline error on rejection (depends on T043)
-- [ ] T045 [US3] Wire a "Move money" action into `BudgetingPage.tsx` opening `MoveAllocationDialog`, refreshing on success (depends on T044, T034)
-- [ ] T046 [US3] Add integration test cases to `BudgetControllerIntegrationTest.java`: successful transfer via `POST /budgets/transfer` updates both categories' status; over-the-balance transfer returns 400 (depends on T042)
+- [X] T037 [P] [US3] Add `AddAllocationTransferPersistencePort.java` to `Domain/src/main/java/at/ymeri/my/finance/domain/spi/budget/` with `AllocationTransferDto add(AllocationTransferDto transfer)`
+- [X] T038 [US3] Implement `add()` in `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/budget/AllocationTransferPostgresAdapter.java` (now implements both `GetAllocationTransferPersistencePort` and `AddAllocationTransferPersistencePort`) (depends on T037, T013)
+- [X] T039 [P] [US3] Create `Domain/src/main/java/at/ymeri/my/finance/domain/api/MoveAllocationService.java` (interface: `AllocationTransferDto moveAllocation(String fromCategoryId, String toCategoryId, int year, int month, BigDecimal amount)`)
+- [X] T040 [US3] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/MoveAllocationServiceImpl.java`: validate amount > 0, categories differ and exist, amount ≤ `EnvelopeBalances.envelopeBalanceAsOf(fromCategoryId, ...)`, then persist via `AddAllocationTransferPersistencePort` (depends on T028, T037, T038, T039, T036 must fail first)
+- [X] T041 [US3] Create `Application/src/main/java/at/ymeri/my/finance/controller/budget/BudgetTransferController.java` implementing the generated `BudgetTransferApi`, delegating to `MoveAllocationService` (depends on T040, T005)
+- [X] T042 [US3] Extend `Application/src/main/java/at/ymeri/my/finance/application/mapper/BudgetMapper.java` with `TransferAllocationRequest` → `MoveAllocationService` call params and `AllocationTransferDto` → `TransferAllocationResponse` mappings (including post-move `fromEnvelopeBalance`/`toEnvelopeBalance`, sourced from `GetBudgetStatusService`) (depends on T041)
+- [X] T043 [P] [US3] Add `moveAllocation(request)` to `frontend/src/api/client.ts` (`POST /api/v1/budgets/transfer`)
+- [X] T044 [US3] Create `frontend/src/components/MoveAllocationDialog.tsx` — source/destination category pickers, amount field, inline error on rejection (depends on T043)
+- [X] T045 [US3] Wire a "Move money" action into `BudgetingPage.tsx` opening `MoveAllocationDialog`, refreshing on success (depends on T044, T034)
+- [X] T046 [US3] Add integration test cases to `BudgetControllerIntegrationTest.java`: successful transfer via `POST /budgets/transfer` updates both categories' status; over-the-balance transfer returns 400 (depends on T042)
 
 **Checkpoint**: Money can be reassigned between envelopes without a detour through "unallocated."
 
@@ -179,18 +179,18 @@ entry equal to the source amount, added on top of any existing/carried balance.
 
 ### Tests for User Story 4
 
-- [ ] T047 [P] [US4] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/RepeatAllocationsServiceImplTest.java`: repeating into a month with no existing allocations tops each category up from zero; repeating into a month with existing allocations adds on top (not overwrite); repeating a source month with zero allocations throws
+- [X] T047 [P] [US4] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/RepeatAllocationsServiceImplTest.java`: repeating into a month with no existing allocations tops each category up from zero; repeating into a month with existing allocations adds on top (not overwrite); repeating a source month with zero allocations throws
 
 ### Implementation for User Story 4
 
-- [ ] T048 [P] [US4] Create `Domain/src/main/java/at/ymeri/my/finance/domain/api/RepeatAllocationsService.java` (interface: `List<AllocationTopUp> repeatAllocations(int fromYear, int fromMonth, int toYear, int toMonth)`, with a small `AllocationTopUp{categoryId, amountAdded, newMonthlyAmount}` record/DTO)
-- [ ] T049 [US4] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/RepeatAllocationsServiceImpl.java`: read source month's allocations via `GetBudgetPersistencePort`, throw if empty, else for each upsert target month = existing target amount (0 if none) + source amount via `SetBudgetPersistencePort` (depends on T047 must fail first)
-- [ ] T050 [US4] Create `Application/src/main/java/at/ymeri/my/finance/controller/budget/BudgetRepeatController.java` implementing the generated `BudgetRepeatApi`, delegating to `RepeatAllocationsService` (depends on T049, T005)
-- [ ] T051 [US4] Extend `Application/src/main/java/at/ymeri/my/finance/application/mapper/BudgetMapper.java` with `RepeatAllocationsRequest`/`RepeatAllocationsResponse` mappings (depends on T050)
-- [ ] T052 [P] [US4] Add `repeatAllocations(request)` to `frontend/src/api/client.ts` (`POST /api/v1/budgets/repeat`)
-- [ ] T053 [US4] Create `frontend/src/components/RepeatAllocationsDialog.tsx` — computes the client-side preview (which categories will receive a top-up and by how much) from the already-fetched source/target month allocation lists, shows it, then calls `repeatAllocations` on confirm; shows "nothing to repeat" when the source month is empty (depends on T052)
-- [ ] T054 [US4] Wire a "Repeat last month" action into `BudgetingPage.tsx` opening `RepeatAllocationsDialog`, refreshing on success (depends on T053, T034)
-- [ ] T055 [US4] Add integration test cases to `BudgetControllerIntegrationTest.java`: repeat into an empty target month; repeat into a month with existing allocations (additive, not overwritten); repeat an empty source month returns 400 (depends on T051)
+- [X] T048 [P] [US4] Create `Domain/src/main/java/at/ymeri/my/finance/domain/api/RepeatAllocationsService.java` (interface: `List<AllocationTopUp> repeatAllocations(int fromYear, int fromMonth, int toYear, int toMonth)`, with a small `AllocationTopUp{categoryId, amountAdded, newMonthlyAmount}` record/DTO)
+- [X] T049 [US4] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/RepeatAllocationsServiceImpl.java`: read source month's allocations via `GetBudgetPersistencePort`, throw if empty, else for each upsert target month = existing target amount (0 if none) + source amount via `SetBudgetPersistencePort` (depends on T047 must fail first)
+- [X] T050 [US4] Create `Application/src/main/java/at/ymeri/my/finance/controller/budget/BudgetRepeatController.java` implementing the generated `BudgetRepeatApi`, delegating to `RepeatAllocationsService` (depends on T049, T005)
+- [X] T051 [US4] Extend `Application/src/main/java/at/ymeri/my/finance/application/mapper/BudgetMapper.java` with `RepeatAllocationsRequest`/`RepeatAllocationsResponse` mappings (depends on T050)
+- [X] T052 [P] [US4] Add `repeatAllocations(request)` to `frontend/src/api/client.ts` (`POST /api/v1/budgets/repeat`)
+- [X] T053 [US4] Create `frontend/src/components/RepeatAllocationsDialog.tsx` — computes the client-side preview (which categories will receive a top-up and by how much) from the already-fetched source/target month allocation lists, shows it, then calls `repeatAllocations` on confirm; shows "nothing to repeat" when the source month is empty (depends on T052)
+- [X] T054 [US4] Wire a "Repeat last month" action into `BudgetingPage.tsx` opening `RepeatAllocationsDialog`, refreshing on success (depends on T053, T034)
+- [X] T055 [US4] Add integration test cases to `BudgetControllerIntegrationTest.java`: repeat into an empty target month; repeat into a month with existing allocations (additive, not overwritten); repeat an empty source month returns 400 (depends on T051)
 
 **Checkpoint**: All four user stories are independently functional — the full envelope-budgeting loop works end to end.
 

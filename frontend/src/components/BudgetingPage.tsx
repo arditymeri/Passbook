@@ -3,6 +3,8 @@ import { useBudgetAllocations } from '../hooks/useBudgetAllocations';
 import { fetchCategories, fetchMonthlySummary } from '../api/client';
 import { MonthNav } from './MonthNav';
 import { AllocationForm } from './AllocationForm';
+import { MoveAllocationDialog } from './MoveAllocationDialog';
+import { RepeatAllocationsDialog } from './RepeatAllocationsDialog';
 import type { Allocation, BudgetStatusEntry, Category, Period } from '../types';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -32,6 +34,8 @@ export function BudgetingPage({ onBack }: BudgetingPageProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => setCategories([]));
@@ -68,6 +72,16 @@ export function BudgetingPage({ onBack }: BudgetingPageProps) {
     refresh();
   }
 
+  function handleMoveSuccess() {
+    setMoveDialogOpen(false);
+    refresh();
+  }
+
+  function handleRepeatSuccess() {
+    setRepeatDialogOpen(false);
+    refresh();
+  }
+
   const allocationTargets = categories.filter((c) => c.type === 'EXPENSE' || c.type === 'BOTH');
   const entryByCategory = new Map<string, BudgetStatusEntry>(entries.map((e) => [e.categoryId, e]));
   const editingAllocation: Allocation | undefined = editingCategoryId
@@ -83,6 +97,12 @@ export function BudgetingPage({ onBack }: BudgetingPageProps) {
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" sx={{ fontWeight: 700, flexGrow: 1 }}>Budgeting</Typography>
+        <Button variant="outlined" onClick={() => setRepeatDialogOpen(true)}>
+          Repeat Last Month
+        </Button>
+        <Button variant="outlined" onClick={() => setMoveDialogOpen(true)}>
+          Move Money
+        </Button>
         <Button variant="contained" startIcon={<AddIcon />} onClick={handleAssignNew}>
           Assign to Category
         </Button>
@@ -161,6 +181,25 @@ export function BudgetingPage({ onBack }: BudgetingPageProps) {
         categories={categories}
         initialCategoryId={editingCategoryId ?? undefined}
         initialAmount={editingAllocation ? String(editingAllocation.limitAmount) : undefined}
+      />
+
+      <MoveAllocationDialog
+        open={moveDialogOpen}
+        onClose={() => setMoveDialogOpen(false)}
+        onSuccess={handleMoveSuccess}
+        year={period.year}
+        month={period.month}
+        categories={categories}
+      />
+
+      <RepeatAllocationsDialog
+        open={repeatDialogOpen}
+        onClose={() => setRepeatDialogOpen(false)}
+        onSuccess={handleRepeatSuccess}
+        toYear={period.year}
+        toMonth={period.month}
+        targetAllocations={allocations}
+        categories={categories}
       />
     </Box>
   );
