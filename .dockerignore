@@ -1,0 +1,22 @@
+# Build output — must never be copied into the image: the OpenAPI generator
+# runs with skipOverwrite=true, so a stale generated-sources tree would be
+# kept instead of being regenerated from the YAML specs.
+target/
+**/target/
+
+# Frontend build output / deps
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+
+# VCS & IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+*.iml
+
+# Agent / spec tooling
+.agents/
+.claude/
+specs/

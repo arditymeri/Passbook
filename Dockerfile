@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Package the application
-RUN chmod +x mvnw && ./mvnw package -Dmaven.test.skip=true
+RUN chmod +x mvnw && ./mvnw clean package -Dmaven.test.skip=true
 
 # Run the application
 CMD ["java", "-jar", "Launcher/target/Launcher-0.0.1-SNAPSHOT-exec.jar"]
