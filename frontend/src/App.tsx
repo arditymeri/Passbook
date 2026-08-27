@@ -23,6 +23,7 @@ import { MonthNav } from './components/MonthNav';
 import { RecentTransactions } from './components/RecentTransactions';
 import { PriceChangeAlerts } from './components/PriceChangeAlerts';
 import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
+import { SavingsGoalsPage } from './components/SavingsGoalsPage';
 import { UpcomingRecurring } from './components/UpcomingRecurring';
 import { SummaryCard } from './components/SummaryCard';
 import { useDashboardData } from './hooks/useDashboardData';
@@ -32,7 +33,7 @@ import type { Period, Transaction, TransactionHistoryEntry } from './types';
 
 function App() {
   const now = new Date();
-  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts' | 'budgeting'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts' | 'budgeting' | 'goals'>('dashboard');
   const [period, setPeriod] = useState<Period>({ year: now.getFullYear(), month: now.getMonth() + 1 });
   const [refreshKey, setRefreshKey] = useState(0);
   const [billFormOpen, setBillFormOpen] = useState(false);
@@ -76,6 +77,15 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BudgetingPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+      </ThemeProvider>
+    );
+  }
+
+  if (view === 'goals') {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <SavingsGoalsPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
       </ThemeProvider>
     );
   }
@@ -140,6 +150,9 @@ function App() {
             </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setRecurringProposalsOpen(true)}>
               Recurring
+            </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('goals')}>
+              Goals
             </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('categories')}>
               Categories

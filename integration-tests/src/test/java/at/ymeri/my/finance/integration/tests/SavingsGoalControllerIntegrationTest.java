@@ -4,7 +4,10 @@ import at.ymeri.my.finance.MyFinanceApplication;
 import at.ymeri.my.finance.application.data.AccountResponse;
 import at.ymeri.my.finance.application.data.AccountType;
 import at.ymeri.my.finance.application.data.CreateAccountRequest;
+import at.ymeri.my.finance.application.data.CreateIncomeRequest;
 import at.ymeri.my.finance.application.data.CreateSavingsGoalRequest;
+import at.ymeri.my.finance.application.data.IncomeResponse;
+import at.ymeri.my.finance.application.data.SavingsGoalListResponse;
 import at.ymeri.my.finance.application.data.SavingsGoalResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -89,5 +93,76 @@ public class SavingsGoalControllerIntegrationTest {
         ResponseEntity<String> response = restTemplate.postForEntity("/savings-goals", req, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    // ── US2 (011): See Goal Progress at a Glance ────────────────────────────
+
+    @Test
+    void listSavingsGoals_reflectsLinkedAccountBalance() {
+        UUID accountId = createAccount("Emergency-IT-011-US2a");
+        restTemplate.postForEntity("/savings-goals",
+                new CreateSavingsGoalRequest("Emergency Fund", 1000.0, accountId), SavingsGoalResponse.class);
+        recordIncome(accountId, 300.0);
+
+        ResponseEntity<SavingsGoalListResponse> response = restTemplate
+                .getForEntity("/savings-goals", SavingsGoalListResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().getGoals())
+                .anyMatch(g -> "Emergency Fund".equals(g.getName())
+                        && g.getSavedAmount().compareTo(BigDecimal.valueOf(300.0)) == 0
+                        && g.getPercentComplete().compareTo(BigDecimal.valueOf(30.00)) == 0
+                        && g.getRemainingAmount().compareTo(BigDecimal.valueOf(700.0)) == 0
+                        && !g.getAchieved());
+    }
+
+    @Test
+    void listSavingsGoals_newTransactionOnLinkedAccount_changesValuesOnNextCall() {
+        UUID accountId = createAccount("Bike-IT-011-US2b");
+        restTemplate.postForEntity("/savings-goals",
+                new CreateSavingsGoalRequest("New Bike", 500.0, accountId), SavingsGoalResponse.class);
+        recordIncome(accountId, 100.0);
+
+        SavingsGoalResponse before = findGoal("New Bike");
+        recordIncome(accountId, 150.0);
+        SavingsGoalResponse after = findGoal("New Bike");
+
+        assertThat(before.getSavedAmount()).isEqualByComparingTo(BigDecimal.valueOf(100.0));
+        assertThat(after.getSavedAmount()).isEqualByComparingTo(BigDecimal.valueOf(250.0));
+    }
+
+    @Test
+    void listSavingsGoals_balanceAtOrAboveTarget_marksAchieved() {
+        UUID accountId = createAccount("Camera-IT-011-US2c");
+        restTemplate.postForEntity("/savings-goals",
+                new CreateSavingsGoalRequest("Camera Fund", 200.0, accountId), SavingsGoalResponse.class);
+        recordIncome(accountId, 250.0);
+
+        SavingsGoalResponse goal = findGoal("Camera Fund");
+
+        assertThat(goal.getAchieved()).isTrue();
+    }
+
+    @Test
+    void getSavingsGoal_unknownId_returns404() {
+        ResponseEntity<String> response = restTemplate
+                .getForEntity("/savings-goals/" + UUID.randomUUID(), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    private void recordIncome(UUID accountId, double amount) {
+        CreateIncomeRequest income = new CreateIncomeRequest(amount, OffsetDateTime.now())
+                .accountId(accountId.toString());
+        restTemplate.postForEntity("/incomes", income, IncomeResponse.class);
+    }
+
+    private SavingsGoalResponse findGoal(String name) {
+        ResponseEntity<SavingsGoalListResponse> list = restTemplate
+                .getForEntity("/savings-goals", SavingsGoalListResponse.class);
+        return list.getBody().getGoals().stream()
+                .filter(g -> name.equals(g.getName()))
+                .findFirst()
+                .orElseThrow();
     }
 }

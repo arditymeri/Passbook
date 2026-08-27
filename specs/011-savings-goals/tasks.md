@@ -121,19 +121,19 @@ action; push the balance to or above the target and verify `achieved` becomes `t
 
 ### Tests for User Story 2
 
-- [ ] T029 [P] [US2] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/goal/GetSavingsGoalServiceImplTest.java`: `getAll()`/`getById()` return each goal's `savedAmount` matching its linked account's current balance, with correct `percentComplete`/`remainingAmount`/`achieved`; a negative account balance yields `percentComplete` floored at 0; no goals → empty list; unknown id → `NoSuchElementException`
+- [X] T029 [P] [US2] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/goal/GetSavingsGoalServiceImplTest.java`: `getAll()`/`getById()` return each goal's `savedAmount` matching its linked account's current balance, with correct `percentComplete`/`remainingAmount`/`achieved`; a negative account balance yields `percentComplete` floored at 0; no goals → empty list; unknown id → `NoSuchElementException`
 
 ### Implementation for User Story 2
 
-- [ ] T030 [P] [US2] Create `Domain/src/main/java/at/ymeri/my/finance/domain/api/GetSavingsGoalService.java` interface (`List<SavingsGoalStatusDto> getAll()`, `SavingsGoalStatusDto getById(String id)`)
-- [ ] T031 [US2] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/GetSavingsGoalServiceImpl.java`: for each `SavingsGoalDto` from `GetSavingsGoalPersistencePort`, resolve its account via `GetAccountService.getAccountById` and return `SavingsGoalProgress.of(goal, account.getBalance())` (depends on T014, T020, T030, T029 must fail first)
-- [ ] T032 [US2] Create `Application/src/main/java/at/ymeri/my/finance/controller/goal/SavingsGoalGetController.java` implementing the generated `GoalGetApi` (`listSavingsGoals`, `getSavingsGoal`), delegating to `GetSavingsGoalService`, mapping `NoSuchElementException`→404 for the single-goal lookup (depends on T031, T007)
-- [ ] T033 [US2] Extend `Application/src/main/java/at/ymeri/my/finance/application/mapper/SavingsGoalMapper.java` with `List<SavingsGoalStatusDto>` → `savingsGoalListResponse` (depends on T032)
-- [ ] T034 [P] [US2] Add `fetchSavingsGoals` function to `frontend/src/api/client.ts`
-- [ ] T035 [US2] Create `frontend/src/hooks/useSavingsGoals.ts` fetching the goal list, mirrors `useRecurringSeries.ts` (depends on T034)
-- [ ] T036 [US2] Create `frontend/src/components/SavingsGoalsPage.tsx` — goal cards showing name, saved amount, a progress bar, percent complete, remaining amount, and an achieved badge; a "+ New Goal" button opens `SavingsGoalForm` (depends on T035, T027)
-- [ ] T037 [US2] Add a "Goals" nav button and `'goals'` view to `frontend/src/App.tsx`, mirroring how `AccountsPage`/`BudgetingPage` are opened (depends on T036)
-- [ ] T038 [US2] Add cases to `SavingsGoalControllerIntegrationTest.java`: `GET /savings-goals` reflects the linked account's current balance in `savedAmount`/`percentComplete`/`remainingAmount`; a new transaction on the linked account changes the values on the next call; a balance at or above target sets `achieved` true; `GET /savings-goals/{id}` returns 404 for an unknown id (depends on T032, T033)
+- [X] T030 [P] [US2] Create `Domain/src/main/java/at/ymeri/my/finance/domain/api/GetSavingsGoalService.java` interface (`List<SavingsGoalStatusDto> getAll()`, `SavingsGoalStatusDto getById(String id)`)
+- [X] T031 [US2] Implement `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/GetSavingsGoalServiceImpl.java`: for each `SavingsGoalDto` from `GetSavingsGoalPersistencePort`, resolve its account via `GetAccountService.getAccountById` and return `SavingsGoalProgress.of(goal, account.getBalance())` (depends on T014, T020, T030, T029 must fail first)
+- [X] T032 [US2] Create `Application/src/main/java/at/ymeri/my/finance/controller/goal/SavingsGoalGetController.java` implementing the generated `GoalGetApi` (`listSavingsGoals`, `getSavingsGoal`), delegating to `GetSavingsGoalService`, mapping `NoSuchElementException`→404 for the single-goal lookup (depends on T031, T007)
+- [X] T033 [US2] Extend `Application/src/main/java/at/ymeri/my/finance/application/mapper/SavingsGoalMapper.java` with `List<SavingsGoalStatusDto>` → `savingsGoalListResponse` (depends on T032)
+- [X] T034 [P] [US2] Add `fetchSavingsGoals` function to `frontend/src/api/client.ts`
+- [X] T035 [US2] Create `frontend/src/hooks/useSavingsGoals.ts` fetching the goal list, mirrors `useRecurringSeries.ts` (depends on T034)
+- [X] T036 [US2] Create `frontend/src/components/SavingsGoalsPage.tsx` — goal cards showing name, saved amount, a progress bar, percent complete, remaining amount, and an achieved badge; a "+ New Goal" button opens `SavingsGoalForm` (depends on T035, T027)
+- [X] T037 [US2] Add a "Goals" nav button and `'goals'` view to `frontend/src/App.tsx`, mirroring how `AccountsPage`/`BudgetingPage` are opened (depends on T036)
+- [X] T038 [US2] Add cases to `SavingsGoalControllerIntegrationTest.java`: `GET /savings-goals` reflects the linked account's current balance in `savedAmount`/`percentComplete`/`remainingAmount`; a new transaction on the linked account changes the values on the next call; a balance at or above target sets `achieved` true; `GET /savings-goals/{id}` returns 404 for an unknown id (depends on T032, T033)
 
 **Checkpoint**: Users can create a goal and see its live progress — the core MVP loop works end to end.
 

@@ -5,10 +5,14 @@ import at.ymeri.my.finance.domain.data.goal.SavingsGoalStatusDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper
 public interface SavingsGoalMapper {
 
     SavingsGoalMapper INSTANCE = Mappers.getMapper(SavingsGoalMapper.class);
 
     SavingsGoalResponse map(SavingsGoalStatusDto dto);
+
+    List<SavingsGoalResponse> mapList(List<SavingsGoalStatusDto> dtos);
 }
