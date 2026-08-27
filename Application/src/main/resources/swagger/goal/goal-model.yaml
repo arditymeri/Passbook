@@ -1,0 +1,89 @@
+components:
+  schemas:
+    paceStatus:
+      type: "string"
+      enum:
+        - ON_PACE
+        - BEHIND_PACE
+        - OVERDUE
+
+    createSavingsGoalRequest:
+      type: "object"
+      required:
+        - name
+        - targetAmount
+        - accountId
+      properties:
+        name:
+          type: "string"
+        targetAmount:
+          type: "number"
+          format: "double"
+          minimum: 0
+          exclusiveMinimum: true
+        targetDate:
+          type: "string"
+          format: "date-time"
+        accountId:
+          type: "string"
+          format: "uuid"
+
+    updateSavingsGoalRequest:
+      type: "object"
+      required:
+        - name
+        - targetAmount
+      properties:
+        name:
+          type: "string"
+        targetAmount:
+          type: "number"
+          format: "double"
+          minimum: 0
+          exclusiveMinimum: true
+        targetDate:
+          type: "string"
+          format: "date-time"
+
+    savingsGoalResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        targetAmount:
+          type: "number"
+        targetDate:
+          type: "string"
+          format: "date-time"
+        accountId:
+          type: "string"
+          format: "uuid"
+        createdAt:
+          type: "string"
+          format: "date-time"
+        savedAmount:
+          type: "number"
+          description: "The linked account's current derived balance — never stored, computed fresh on every read"
+        percentComplete:
+          type: "number"
+          description: "savedAmount as a percentage of targetAmount, floored at 0 and capped at 100"
+        remainingAmount:
+          type: "number"
+          description: "targetAmount minus savedAmount, floored at 0"
+        achieved:
+          type: "boolean"
+          description: "True once savedAmount reaches or exceeds targetAmount"
+        paceStatus:
+          $ref: '#/components/schemas/paceStatus'
+          description: "Only present when targetDate is set and the goal is not yet achieved; omitted otherwise"
+
+    savingsGoalListResponse:
+      type: "object"
+      properties:
+        goals:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/savingsGoalResponse'

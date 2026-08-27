@@ -45,13 +45,13 @@ All paths are relative to the repo root, following `plan.md`'s Project Structure
 
 **Purpose**: Wire the new OpenAPI contracts into the build so generated code exists for later phases
 
-- [ ] T001 [P] Create `Application/src/main/resources/swagger/goal/goal-model.yaml` (copy from `specs/011-savings-goals/contracts/goal-model.yaml`)
-- [ ] T002 [P] Create `Application/src/main/resources/swagger/goal/goal-get-controller.yaml` (copy from `specs/011-savings-goals/contracts/goal-get-controller.yaml`)
-- [ ] T003 [P] Create `Application/src/main/resources/swagger/goal/goal-add-controller.yaml` (copy from `specs/011-savings-goals/contracts/goal-add-controller.yaml`)
-- [ ] T004 [P] Create `Application/src/main/resources/swagger/goal/goal-update-controller.yaml` (copy from `specs/011-savings-goals/contracts/goal-update-controller.yaml`)
-- [ ] T005 [P] Create `Application/src/main/resources/swagger/goal/goal-delete-controller.yaml` (copy from `specs/011-savings-goals/contracts/goal-delete-controller.yaml`)
-- [ ] T006 Add `goal-get`, `goal-add`, `goal-update`, and `goal-delete` `<execution>` blocks to the OpenAPI generator plugin in `Application/pom.xml`, mirroring the existing `recurring-*` executions (depends on T001–T005)
-- [ ] T007 Run `./mvnw -pl Application generate-sources` to generate `GoalGetApi`, `GoalAddApi`, `GoalUpdateApi`, `GoalDeleteApi`, and the new model classes into `Application/target/generated-sources/` (depends on T006)
+- [X] T001 [P] Create `Application/src/main/resources/swagger/goal/goal-model.yaml` (copy from `specs/011-savings-goals/contracts/goal-model.yaml`)
+- [X] T002 [P] Create `Application/src/main/resources/swagger/goal/goal-get-controller.yaml` (copy from `specs/011-savings-goals/contracts/goal-get-controller.yaml`)
+- [X] T003 [P] Create `Application/src/main/resources/swagger/goal/goal-add-controller.yaml` (copy from `specs/011-savings-goals/contracts/goal-add-controller.yaml`)
+- [X] T004 [P] Create `Application/src/main/resources/swagger/goal/goal-update-controller.yaml` (copy from `specs/011-savings-goals/contracts/goal-update-controller.yaml`)
+- [X] T005 [P] Create `Application/src/main/resources/swagger/goal/goal-delete-controller.yaml` (copy from `specs/011-savings-goals/contracts/goal-delete-controller.yaml`)
+- [X] T006 Add `goal-get`, `goal-add`, `goal-update`, and `goal-delete` `<execution>` blocks to the OpenAPI generator plugin in `Application/pom.xml`, mirroring the existing `recurring-*` executions (depends on T001–T005)
+- [X] T007 Run `./mvnw -pl Application generate-sources` to generate `GoalGetApi`, `GoalAddApi`, `GoalUpdateApi`, `GoalDeleteApi`, and the new model classes into `Application/target/generated-sources/` (depends on T006)
 
 **Checkpoint**: Generated API surface exists; Application-layer controllers can now be written against it.
 
@@ -64,19 +64,19 @@ helper every story's response depends on — every user story needs both from it
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T008 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/goal/PaceStatus.java` (enum: `ON_PACE`, `BEHIND_PACE`, `OVERDUE`)
-- [ ] T009 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/goal/SavingsGoalDto.java` (fields: `id`, `name`, `targetAmount` (BigDecimal), `targetDate` (nullable OffsetDateTime), `accountId`, `createdAt`)
-- [ ] T010 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/goal/SavingsGoalStatusDto.java` (all `SavingsGoalDto` fields plus `savedAmount`, `percentComplete`, `remainingAmount` (all BigDecimal), `achieved` (boolean), `paceStatus` (nullable `PaceStatus`) — mirrors `BudgetStatusDto`'s split from `BudgetDto`) (depends on T008, T009)
-- [ ] T011 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/SavingsGoalEntity.java` (`@Entity @Table(name = "savings_goal")`; `targetAmount` as `BigDecimal`, `targetDate` nullable `OffsetDateTime` column, `accountId`/`name` as `String`, `createdAt` as `OffsetDateTime`)
-- [ ] T012 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/SavingsGoalRepository.java` (Spring Data `JpaRepository<SavingsGoalEntity, UUID>` with `Optional<SavingsGoalEntity> findByAccountId(String accountId)`)
-- [ ] T013 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/mapper/SavingsGoalMapper.java` (MapStruct, `SavingsGoalEntity` ↔ `SavingsGoalDto`, mirrors `RecurringSeriesMapper`'s (Infrastructure) simplicity)
-- [ ] T014 Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/goal/GetSavingsGoalPersistencePort.java` with `List<SavingsGoalDto> getAll()`, `Optional<SavingsGoalDto> findById(String id)`, `Optional<SavingsGoalDto> findByAccountId(String accountId)` (depends on T009)
-- [ ] T015 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/goal/AddSavingsGoalPersistencePort.java` with `SavingsGoalDto add(SavingsGoalDto goal)` (depends on T009)
-- [ ] T016 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/goal/UpdateSavingsGoalPersistencePort.java` with `SavingsGoalDto update(String id, SavingsGoalDto goal)` (depends on T009)
-- [ ] T017 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/goal/DeleteSavingsGoalPersistencePort.java` with `void delete(String id)`
-- [ ] T018 Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/goal/SavingsGoalPostgresAdapter.java` implementing `GetSavingsGoalPersistencePort`, `AddSavingsGoalPersistencePort`, `UpdateSavingsGoalPersistencePort`, and `DeleteSavingsGoalPersistencePort` (depends on T011, T012, T013, T014, T015, T016, T017)
-- [ ] T019 [P] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/goal/SavingsGoalProgressTest.java`: `percentComplete`/`remainingAmount` for saved below, at, and above target (capped at 100% / floored at 0 respectively); `achieved` true once saved reaches or exceeds target, false below it; `paceStatus` is always `null` at this stage (no target-date logic yet — added in US3)
-- [ ] T020 Create `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/SavingsGoalProgress.java`: a static `SavingsGoalStatusDto of(SavingsGoalDto goal, BigDecimal savedAmount)` computing `percentComplete`, `remainingAmount`, `achieved`; `paceStatus` stubbed to always return `null` for now (depends on T010, T019 must fail first)
+- [X] T008 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/goal/PaceStatus.java` (enum: `ON_PACE`, `BEHIND_PACE`, `OVERDUE`)
+- [X] T009 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/goal/SavingsGoalDto.java` (fields: `id`, `name`, `targetAmount` (BigDecimal), `targetDate` (nullable OffsetDateTime), `accountId`, `createdAt`)
+- [X] T010 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/goal/SavingsGoalStatusDto.java` (all `SavingsGoalDto` fields plus `savedAmount`, `percentComplete`, `remainingAmount` (all BigDecimal), `achieved` (boolean), `paceStatus` (nullable `PaceStatus`) — mirrors `BudgetStatusDto`'s split from `BudgetDto`) (depends on T008, T009)
+- [X] T011 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/SavingsGoalEntity.java` (`@Entity @Table(name = "savings_goal")`; `targetAmount` as `BigDecimal`, `targetDate` nullable `OffsetDateTime` column, `accountId`/`name` as `String`, `createdAt` as `OffsetDateTime`)
+- [X] T012 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/SavingsGoalRepository.java` (Spring Data `JpaRepository<SavingsGoalEntity, UUID>` with `Optional<SavingsGoalEntity> findByAccountId(String accountId)`)
+- [X] T013 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/mapper/SavingsGoalMapper.java` (MapStruct, `SavingsGoalEntity` ↔ `SavingsGoalDto`, mirrors `RecurringSeriesMapper`'s (Infrastructure) simplicity)
+- [X] T014 Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/goal/GetSavingsGoalPersistencePort.java` with `List<SavingsGoalDto> getAll()`, `Optional<SavingsGoalDto> findById(String id)`, `Optional<SavingsGoalDto> findByAccountId(String accountId)` (depends on T009)
+- [X] T015 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/goal/AddSavingsGoalPersistencePort.java` with `SavingsGoalDto add(SavingsGoalDto goal)` (depends on T009)
+- [X] T016 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/goal/UpdateSavingsGoalPersistencePort.java` with `SavingsGoalDto update(String id, SavingsGoalDto goal)` (depends on T009)
+- [X] T017 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/goal/DeleteSavingsGoalPersistencePort.java` with `void delete(String id)`
+- [X] T018 Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/goal/SavingsGoalPostgresAdapter.java` implementing `GetSavingsGoalPersistencePort`, `AddSavingsGoalPersistencePort`, `UpdateSavingsGoalPersistencePort`, and `DeleteSavingsGoalPersistencePort` (depends on T011, T012, T013, T014, T015, T016, T017)
+- [X] T019 [P] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/goal/SavingsGoalProgressTest.java`: `percentComplete`/`remainingAmount` for saved below, at, and above target (capped at 100% / floored at 0 respectively); `achieved` true once saved reaches or exceeds target, false below it; `paceStatus` is always `null` at this stage (no target-date logic yet — added in US3)
+- [X] T020 Create `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/SavingsGoalProgress.java`: a static `SavingsGoalStatusDto of(SavingsGoalDto goal, BigDecimal savedAmount)` computing `percentComplete`, `remainingAmount`, `achieved`; `paceStatus` stubbed to always return `null` for now (depends on T010, T019 must fail first)
 
 **Checkpoint**: `SavingsGoal` persistence and progress derivation exist end to end. User story implementation can now begin.
 
