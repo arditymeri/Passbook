@@ -151,6 +151,62 @@ public class SavingsGoalControllerIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    // ── US3 (011): Get Warned About Pace ────────────────────────────────────
+
+    @Test
+    void goalWithFutureTargetDate_progressAheadOfPace_isOnPace() {
+        UUID accountId = createAccount("Laptop-IT-011-US3a");
+        CreateSavingsGoalRequest req = new CreateSavingsGoalRequest("Laptop Fund", 1000.0, accountId)
+                .targetDate(OffsetDateTime.now().plusDays(10));
+        restTemplate.postForEntity("/savings-goals", req, SavingsGoalResponse.class);
+        recordIncome(accountId, 900.0);
+
+        SavingsGoalResponse goal = findGoal("Laptop Fund");
+
+        assertThat(goal.getPaceStatus()).isEqualTo(at.ymeri.my.finance.application.data.PaceStatus.ON_PACE);
+    }
+
+    @Test
+    void goalWithFutureTargetDate_progressBehindPace_isBehindPace() throws InterruptedException {
+        // A short target window (3s) with a mid-window pause makes elapsed time a large, reliable
+        // fraction of the total without depending on exact wall-clock timing (unlike a multi-day
+        // window, where the test's own runtime would never be a meaningful fraction of the total).
+        UUID accountId = createAccount("Piano-IT-011-US3b");
+        CreateSavingsGoalRequest req = new CreateSavingsGoalRequest("Piano Fund", 1000.0, accountId)
+                .targetDate(OffsetDateTime.now().plusSeconds(3));
+        restTemplate.postForEntity("/savings-goals", req, SavingsGoalResponse.class);
+        recordIncome(accountId, 1.0);
+        Thread.sleep(1500);
+
+        SavingsGoalResponse goal = findGoal("Piano Fund");
+
+        assertThat(goal.getPaceStatus()).isEqualTo(at.ymeri.my.finance.application.data.PaceStatus.BEHIND_PACE);
+    }
+
+    @Test
+    void goalWithPastTargetDate_unmet_isOverdue() {
+        UUID accountId = createAccount("Sofa-IT-011-US3c");
+        CreateSavingsGoalRequest req = new CreateSavingsGoalRequest("Sofa Fund", 1000.0, accountId)
+                .targetDate(OffsetDateTime.now().minusDays(1));
+        restTemplate.postForEntity("/savings-goals", req, SavingsGoalResponse.class);
+        recordIncome(accountId, 50.0);
+
+        SavingsGoalResponse goal = findGoal("Sofa Fund");
+
+        assertThat(goal.getPaceStatus()).isEqualTo(at.ymeri.my.finance.application.data.PaceStatus.OVERDUE);
+    }
+
+    @Test
+    void goalWithNoTargetDate_neverHasPaceStatus() {
+        UUID accountId = createAccount("Rug-IT-011-US3d");
+        restTemplate.postForEntity("/savings-goals",
+                new CreateSavingsGoalRequest("Rug Fund", 500.0, accountId), SavingsGoalResponse.class);
+
+        SavingsGoalResponse goal = findGoal("Rug Fund");
+
+        assertThat(goal.getPaceStatus()).isNull();
+    }
+
     private void recordIncome(UUID accountId, double amount) {
         CreateIncomeRequest income = new CreateIncomeRequest(amount, OffsetDateTime.now())
                 .accountId(accountId.toString());

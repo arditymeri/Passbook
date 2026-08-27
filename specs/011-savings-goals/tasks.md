@@ -150,12 +150,12 @@ correct pace status. Verify a goal with no target date never shows a pace status
 
 ### Tests for User Story 3
 
-- [ ] T039 [P] [US3] Extend `SavingsGoalProgressTest.java`: no `targetDate` → `paceStatus` is `null`; `actualFraction >= expectedFraction` (elapsed time vs. progress) → `ON_PACE`; `actualFraction < expectedFraction` → `BEHIND_PACE`; `targetDate` already passed and not achieved → `OVERDUE`; `targetDate` already passed but `achieved` is true → `paceStatus` is `null` (achieved takes precedence, never `OVERDUE`)
+- [X] T039 [P] [US3] Extend `SavingsGoalProgressTest.java`: no `targetDate` → `paceStatus` is `null`; `actualFraction >= expectedFraction` (elapsed time vs. progress) → `ON_PACE`; `actualFraction < expectedFraction` → `BEHIND_PACE`; `targetDate` already passed and not achieved → `OVERDUE`; `targetDate` already passed but `achieved` is true → `paceStatus` is `null` (achieved takes precedence, never `OVERDUE`)
 
 ### Implementation for User Story 3
 
-- [ ] T040 [US3] Extend `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/SavingsGoalProgress.java`'s `paceStatus` computation per `data-model.md`'s pseudocode: `null` when no `targetDate` or when `achieved`; `OVERDUE` when `now` is after `targetDate`; otherwise `ON_PACE`/`BEHIND_PACE` from comparing `actualFraction` to the straight-line `expectedFraction` between `createdAt` and `targetDate` (depends on T039 must fail first)
-- [ ] T041 [US3] Add cases to `SavingsGoalControllerIntegrationTest.java`: a goal with a future target date and progress at/ahead of the straight-line pace shows `ON_PACE`; one behind pace shows `BEHIND_PACE`; one with a past target date and unmet target shows `OVERDUE`; one with no target date never includes a `paceStatus` (depends on T040)
+- [X] T040 [US3] Extend `Domain/src/main/java/at/ymeri/my/finance/domain/service/goal/SavingsGoalProgress.java`'s `paceStatus` computation per `data-model.md`'s pseudocode: `null` when no `targetDate` or when `achieved`; `OVERDUE` when `now` is after `targetDate`; otherwise `ON_PACE`/`BEHIND_PACE` from comparing `actualFraction` to the straight-line `expectedFraction` between `createdAt` and `targetDate` (depends on T039 must fail first)
+- [X] T041 [US3] Add cases to `SavingsGoalControllerIntegrationTest.java`: a goal with a future target date and progress at/ahead of the straight-line pace shows `ON_PACE`; one behind pace shows `BEHIND_PACE`; one with a past target date and unmet target shows `OVERDUE`; one with no target date never includes a `paceStatus` (depends on T040)
 
 **Checkpoint**: All three P1/P2 stories are independently functional — create, view progress, and pace warnings all work end to end.
 
