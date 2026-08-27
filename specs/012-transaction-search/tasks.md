@@ -85,7 +85,7 @@ Add an account filter on top; confirm only transactions matching both appear.
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] Extend `frontend/src/components/TransactionFilterBar.tsx`: add a combined "Category / Source" dropdown (bill categories from the existing `categories` list, then income sources from the existing `IncomeSource` values, in one list — selecting a category clears `source` and vice versa, per `research.md`'s UI decision) and an "Account" dropdown (from the existing `accounts` list), both calling `onFiltersChange` (depends on T004, T006)
+- [X] T007 [US2] Extend `frontend/src/components/TransactionFilterBar.tsx`: add a combined "Category / Source" dropdown (bill categories from the existing `categories` list, then income sources from the existing `IncomeSource` values, in one list — selecting a category clears `source` and vice versa, per `research.md`'s UI decision) and an "Account" dropdown (from the existing `accounts` list), both calling `onFiltersChange` (depends on T004, T006)
 
 **Checkpoint**: Users can narrow by category/source and account, combined with search text from US1.
 

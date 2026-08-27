@@ -223,7 +223,12 @@ function App() {
             </Box>
           </Box>
 
-          <TransactionFilterBar filters={filters} onFiltersChange={setFilters} />
+          <TransactionFilterBar
+            filters={filters}
+            onFiltersChange={setFilters}
+            categories={categories}
+            accounts={accounts}
+          />
 
           <RecentTransactions
             transactions={displayedTransactions}
