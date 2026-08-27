@@ -1,4 +1,4 @@
-import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary, RepeatAllocationsRequest, RepeatAllocationsResponse, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse } from '../types';
+import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -75,6 +75,28 @@ export async function moveAllocation(req: TransferAllocationRequest): Promise<Tr
 
 export async function repeatAllocations(req: RepeatAllocationsRequest): Promise<RepeatAllocationsResponse> {
   return postAndReturn<RepeatAllocationsResponse>('/api/v1/budgets/repeat', req);
+}
+
+export async function fetchRecurringSeries(): Promise<RecurringSeries[]> {
+  const data = await request<{ series: RecurringSeries[] }>('/api/v1/recurring-series');
+  return data.series ?? [];
+}
+
+export async function detectRecurringSeries(): Promise<RecurringSeries[]> {
+  const data = await postAndReturn<{ series: RecurringSeries[] }>('/api/v1/recurring-series/detect', {});
+  return data.series ?? [];
+}
+
+export async function confirmRecurringSeries(id: string): Promise<RecurringSeries> {
+  return postAndReturn<RecurringSeries>(`/api/v1/recurring-series/${id}/confirm`, {});
+}
+
+export async function dismissRecurringSeries(id: string): Promise<RecurringSeries> {
+  return postAndReturn<RecurringSeries>(`/api/v1/recurring-series/${id}/dismiss`, {});
+}
+
+export async function fetchRecurringDashboard(): Promise<RecurringDashboard> {
+  return request<RecurringDashboard>('/api/v1/recurring-series/dashboard');
 }
 
 export async function fetchBills(): Promise<Bill[]> {

@@ -16,6 +16,29 @@ against an implied unassisted default of three.
 transactions was already marked with the existing `recurring` flag." This makes FR-002, US2
 Scenario 1, US2 Scenario 4, and SC-002 all agree.
 
+## Data-model gap found during implementation: income has no category
+
+**Found**: `data-model.md` originally modeled a series' second matching dimension (alongside
+description) as `categoryId` for both `BILL` and `INCOME` series, and the OpenAPI contracts
+generated a `categoryId: uuid` field accordingly. While implementing the Foundational phase,
+`IncomeDto` turned out to have no `categoryId` field at all — only `BillDto` does. Incomes are
+categorized (if at all) by their `IncomeSource` enum (`SALARY`, `FREELANCE`, `INVESTMENT`,
+`RENTAL`, `GIFT`, `OTHER`), not by the `Category` entity bills use.
+
+**Fix**: `RecurringSeriesDto`/`RecurringSeriesEntity`'s field is renamed `categoryId` → `groupKey`
+— a bill's `categoryId` for a `BILL` series, an income's `source.name()` for an `INCOME` series.
+The OpenAPI contracts (`recurringSeriesResponse`, `upcomingRecurringItem`, `priceChangeAlert`) and
+`data-model.md` are updated to match; `spec.md`'s Assumptions section now documents the
+substitution. This is a rename only — the matching logic itself (group by this dimension plus
+normalized description) is unchanged from the original design.
+
+**Rationale for not treating this as a scope question**: the spec's actual requirement is "share a
+category" as a stand-in for "the same natural grouping dimension for that transaction type" — the
+spec's own Assumptions section already established that bill and income series never merge even
+with a coincidentally matching key, which only makes sense if the two transaction types are always
+understood to have their own separate categorization schemes. Substituting `IncomeSource` for the
+category income doesn't have preserves that intent; it doesn't change what the feature does.
+
 ## Decision: Series membership is computed by re-matching, never stored on the transaction
 
 **Decision**: A `RecurringSeries` row stores *what identifies* a series (transaction type,

@@ -107,3 +107,4 @@ As a user, I want to be told when a new occurrence of a recurring bill costs a d
 - Series recognition is scoped per bill and per income independently; a bill series and an income series are never merged even if coincidentally similar.
 - No authentication or multi-user support is introduced — this remains a single-user application, consistent with the rest of the product.
 - This feature does not send external notifications (email/push) for upcoming or overdue items — visibility is limited to the in-app Upcoming view, consistent with the app having no notification infrastructure today.
+- Income transactions have no category (only bills do) — for income, series grouping uses the existing income `source` field (e.g. SALARY, FREELANCE) as the "category" dimension FR-001 refers to, since it's the closest thing income already has to a categorization.

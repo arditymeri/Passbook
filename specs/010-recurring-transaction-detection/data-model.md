@@ -7,8 +7,8 @@
 | Field | Type | Notes |
 |---|---|---|
 | `id` | UUID | generated |
-| `transactionType` | enum: `BILL`, `INCOME` | which transaction stream this series belongs to; a bill series and an income series are never the same row even with identical category/description (Assumptions) |
-| `categoryId` | UUID (FK → category) | part of the matching key |
+| `transactionType` | enum: `BILL`, `INCOME` | which transaction stream this series belongs to; a bill series and an income series are never the same row even with identical grouping/description (Assumptions) |
+| `groupKey` | String | part of the matching key — the bill's `categoryId` for a `BILL` series, or the income's `source` enum name (e.g. `SALARY`) for an `INCOME` series. Income has no category field at all, so its `source` is the closest equivalent (Assumptions); kept as one generic string column rather than two type-specific ones so both transaction types share one row shape. |
 | `description` | String | the matching key's description text, stored trimmed and lowercased at creation time (the normalized form used for matching, per `research.md`) |
 | `frequency` | `RecurringFrequency` (existing enum: `DAILY`/`WEEKLY`/`MONTHLY`/`YEARLY`) | the cadence detected for this series |
 | `status` | enum: `PROPOSED`, `CONFIRMED`, `DISMISSED` | see State Transitions below |
@@ -25,7 +25,7 @@ dismissed proposal stay dismissed, per FR-003).
 ```
 membersOf(series, asOfNow) =
     { t ∈ GetBillService.getAll() (if series.transactionType = BILL, else GetIncomeService.getAll())
-      : t.categoryId = series.categoryId
+      : groupKeyOf(t) = series.groupKey                 // t.categoryId for a bill, t.source.name() for an income
         AND normalize(t.description) = series.description }
 ```
 
@@ -59,8 +59,11 @@ amount is what's compared — no special-casing needed here.
 ## Relationships
 
 ```
-Category 1───* RecurringSeries          (categoryId FK, existing)
-RecurringSeries ···> Bill or Income     (computed match on categoryId + normalized description,
+Category 1───* RecurringSeries          (loosely, for BILL series only — groupKey holds the
+                                          category id as a plain string, not an enforced FK,
+                                          since INCOME series store an IncomeSource name in the
+                                          same column instead)
+RecurringSeries ···> Bill or Income     (computed match on groupKey + normalized description,
                                           not a stored relationship — see "Series member
                                           transactions" above)
 ```

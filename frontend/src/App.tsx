@@ -21,6 +21,7 @@ import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
 import { MonthNav } from './components/MonthNav';
 import { RecentTransactions } from './components/RecentTransactions';
+import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
 import { SummaryCard } from './components/SummaryCard';
 import { useDashboardData } from './hooks/useDashboardData';
 import { fetchBillHistory, fetchIncomeHistory, removeBill, removeIncome } from './api/client';
@@ -40,6 +41,7 @@ function App() {
   const [viewingHistoryFor, setViewingHistoryFor] = useState<Transaction | null>(null);
   const [history, setHistory] = useState<TransactionHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [recurringProposalsOpen, setRecurringProposalsOpen] = useState(false);
 
   const {
     summary, summaryLoading, summaryError,
@@ -133,6 +135,9 @@ function App() {
             </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('budgeting')}>
               Budgeting
+            </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setRecurringProposalsOpen(true)}>
+              Recurring
             </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('categories')}>
               Categories
@@ -239,6 +244,13 @@ function App() {
         history={history}
         loading={historyLoading}
         onClose={() => setViewingHistoryFor(null)}
+      />
+
+      <RecurringSeriesProposals
+        open={recurringProposalsOpen}
+        onClose={() => setRecurringProposalsOpen(false)}
+        onChanged={handleSaveSuccess}
+        categories={categories}
       />
     </ThemeProvider>
   );
