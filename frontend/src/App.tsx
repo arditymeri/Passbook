@@ -21,6 +21,7 @@ import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
 import { MonthNav } from './components/MonthNav';
 import { RecentTransactions } from './components/RecentTransactions';
+import { PriceChangeAlerts } from './components/PriceChangeAlerts';
 import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
 import { UpcomingRecurring } from './components/UpcomingRecurring';
 import { SummaryCard } from './components/SummaryCard';
@@ -186,7 +187,10 @@ function App() {
               />
             </Box>
             <Box sx={{ flex: 1, minWidth: 280 }}>
-              <UpcomingRecurring categories={categories} refreshKey={refreshKey} />
+              <Stack spacing={2.5}>
+                <UpcomingRecurring categories={categories} refreshKey={refreshKey} />
+                <PriceChangeAlerts categories={categories} refreshKey={refreshKey} />
+              </Stack>
             </Box>
           </Box>
 

@@ -214,6 +214,48 @@ public class RecurringSeriesControllerIntegrationTest {
                         && u.getPredictedDate().isAfter(newOccurrence.plusDays(29)));
     }
 
+    // ── US3 (010): Get Warned About a Price Change ──────────────────────────────
+
+    @Test
+    void dashboard_lastOccurrenceAmountJumpsBeyondTolerance_reportsAPriceChangeAlert() {
+        String catId = createCategory("Broadband-IT-010-US3a");
+        OffsetDateTime first = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(2);
+        createBillAt(catId, "Broadband-IT-010-US3a", first, 29.99);
+        createBillAt(catId, "Broadband-IT-010-US3a", first.plusMonths(1), 29.99);
+        createBillAt(catId, "Broadband-IT-010-US3a", first.plusMonths(2), 39.99);
+        restTemplate.postForEntity("/recurring-series/detect", null, RecurringSeriesListResponse.class);
+        String seriesId = findSeriesId("broadband-it-010-us3a");
+        restTemplate.postForEntity("/recurring-series/" + seriesId + "/confirm", null, RecurringSeriesResponse.class);
+
+        ResponseEntity<RecurringDashboardResponse> response = restTemplate
+                .getForEntity("/recurring-series/dashboard", RecurringDashboardResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().getRecentPriceChanges())
+                .anyMatch(a -> "broadband-it-010-us3a".equals(a.getDescription())
+                        && a.getPriorAmount().compareTo(BigDecimal.valueOf(29.99)) == 0
+                        && a.getNewAmount().compareTo(BigDecimal.valueOf(39.99)) == 0
+                        && a.getDelta().compareTo(BigDecimal.valueOf(10.00)) == 0);
+    }
+
+    @Test
+    void dashboard_lastOccurrenceAmountUnchanged_reportsNoPriceChangeAlert() {
+        String catId = createCategory("Housing-IT-010-US3b");
+        OffsetDateTime first = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(2);
+        createBillAt(catId, "Housing-IT-010-US3b", first, 900.00);
+        createBillAt(catId, "Housing-IT-010-US3b", first.plusMonths(1), 900.00);
+        createBillAt(catId, "Housing-IT-010-US3b", first.plusMonths(2), 900.00);
+        restTemplate.postForEntity("/recurring-series/detect", null, RecurringSeriesListResponse.class);
+        String seriesId = findSeriesId("housing-it-010-us3b");
+        restTemplate.postForEntity("/recurring-series/" + seriesId + "/confirm", null, RecurringSeriesResponse.class);
+
+        ResponseEntity<RecurringDashboardResponse> response = restTemplate
+                .getForEntity("/recurring-series/dashboard", RecurringDashboardResponse.class);
+
+        assertThat(response.getBody().getRecentPriceChanges())
+                .noneMatch(a -> "housing-it-010-us3b".equals(a.getDescription()));
+    }
+
     private void createBillAt(String categoryId, String description, OffsetDateTime time, double amount) {
         Bill bill = new Bill().amount(amount).time(time).categoryId(categoryId).description(description);
         restTemplate.postForEntity("/createBill", bill, BillResponseModel.class);

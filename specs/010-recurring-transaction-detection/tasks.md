@@ -159,15 +159,15 @@ alert appears when the difference is within tolerance.
 
 ### Tests for User Story 3
 
-- [ ] T048 [P] [US3] Add cases to `GetUpcomingRecurringServiceImplTest.java`: the two most recent occurrences differing by more than tolerance produce a `PriceChangeAlertDto` with the correct prior amount, new amount, and delta; a difference within tolerance produces no alert; a series with fewer than two occurrences produces no alert; a `PROPOSED` or `DISMISSED` series never produces one
+- [X] T048 [P] [US3] Add cases to `GetUpcomingRecurringServiceImplTest.java`: the two most recent occurrences differing by more than tolerance produce a `PriceChangeAlertDto` with the correct prior amount, new amount, and delta; a difference within tolerance produces no alert; a series with fewer than two occurrences produces no alert; a `PROPOSED` or `DISMISSED` series never produces one
 
 ### Implementation for User Story 3
 
-- [ ] T049 [US3] Extend `Domain/src/main/java/at/ymeri/my/finance/domain/service/recurring/GetUpcomingRecurringServiceImpl.java` to populate `recentPriceChanges`: for each confirmed series with ≥2 matched members, compare the two most recent via `RecurringMatching.isWithinAmountTolerance`, emitting a `PriceChangeAlertDto` when it fails (depends on T022, T048 must fail first)
-- [ ] T050 [US3] Verify the existing `RecurringSeriesMapper` (Application) mapping from T043 already carries `recentPriceChanges` through to `recurringDashboardResponse` (MapStruct auto-mapping check, same verification done for `envelopeBalance` in feature 009); add an explicit `@Mapping` only if the generated mapper impl omits it (depends on T049)
-- [ ] T051 [P] [US3] Create `frontend/src/components/PriceChangeAlerts.tsx` — small list showing each alert's description, prior amount, new amount, and delta (colour-coded by increase/decrease) (depends on T044)
-- [ ] T052 [US3] Mount `PriceChangeAlerts` alongside `UpcomingRecurring` on the dashboard in `frontend/src/App.tsx` (depends on T051, T046)
-- [ ] T053 [US3] Add cases to `RecurringSeriesControllerIntegrationTest.java`: a new occurrence differing from a confirmed series' prior amount by more than tolerance appears in `GET /recurring-series/dashboard`'s `recentPriceChanges`; an occurrence within tolerance does not (depends on T049, T050)
+- [X] T049 [US3] Extend `Domain/src/main/java/at/ymeri/my/finance/domain/service/recurring/GetUpcomingRecurringServiceImpl.java` to populate `recentPriceChanges`: for each confirmed series with ≥2 matched members, compare the two most recent via `RecurringMatching.isWithinAmountTolerance`, emitting a `PriceChangeAlertDto` when it fails (depends on T022, T048 must fail first)
+- [X] T050 [US3] Verify the existing `RecurringSeriesMapper` (Application) mapping from T043 already carries `recentPriceChanges` through to `recurringDashboardResponse` (MapStruct auto-mapping check, same verification done for `envelopeBalance` in feature 009); add an explicit `@Mapping` only if the generated mapper impl omits it (depends on T049)
+- [X] T051 [P] [US3] Create `frontend/src/components/PriceChangeAlerts.tsx` — small list showing each alert's description, prior amount, new amount, and delta (colour-coded by increase/decrease) (depends on T044)
+- [X] T052 [US3] Mount `PriceChangeAlerts` alongside `UpcomingRecurring` on the dashboard in `frontend/src/App.tsx` (depends on T051, T046)
+- [X] T053 [US3] Add cases to `RecurringSeriesControllerIntegrationTest.java`: a new occurrence differing from a confirmed series' prior amount by more than tolerance appears in `GET /recurring-series/dashboard`'s `recentPriceChanges`; an occurrence within tolerance does not (depends on T049, T050)
 
 **Checkpoint**: All three user stories are independently functional — the full recurring-detection loop works end to end.
 

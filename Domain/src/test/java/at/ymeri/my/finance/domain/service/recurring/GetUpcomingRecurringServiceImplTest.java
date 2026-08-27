@@ -5,6 +5,7 @@ import at.ymeri.my.finance.domain.api.GetIncomeService;
 import at.ymeri.my.finance.domain.api.GetRecurringSeriesService;
 import at.ymeri.my.finance.domain.data.bill.BillDto;
 import at.ymeri.my.finance.domain.data.common.RecurringFrequency;
+import at.ymeri.my.finance.domain.data.recurring.PriceChangeAlertDto;
 import at.ymeri.my.finance.domain.data.recurring.RecurringDashboardResult;
 import at.ymeri.my.finance.domain.data.recurring.RecurringSeriesDto;
 import at.ymeri.my.finance.domain.data.recurring.RecurringSeriesStatus;
@@ -104,6 +105,66 @@ class GetUpcomingRecurringServiceImplTest {
         RecurringDashboardResult result = service.getDashboard();
 
         assertTrue(result.getUpcoming().isEmpty());
+    }
+
+    @Test
+    void getDashboard_lastTwoOccurrencesDifferBeyondTolerance_producesPriceChangeAlert() {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+        when(getRecurringSeriesService.getAll()).thenReturn(List.of(confirmedSeries("cat-A", "netflix")));
+        when(getBillService.getAll()).thenReturn(List.of(
+                bill("cat-A", "Netflix", now.minusMonths(1), "15.99"),
+                bill("cat-A", "Netflix", now, "19.99")));
+        lenient().when(getIncomeService.getAll()).thenReturn(List.of());
+
+        RecurringDashboardResult result = service.getDashboard();
+
+        assertEquals(1, result.getRecentPriceChanges().size());
+        PriceChangeAlertDto alert = result.getRecentPriceChanges().get(0);
+        assertEquals(new BigDecimal("15.99"), alert.getPriorAmount());
+        assertEquals(new BigDecimal("19.99"), alert.getNewAmount());
+        assertEquals(new BigDecimal("4.00"), alert.getDelta());
+    }
+
+    @Test
+    void getDashboard_differenceWithinTolerance_producesNoAlert() {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+        when(getRecurringSeriesService.getAll()).thenReturn(List.of(confirmedSeries("cat-A", "netflix")));
+        when(getBillService.getAll()).thenReturn(List.of(
+                bill("cat-A", "Netflix", now.minusMonths(1), "15.99"),
+                bill("cat-A", "Netflix", now, "16.50")));
+        lenient().when(getIncomeService.getAll()).thenReturn(List.of());
+
+        RecurringDashboardResult result = service.getDashboard();
+
+        assertTrue(result.getRecentPriceChanges().isEmpty());
+    }
+
+    @Test
+    void getDashboard_fewerThanTwoOccurrences_producesNoAlert() {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+        when(getRecurringSeriesService.getAll()).thenReturn(List.of(confirmedSeries("cat-A", "netflix")));
+        when(getBillService.getAll()).thenReturn(List.of(bill("cat-A", "Netflix", now, "15.99")));
+        lenient().when(getIncomeService.getAll()).thenReturn(List.of());
+
+        RecurringDashboardResult result = service.getDashboard();
+
+        assertTrue(result.getRecentPriceChanges().isEmpty());
+    }
+
+    @Test
+    void getDashboard_proposedOrDismissedSeries_neverProducesAlert() {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+        RecurringSeriesDto proposed = confirmedSeries("cat-A", "netflix");
+        proposed.setStatus(RecurringSeriesStatus.PROPOSED);
+        when(getRecurringSeriesService.getAll()).thenReturn(List.of(proposed));
+        lenient().when(getBillService.getAll()).thenReturn(List.of(
+                bill("cat-A", "Netflix", now.minusMonths(1), "15.99"),
+                bill("cat-A", "Netflix", now, "40.00")));
+        lenient().when(getIncomeService.getAll()).thenReturn(List.of());
+
+        RecurringDashboardResult result = service.getDashboard();
+
+        assertTrue(result.getRecentPriceChanges().isEmpty());
     }
 
     @Test

@@ -4,6 +4,7 @@ import at.ymeri.my.finance.domain.api.GetBillService;
 import at.ymeri.my.finance.domain.api.GetIncomeService;
 import at.ymeri.my.finance.domain.api.GetRecurringSeriesService;
 import at.ymeri.my.finance.domain.api.GetUpcomingRecurringService;
+import at.ymeri.my.finance.domain.data.recurring.PriceChangeAlertDto;
 import at.ymeri.my.finance.domain.data.recurring.RecurringDashboardResult;
 import at.ymeri.my.finance.domain.data.recurring.RecurringSeriesDto;
 import at.ymeri.my.finance.domain.data.recurring.RecurringSeriesStatus;
@@ -18,10 +19,9 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Predicts each confirmed series' next occurrence at read time from current transaction history —
- * nothing is cached or stored (Constitution Principle III). Price-change detection
- * ({@code recentPriceChanges}) is added by feature 010's US3; this class returns an empty list for
- * it until then.
+ * Predicts each confirmed series' next occurrence, and flags when its most recently recorded
+ * occurrence's amount differs from the one before it, at read time from current transaction
+ * history — nothing is cached or stored (Constitution Principle III).
  */
 @Service
 public class GetUpcomingRecurringServiceImpl implements GetUpcomingRecurringService {
@@ -45,6 +45,7 @@ public class GetUpcomingRecurringServiceImpl implements GetUpcomingRecurringServ
                 .toList();
 
         List<UpcomingRecurringItemDto> upcoming = new ArrayList<>();
+        List<PriceChangeAlertDto> priceChanges = new ArrayList<>();
         for (RecurringSeriesDto series : confirmed) {
             List<MemberOccurrence> members = membersOf(series);
             if (members.isEmpty()) {
@@ -65,11 +66,26 @@ public class GetUpcomingRecurringServiceImpl implements GetUpcomingRecurringServ
             // reduces to whether that freshly-derived date has already passed.
             item.setOverdue(predictedDate.isBefore(OffsetDateTime.now()));
             upcoming.add(item);
+
+            if (members.size() >= 2) {
+                MemberOccurrence prior = members.get(members.size() - 2);
+                if (!RecurringMatching.isWithinAmountTolerance(prior.amount(), latest.amount())) {
+                    PriceChangeAlertDto alert = new PriceChangeAlertDto();
+                    alert.setTransactionId(latest.id());
+                    alert.setTransactionType(series.getTransactionType());
+                    alert.setGroupKey(series.getGroupKey());
+                    alert.setDescription(series.getDescription());
+                    alert.setPriorAmount(prior.amount());
+                    alert.setNewAmount(latest.amount());
+                    alert.setDelta(latest.amount().subtract(prior.amount()));
+                    priceChanges.add(alert);
+                }
+            }
         }
 
         RecurringDashboardResult result = new RecurringDashboardResult();
         result.setUpcoming(upcoming);
-        result.setRecentPriceChanges(List.of());
+        result.setRecentPriceChanges(priceChanges);
         return result;
     }
 
