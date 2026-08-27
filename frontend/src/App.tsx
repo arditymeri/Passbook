@@ -24,12 +24,15 @@ import { RecentTransactions } from './components/RecentTransactions';
 import { PriceChangeAlerts } from './components/PriceChangeAlerts';
 import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
 import { SavingsGoalsPage } from './components/SavingsGoalsPage';
+import { TransactionFilterBar } from './components/TransactionFilterBar';
 import { UpcomingRecurring } from './components/UpcomingRecurring';
 import { SummaryCard } from './components/SummaryCard';
 import { useDashboardData } from './hooks/useDashboardData';
 import { fetchBillHistory, fetchIncomeHistory, removeBill, removeIncome } from './api/client';
+import { filterTransactions } from './utils/transactionFilters';
 import { theme } from './theme';
-import type { Period, Transaction, TransactionHistoryEntry } from './types';
+import { EMPTY_TRANSACTION_FILTERS } from './types';
+import type { Period, Transaction, TransactionFilters, TransactionHistoryEntry } from './types';
 
 function App() {
   const now = new Date();
@@ -45,14 +48,27 @@ function App() {
   const [history, setHistory] = useState<TransactionHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [recurringProposalsOpen, setRecurringProposalsOpen] = useState(false);
+  const [filters, setFilters] = useState<TransactionFilters>(EMPTY_TRANSACTION_FILTERS);
 
   const {
     summary, summaryLoading, summaryError,
     budgetEntries, budgetLoading, budgetError,
-    transactions, transactionsLoading, transactionsError,
+    transactions, allTransactions, transactionsLoading, transactionsError,
     categoryNames, categories,
     accounts,
   } = useDashboardData(period.year, period.month, refreshKey);
+
+  const isFiltering = filters.searchText !== ''
+    || filters.categoryId !== undefined
+    || filters.source !== undefined
+    || filters.accountId !== undefined
+    || filters.startDate !== undefined
+    || filters.endDate !== undefined
+    || filters.minAmount !== undefined
+    || filters.maxAmount !== undefined
+    || filters.type !== 'ALL';
+
+  const displayedTransactions = isFiltering ? filterTransactions(allTransactions, filters) : transactions;
 
   if (view === 'categories') {
     return (
@@ -207,14 +223,17 @@ function App() {
             </Box>
           </Box>
 
+          <TransactionFilterBar filters={filters} onFiltersChange={setFilters} />
+
           <RecentTransactions
-            transactions={transactions}
+            transactions={displayedTransactions}
             categoryNames={categoryNames}
             loading={transactionsLoading}
             error={transactionsError}
             onCorrect={setCorrectingTransaction}
             onRemove={setRemovingTransaction}
             onHistory={handleOpenHistory}
+            emptyMessage={isFiltering ? 'No transactions found' : undefined}
           />
         </Stack>
       </Container>

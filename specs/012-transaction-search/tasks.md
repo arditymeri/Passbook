@@ -66,9 +66,9 @@ the normal month-scoped list.
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Create `frontend/src/components/TransactionFilterBar.tsx`: a search text field (the only control at this stage), calling an `onFiltersChange` callback with the updated `TransactionFilters` object (other fields left at their default/unset values) (depends on T001)
-- [ ] T005 [US1] Modify `frontend/src/components/RecentTransactions.tsx`: accept an optional `emptyMessage?: string` prop, defaulting to the existing "No transactions for this month." text when not provided
-- [ ] T006 [US1] Modify `frontend/src/App.tsx`: add `filters` state initialized to the all-cleared `TransactionFilters` shape from `data-model.md`; compute `isFiltering` (true when any field differs from its cleared default); compute the transactions passed to `RecentTransactions` as `filterTransactions(allTransactions, filters)` when `isFiltering`, else the existing month-scoped `transactions`; pass `emptyMessage="No transactions found"` to `RecentTransactions` when `isFiltering`; mount `TransactionFilterBar` directly above `RecentTransactions` (depends on T002, T003, T004, T005)
+- [X] T004 [US1] Create `frontend/src/components/TransactionFilterBar.tsx`: a search text field (the only control at this stage), calling an `onFiltersChange` callback with the updated `TransactionFilters` object (other fields left at their default/unset values) (depends on T001)
+- [X] T005 [US1] Modify `frontend/src/components/RecentTransactions.tsx`: accept an optional `emptyMessage?: string` prop, defaulting to the existing "No transactions for this month." text when not provided
+- [X] T006 [US1] Modify `frontend/src/App.tsx`: add `filters` state initialized to the all-cleared `TransactionFilters` shape from `data-model.md`; compute `isFiltering` (true when any field differs from its cleared default); compute the transactions passed to `RecentTransactions` as `filterTransactions(allTransactions, filters)` when `isFiltering`, else the existing month-scoped `transactions`; pass `emptyMessage="No transactions found"` to `RecentTransactions` when `isFiltering`; mount `TransactionFilterBar` directly above `RecentTransactions` (depends on T002, T003, T004, T005)
 
 **Checkpoint**: Users can search their full transaction history by description from the dashboard.
 
