@@ -22,6 +22,7 @@ import { CategorySpend } from './components/CategorySpend';
 import { MonthNav } from './components/MonthNav';
 import { RecentTransactions } from './components/RecentTransactions';
 import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
+import { UpcomingRecurring } from './components/UpcomingRecurring';
 import { SummaryCard } from './components/SummaryCard';
 import { useDashboardData } from './hooks/useDashboardData';
 import { fetchBillHistory, fetchIncomeHistory, removeBill, removeIncome } from './api/client';
@@ -183,6 +184,9 @@ function App() {
                 loading={budgetLoading}
                 error={budgetError}
               />
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 280 }}>
+              <UpcomingRecurring categories={categories} refreshKey={refreshKey} />
             </Box>
           </Box>
 

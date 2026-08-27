@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
@@ -144,6 +145,78 @@ public class RecurringSeriesControllerIntegrationTest {
                 .postForEntity("/recurring-series/" + seriesId + "/dismiss", null, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    // ── US1 (010): See What's Coming Up ────────────────────────────────────────
+
+    @Test
+    void dashboard_confirmedSeriesWithRecentOccurrence_returnsCorrectPrediction() {
+        String catId = createCategory("Insurance-IT-010-US1a");
+        OffsetDateTime lastOccurrence = OffsetDateTime.now(ZoneOffset.UTC).minusDays(5);
+        createBillAt(catId, "Insurance-IT-010-US1a", lastOccurrence.minusMonths(2), 60.00);
+        createBillAt(catId, "Insurance-IT-010-US1a", lastOccurrence.minusMonths(1), 60.00);
+        createBillAt(catId, "Insurance-IT-010-US1a", lastOccurrence, 60.00);
+        restTemplate.postForEntity("/recurring-series/detect", null, RecurringSeriesListResponse.class);
+        String seriesId = findSeriesId("insurance-it-010-us1a");
+        restTemplate.postForEntity("/recurring-series/" + seriesId + "/confirm", null, RecurringSeriesResponse.class);
+
+        ResponseEntity<RecurringDashboardResponse> response = restTemplate
+                .getForEntity("/recurring-series/dashboard", RecurringDashboardResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().getUpcoming())
+                .anyMatch(u -> "insurance-it-010-us1a".equals(u.getDescription())
+                        && !u.getOverdue()
+                        && u.getPredictedAmount().compareTo(BigDecimal.valueOf(60.00)) == 0);
+    }
+
+    @Test
+    void dashboard_pastPredictionWithNoNewOccurrence_isMarkedOverdue() {
+        String catId = createCategory("Membership-IT-010-US1b");
+        // three occurrences a month apart, the last one two months ago -> predicted next date
+        // (last + 1 month) is one month in the past, with nothing recorded since
+        OffsetDateTime lastOccurrence = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(2);
+        createBillAt(catId, "Membership-IT-010-US1b", lastOccurrence.minusMonths(2), 25.00);
+        createBillAt(catId, "Membership-IT-010-US1b", lastOccurrence.minusMonths(1), 25.00);
+        createBillAt(catId, "Membership-IT-010-US1b", lastOccurrence, 25.00);
+        restTemplate.postForEntity("/recurring-series/detect", null, RecurringSeriesListResponse.class);
+        String seriesId = findSeriesId("membership-it-010-us1b");
+        restTemplate.postForEntity("/recurring-series/" + seriesId + "/confirm", null, RecurringSeriesResponse.class);
+
+        ResponseEntity<RecurringDashboardResponse> response = restTemplate
+                .getForEntity("/recurring-series/dashboard", RecurringDashboardResponse.class);
+
+        assertThat(response.getBody().getUpcoming())
+                .anyMatch(u -> "membership-it-010-us1b".equals(u.getDescription()) && u.getOverdue());
+    }
+
+    @Test
+    void dashboard_recordingNewOccurrence_advancesThePrediction() {
+        String catId = createCategory("Storage-IT-010-US1c");
+        OffsetDateTime first = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(2);
+        createBillAt(catId, "Storage-IT-010-US1c", first, 3.99);
+        createBillAt(catId, "Storage-IT-010-US1c", first.plusMonths(1), 3.99);
+        createBillAt(catId, "Storage-IT-010-US1c", first.plusMonths(2), 3.99);
+        restTemplate.postForEntity("/recurring-series/detect", null, RecurringSeriesListResponse.class);
+        String seriesId = findSeriesId("storage-it-010-us1c");
+        restTemplate.postForEntity("/recurring-series/" + seriesId + "/confirm", null, RecurringSeriesResponse.class);
+
+        OffsetDateTime newOccurrence = OffsetDateTime.now(ZoneOffset.UTC);
+        createBillAt(catId, "Storage-IT-010-US1c", newOccurrence, 3.99);
+
+        ResponseEntity<RecurringDashboardResponse> response = restTemplate
+                .getForEntity("/recurring-series/dashboard", RecurringDashboardResponse.class);
+
+        // predicted next date is now derived from the just-recorded occurrence, one month out —
+        // strictly after the occurrence before it plus 29 days, confirming the prediction moved
+        assertThat(response.getBody().getUpcoming())
+                .anyMatch(u -> "storage-it-010-us1c".equals(u.getDescription())
+                        && u.getPredictedDate().isAfter(newOccurrence.plusDays(29)));
+    }
+
+    private void createBillAt(String categoryId, String description, OffsetDateTime time, double amount) {
+        Bill bill = new Bill().amount(amount).time(time).categoryId(categoryId).description(description);
+        restTemplate.postForEntity("/createBill", bill, BillResponseModel.class);
     }
 
     private String findSeriesId(String description) {
