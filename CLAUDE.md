@@ -104,5 +104,5 @@ frontend/
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/011-savings-goals/plan.md`.
+at `specs/012-transaction-search/plan.md`.
 <!-- SPECKIT END -->
