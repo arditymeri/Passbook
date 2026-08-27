@@ -1,10 +1,8 @@
 package at.ymeri.my.finance.domain.api;
 
-import at.ymeri.my.finance.domain.data.budget.BudgetStatusDto;
-
-import java.util.List;
+import at.ymeri.my.finance.domain.data.budget.BudgetStatusResult;
 
 public interface GetBudgetStatusService {
 
-    List<BudgetStatusDto> getBudgetStatus(int year, int month);
+    BudgetStatusResult getBudgetStatus(int year, int month);
 }

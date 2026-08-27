@@ -20,6 +20,63 @@ export interface BudgetStatusEntry {
   actual: number;
   remaining: number;
   status: BudgetStatusValue;
+  envelopeBalance: number;
+}
+
+export interface BudgetStatusResponse {
+  year: number;
+  month: number;
+  entries: BudgetStatusEntry[];
+  unallocated: number;
+}
+
+export interface Allocation {
+  id: string;
+  categoryId: string;
+  year: number;
+  month: number;
+  limitAmount: number;
+}
+
+export interface CreateAllocationRequest {
+  categoryId: string;
+  year: number;
+  month: number;
+  limitAmount: number;
+}
+
+export interface TransferAllocationRequest {
+  fromCategoryId: string;
+  toCategoryId: string;
+  year: number;
+  month: number;
+  amount: number;
+}
+
+export interface TransferAllocationResponse {
+  id: string;
+  fromCategoryId: string;
+  toCategoryId: string;
+  amount: number;
+  fromEnvelopeBalance: number;
+  toEnvelopeBalance: number;
+}
+
+export interface RepeatAllocationsRequest {
+  fromYear: number;
+  fromMonth: number;
+  toYear: number;
+  toMonth: number;
+}
+
+export interface AllocationTopUp {
+  categoryId: string;
+  amountAdded: number;
+  newMonthlyAmount: number;
+}
+
+export interface RepeatAllocationsResponse {
+  applied: AllocationTopUp[];
 }
 
 export interface Bill {

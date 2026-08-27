@@ -2,6 +2,7 @@ package at.ymeri.my.finance.domain.service.budget;
 
 import at.ymeri.my.finance.domain.data.budget.BudgetDto;
 import at.ymeri.my.finance.domain.data.category.CategoryDto;
+import at.ymeri.my.finance.domain.data.category.CategoryType;
 import at.ymeri.my.finance.domain.spi.budget.GetBudgetPersistencePort;
 import at.ymeri.my.finance.domain.spi.budget.SetBudgetPersistencePort;
 import at.ymeri.my.finance.domain.spi.category.GetCategoryPersistencePort;
@@ -70,6 +71,19 @@ class SetBudgetServiceImplTest {
         BudgetDto dto = budget("unknown-cat", 2026, 5, new BigDecimal("100.00"));
         when(getCategoryPersistencePort.getCategoryById("unknown-cat")).thenReturn(Optional.empty());
         assertThrows(NoSuchElementException.class, () -> setBudgetService.setBudget(dto));
+        verifyNoInteractions(setBudgetPersistencePort);
+    }
+
+    @Test
+    void setBudget_incomeOnlyCategory_throwsIllegalArgumentException() {
+        BudgetDto dto = budget("cat-income", 2026, 5, new BigDecimal("100.00"));
+        CategoryDto category = new CategoryDto();
+        category.setId("cat-income");
+        category.setType(CategoryType.INCOME);
+
+        when(getCategoryPersistencePort.getCategoryById("cat-income")).thenReturn(Optional.of(category));
+
+        assertThrows(IllegalArgumentException.class, () -> setBudgetService.setBudget(dto));
         verifyNoInteractions(setBudgetPersistencePort);
     }
 

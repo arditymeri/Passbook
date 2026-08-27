@@ -12,4 +12,5 @@ public class BudgetStatusDto {
     private BigDecimal actual;
     private BigDecimal remaining;
     private BudgetStatus status;
+    private BigDecimal envelopeBalance;
 }

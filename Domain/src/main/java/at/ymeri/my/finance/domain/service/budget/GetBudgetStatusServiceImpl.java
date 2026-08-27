@@ -5,6 +5,7 @@ import at.ymeri.my.finance.domain.data.bill.BillDto;
 import at.ymeri.my.finance.domain.data.budget.BudgetDto;
 import at.ymeri.my.finance.domain.data.budget.BudgetStatus;
 import at.ymeri.my.finance.domain.data.budget.BudgetStatusDto;
+import at.ymeri.my.finance.domain.data.budget.BudgetStatusResult;
 import at.ymeri.my.finance.domain.spi.analysis.GetSpendingAnalysisPersistencePort;
 import at.ymeri.my.finance.domain.spi.budget.GetBudgetPersistencePort;
 import org.springframework.stereotype.Service;
@@ -22,15 +23,18 @@ public class GetBudgetStatusServiceImpl implements GetBudgetStatusService {
 
     private final GetBudgetPersistencePort getBudgetPersistencePort;
     private final GetSpendingAnalysisPersistencePort getSpendingAnalysisPersistencePort;
+    private final EnvelopeBalances envelopeBalances;
 
     public GetBudgetStatusServiceImpl(GetBudgetPersistencePort getBudgetPersistencePort,
-                                      GetSpendingAnalysisPersistencePort getSpendingAnalysisPersistencePort) {
+                                      GetSpendingAnalysisPersistencePort getSpendingAnalysisPersistencePort,
+                                      EnvelopeBalances envelopeBalances) {
         this.getBudgetPersistencePort = getBudgetPersistencePort;
         this.getSpendingAnalysisPersistencePort = getSpendingAnalysisPersistencePort;
+        this.envelopeBalances = envelopeBalances;
     }
 
     @Override
-    public List<BudgetStatusDto> getBudgetStatus(int year, int month) {
+    public BudgetStatusResult getBudgetStatus(int year, int month) {
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
 
@@ -71,6 +75,12 @@ public class GetBudgetStatusServiceImpl implements GetBudgetStatusService {
             }
         });
 
-        return new ArrayList<>(merged.values());
+        merged.values().forEach(entry ->
+                entry.setEnvelopeBalance(envelopeBalances.envelopeBalanceAsOf(entry.getCategoryId(), year, month)));
+
+        BudgetStatusResult result = new BudgetStatusResult();
+        result.setEntries(new ArrayList<>(merged.values()));
+        result.setUnallocated(envelopeBalances.unallocatedAsOf(year, month));
+        return result;
     }
 }

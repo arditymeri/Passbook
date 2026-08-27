@@ -15,4 +15,10 @@ public interface GetBudgetPersistencePort {
     Optional<BudgetDto> findById(UUID id);
 
     boolean existsById(UUID id);
+
+    /**
+     * Every allocation entry ever made, across all categories and months. Used for cumulative
+     * (not month-scoped) balance derivation — see {@code EnvelopeBalances}.
+     */
+    List<BudgetDto> getAll();
 }

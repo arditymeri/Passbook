@@ -1,0 +1,37 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Budget Repeat API"
+  description: "Repeat one month's assignment amounts as new top-up allocations in another month"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /budgets/repeat:
+    post:
+      summary: "Repeat a month's allocations into another month"
+      operationId: repeatAllocations
+      description: >
+        For every category with an allocation in the source month, adds that same amount as a new
+        allocation entry in the target month, on top of whatever is already assigned there (a
+        top-up, not an overwrite). The client is expected to have already shown the user a preview
+        of which categories will be affected, using the existing GET /budgets endpoint for both
+        months, before calling this.
+      tags:
+        - budgetRepeat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "budget-model.yaml#/components/schemas/repeatAllocationsRequest"
+      responses:
+        "200":
+          description: "Allocations repeated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "budget-model.yaml#/components/schemas/repeatAllocationsResponse"
+        "400":
+          description: "Invalid request (invalid year/month, source month has no allocations to repeat)"
+        default:
+          description: "Unexpected error"

@@ -7,6 +7,7 @@ import at.ymeri.my.finance.application.data.BudgetStatusResponse;
 import at.ymeri.my.finance.application.mapper.BudgetMapper;
 import at.ymeri.my.finance.domain.api.GetBudgetService;
 import at.ymeri.my.finance.domain.api.GetBudgetStatusService;
+import at.ymeri.my.finance.domain.data.budget.BudgetStatusResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,11 +39,12 @@ public class BudgetGetController implements BudgetGetApi {
         if (month == null || month < 1 || month > 12) {
             return ResponseEntity.badRequest().build();
         }
-        List<BudgetStatusEntry> entries = BudgetMapper.INSTANCE
-                .mapStatusList(getBudgetStatusService.getBudgetStatus(year, month));
+        BudgetStatusResult result = getBudgetStatusService.getBudgetStatus(year, month);
+        List<BudgetStatusEntry> entries = BudgetMapper.INSTANCE.mapStatusList(result.getEntries());
         return ResponseEntity.ok(new BudgetStatusResponse()
                 .year(year)
                 .month(month)
-                .entries(entries));
+                .entries(entries)
+                .unallocated(result.getUnallocated()));
     }
 }
