@@ -11,4 +11,10 @@ public interface GetBillService {
 
 
     List<BillDto> getAll();
+
+    /**
+     * Prior values of the bill identified by {@code id}, newest first, ending with the original.
+     * Empty if it has never been corrected.
+     */
+    List<BillDto> getHistory(UUID id);
 }

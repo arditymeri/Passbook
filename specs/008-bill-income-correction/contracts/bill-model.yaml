@@ -1,0 +1,103 @@
+# Contract snapshot: Application/src/main/resources/swagger/bill/bill-model.yaml
+# TARGET state for this feature. New/changed pieces are marked; everything else
+# (including the 007 `accountId` addition) is unchanged from the current file.
+
+components:
+  schemas:
+    billResponseModel:
+      type: "object"
+      properties:
+        common:
+          type: "object"
+          properties:
+            success:
+              type: "boolean"
+            message:
+              type: "string"
+        bill:
+          $ref: '#/components/schemas/bill'
+    billListResponseModel:
+      type: "object"
+      properties:
+        common:
+          type: "object"
+          properties:
+            success:
+              type: "boolean"
+            message:
+              type: "string"
+        bills:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/bill'
+    bill:
+      type: "object"
+      properties:
+        id:
+          format: "uuid"
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"
+        description:
+          type: "string"
+        time:
+          type: "string"
+          format: "date-time"
+        date:
+          type: "string"
+          format: "date"
+        categoryId:
+          type: "string"
+        accountId:
+          type: "string"
+        correctsTransactionId:               # NEW — id of the bill this row corrects/reverses, if any
+          type: "string"
+        reversal:                            # NEW — true only for a system-generated reversal row
+          type: "boolean"
+        billItems:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/billItem'
+
+    billItem:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"
+
+    correctBillRequest:                       # NEW — the corrected values for PUT /bills/{id}
+      type: "object"
+      required:
+        - amount
+        - time
+      properties:
+        amount:
+          # Decimal string, not a JSON number: Constitution Principle IV forbids floating-point
+          # for money on any layer, including `number` in JS/TS. Parsed to BigDecimal in the
+          # controller. Sign is excluded here — negative amounts are system-generated reversals
+          # only, never user input.
+          type: "string"
+          pattern: "^\\d+(\\.\\d{1,2})?$"
+          example: "45.50"
+        description:
+          type: "string"
+        time:
+          type: "string"
+          format: "date-time"
+        categoryId:
+          type: "string"
+        accountId:
+          type: "string"
+
+    billHistoryResponse:                      # NEW — response for GET /bills/{id}/history
+      type: "object"
+      properties:
+        history:
+          type: "array"
+          description: "Prior values of this bill, newest first, ending with the original (reversal rows excluded)"
+          items:
+            $ref: '#/components/schemas/bill'

@@ -28,6 +28,11 @@ public class GetBillPostgresAdapter implements GetBillPersistencePort {
     }
 
     @Override
+    public Optional<BillDto> lockBillById(UUID uuid) {
+        return this.billRepository.findByIdForUpdate(uuid).map(BillMapper.INSTANCE::map);
+    }
+
+    @Override
     public List<BillDto> getAll() {
         List<BillEntity> entities = this.billRepository.findAll();
         return BillMapper.INSTANCE.map(entities);

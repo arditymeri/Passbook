@@ -24,7 +24,9 @@ public class DeleteAccountServiceImpl implements DeleteAccountService {
         getAccountPersistencePort.getAccountById(id)
                 .orElseThrow(() -> new NoSuchElementException("Account not found: " + id));
         if (deleteAccountPersistencePort.isReferencedByTransaction(id)) {
-            throw new IllegalStateException("Account is referenced by a bill or income and cannot be deleted");
+            throw new IllegalStateException(
+                    "Account is referenced by a bill or income (including removed or corrected ones, "
+                            + "which are retained permanently) and cannot be deleted");
         }
         deleteAccountPersistencePort.deleteAccount(id);
     }

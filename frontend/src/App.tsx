@@ -10,6 +10,10 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import { AddBillForm } from './components/AddBillForm';
 import { AddIncomeForm } from './components/AddIncomeForm';
+import { CorrectBillForm } from './components/CorrectBillForm';
+import { CorrectIncomeForm } from './components/CorrectIncomeForm';
+import { RemoveConfirmDialog } from './components/RemoveConfirmDialog';
+import { TransactionHistoryDialog } from './components/TransactionHistoryDialog';
 import { AccountsPage } from './components/AccountsPage';
 import { BudgetStatus } from './components/BudgetStatus';
 import { CategoriesPage } from './components/CategoriesPage';
@@ -18,8 +22,9 @@ import { MonthNav } from './components/MonthNav';
 import { RecentTransactions } from './components/RecentTransactions';
 import { SummaryCard } from './components/SummaryCard';
 import { useDashboardData } from './hooks/useDashboardData';
+import { fetchBillHistory, fetchIncomeHistory, removeBill, removeIncome } from './api/client';
 import { theme } from './theme';
-import type { Period } from './types';
+import type { Period, Transaction, TransactionHistoryEntry } from './types';
 
 function App() {
   const now = new Date();
@@ -28,6 +33,12 @@ function App() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [billFormOpen, setBillFormOpen] = useState(false);
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
+  const [correctingTransaction, setCorrectingTransaction] = useState<Transaction | null>(null);
+  const [removingTransaction, setRemovingTransaction] = useState<Transaction | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const [viewingHistoryFor, setViewingHistoryFor] = useState<Transaction | null>(null);
+  const [history, setHistory] = useState<TransactionHistoryEntry[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const {
     summary, summaryLoading, summaryError,
@@ -69,6 +80,33 @@ function App() {
 
   function handleSaveSuccess() {
     setRefreshKey((k) => k + 1);
+  }
+
+  async function handleConfirmRemove() {
+    if (!removingTransaction) return;
+    setRemoving(true);
+    try {
+      if (removingTransaction.type === 'BILL') {
+        await removeBill(removingTransaction.id);
+      } else {
+        await removeIncome(removingTransaction.id);
+      }
+      setRemovingTransaction(null);
+      handleSaveSuccess();
+    } finally {
+      setRemoving(false);
+    }
+  }
+
+  function handleOpenHistory(t: Transaction) {
+    setViewingHistoryFor(t);
+    setHistory([]);
+    setHistoryLoading(true);
+    const load = t.type === 'BILL' ? fetchBillHistory(t.id) : fetchIncomeHistory(t.id);
+    load
+      .then(setHistory)
+      .catch(() => setHistory([]))
+      .finally(() => setHistoryLoading(false));
   }
 
   return (
@@ -135,6 +173,9 @@ function App() {
             categoryNames={categoryNames}
             loading={transactionsLoading}
             error={transactionsError}
+            onCorrect={setCorrectingTransaction}
+            onRemove={setRemovingTransaction}
+            onHistory={handleOpenHistory}
           />
         </Stack>
       </Container>
@@ -152,6 +193,39 @@ function App() {
         onClose={() => setIncomeFormOpen(false)}
         onSuccess={handleSaveSuccess}
         accounts={accounts}
+      />
+
+      <CorrectBillForm
+        open={correctingTransaction?.type === 'BILL'}
+        transaction={correctingTransaction}
+        onClose={() => setCorrectingTransaction(null)}
+        onSuccess={handleSaveSuccess}
+        categories={categories}
+        accounts={accounts}
+      />
+
+      <CorrectIncomeForm
+        open={correctingTransaction?.type === 'INCOME'}
+        transaction={correctingTransaction}
+        onClose={() => setCorrectingTransaction(null)}
+        onSuccess={handleSaveSuccess}
+        accounts={accounts}
+      />
+
+      <RemoveConfirmDialog
+        open={removingTransaction !== null}
+        transaction={removingTransaction}
+        onClose={() => setRemovingTransaction(null)}
+        onConfirm={handleConfirmRemove}
+        submitting={removing}
+      />
+
+      <TransactionHistoryDialog
+        open={viewingHistoryFor !== null}
+        transaction={viewingHistoryFor}
+        history={history}
+        loading={historyLoading}
+        onClose={() => setViewingHistoryFor(null)}
       />
     </ThemeProvider>
   );
