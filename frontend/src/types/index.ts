@@ -20,6 +20,29 @@ export interface BudgetStatusEntry {
   actual: number;
   remaining: number;
   status: BudgetStatusValue;
+  envelopeBalance: number;
+}
+
+export interface BudgetStatusResponse {
+  year: number;
+  month: number;
+  entries: BudgetStatusEntry[];
+  unallocated: number;
+}
+
+export interface Allocation {
+  id: string;
+  categoryId: string;
+  year: number;
+  month: number;
+  limitAmount: number;
+}
+
+export interface CreateAllocationRequest {
+  categoryId: string;
+  year: number;
+  month: number;
+  limitAmount: number;
 }
 
 export interface Bill {

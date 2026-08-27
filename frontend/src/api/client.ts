@@ -1,4 +1,4 @@
-import type { Account, Bill, BudgetStatusEntry, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary, TransactionHistoryEntry } from '../types';
+import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, Income, MonthlySummary, TransactionHistoryEntry } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -52,6 +52,21 @@ export async function fetchBudgetStatus(year: number, month: number): Promise<Bu
     `/api/v1/budgets/status?year=${year}&month=${month}`
   );
   return data.entries ?? [];
+}
+
+export async function fetchBudgetStatusResponse(year: number, month: number): Promise<BudgetStatusResponse> {
+  return request<BudgetStatusResponse>(`/api/v1/budgets/status?year=${year}&month=${month}`);
+}
+
+export async function fetchBudgets(year: number, month: number): Promise<Allocation[]> {
+  const data = await request<{ budgets: Allocation[] }>(
+    `/api/v1/budgets?year=${year}&month=${month}`
+  );
+  return data.budgets ?? [];
+}
+
+export async function createOrUpdateBudget(req: CreateAllocationRequest): Promise<Allocation> {
+  return postAndReturn<Allocation>('/api/v1/budgets', req);
 }
 
 export async function fetchBills(): Promise<Bill[]> {

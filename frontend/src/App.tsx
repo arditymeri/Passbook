@@ -15,6 +15,7 @@ import { CorrectIncomeForm } from './components/CorrectIncomeForm';
 import { RemoveConfirmDialog } from './components/RemoveConfirmDialog';
 import { TransactionHistoryDialog } from './components/TransactionHistoryDialog';
 import { AccountsPage } from './components/AccountsPage';
+import { BudgetingPage } from './components/BudgetingPage';
 import { BudgetStatus } from './components/BudgetStatus';
 import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
@@ -28,7 +29,7 @@ import type { Period, Transaction, TransactionHistoryEntry } from './types';
 
 function App() {
   const now = new Date();
-  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts' | 'budgeting'>('dashboard');
   const [period, setPeriod] = useState<Period>({ year: now.getFullYear(), month: now.getMonth() + 1 });
   const [refreshKey, setRefreshKey] = useState(0);
   const [billFormOpen, setBillFormOpen] = useState(false);
@@ -62,6 +63,15 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <AccountsPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+      </ThemeProvider>
+    );
+  }
+
+  if (view === 'budgeting') {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <BudgetingPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
       </ThemeProvider>
     );
   }
@@ -120,6 +130,9 @@ function App() {
           <Stack direction="row" spacing={1}>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('accounts')}>
               Accounts
+            </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('budgeting')}>
+              Budgeting
             </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('categories')}>
               Categories

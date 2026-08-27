@@ -39,4 +39,9 @@ public class GetBudgetPostgresAdapter implements GetBudgetPersistencePort {
     public boolean existsById(UUID id) {
         return budgetRepository.existsById(id);
     }
+
+    @Override
+    public List<BudgetDto> getAll() {
+        return BudgetMapper.INSTANCE.map(budgetRepository.findAll());
+    }
 }

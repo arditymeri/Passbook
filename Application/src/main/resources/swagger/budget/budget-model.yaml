@@ -73,6 +73,13 @@ components:
             - UNDER_BUDGET
             - OVER_BUDGET
           description: "OVER_BUDGET if actual exceeds budgeted or no budget is set"
+        envelopeBalance:
+          type: "number"
+          description: >
+            This category's running balance as of the requested month: everything ever
+            allocated or transferred in, minus everything ever transferred out or spent, across
+            all months to date. Negative when the category has spent more than it has ever been
+            assigned.
 
     budgetStatusResponse:
       type: "object"
@@ -85,3 +92,103 @@ components:
           type: "array"
           items:
             $ref: '#/components/schemas/budgetStatusEntry'
+        unallocated:
+          type: "number"
+          description: >
+            Running balance as of the requested month: all recorded income to date minus all
+            allocation amounts assigned to date. Negative when categories have been assigned more
+            than has ever been received as income.
+
+    transferAllocationRequest:
+      type: "object"
+      description: "Move money from one category's envelope balance to another's."
+      required:
+        - fromCategoryId
+        - toCategoryId
+        - year
+        - month
+        - amount
+      properties:
+        fromCategoryId:
+          type: "string"
+          format: "uuid"
+        toCategoryId:
+          type: "string"
+          format: "uuid"
+        year:
+          type: "integer"
+          example: 2026
+        month:
+          type: "integer"
+          minimum: 1
+          maximum: 12
+          example: 6
+        amount:
+          type: "number"
+          description: "Must be greater than zero and not exceed the source category's current envelope balance"
+          example: 50.00
+
+    transferAllocationResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        fromCategoryId:
+          type: "string"
+          format: "uuid"
+        toCategoryId:
+          type: "string"
+          format: "uuid"
+        amount:
+          type: "number"
+        fromEnvelopeBalance:
+          type: "number"
+          description: "Source category's envelope balance after the move"
+        toEnvelopeBalance:
+          type: "number"
+          description: "Destination category's envelope balance after the move"
+
+    repeatAllocationsRequest:
+      type: "object"
+      description: "Repeat one month's assignment amounts as new top-up allocations in another month."
+      required:
+        - fromYear
+        - fromMonth
+        - toYear
+        - toMonth
+      properties:
+        fromYear:
+          type: "integer"
+          example: 2026
+        fromMonth:
+          type: "integer"
+          minimum: 1
+          maximum: 12
+          example: 5
+        toYear:
+          type: "integer"
+          example: 2026
+        toMonth:
+          type: "integer"
+          minimum: 1
+          maximum: 12
+          example: 6
+
+    repeatAllocationsResponse:
+      type: "object"
+      properties:
+        applied:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              categoryId:
+                type: "string"
+                format: "uuid"
+              amountAdded:
+                type: "number"
+                description: "Amount topped up (equal to the source month's assignment for this category)"
+              newMonthlyAmount:
+                type: "number"
+                description: "The target month's assignment for this category after the top-up"

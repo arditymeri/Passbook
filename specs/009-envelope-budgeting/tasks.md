@@ -40,11 +40,11 @@ All paths are relative to the repo root, following `plan.md`'s Project Structure
 
 **Purpose**: Wire the new OpenAPI contracts into the build so generated code exists for later phases
 
-- [ ] T001 [P] Add `unallocated` to `budgetStatusResponse` and `envelopeBalance` to `budgetStatusEntry`, and add the `transferAllocationRequest`/`transferAllocationResponse`/`repeatAllocationsRequest`/`repeatAllocationsResponse` schemas, in `Application/src/main/resources/swagger/budget/budget-model.yaml` (copy field definitions from `specs/009-envelope-budgeting/contracts/budget-model.yaml`)
-- [ ] T002 [P] Create `Application/src/main/resources/swagger/budget/budget-transfer-controller.yaml` (copy from `specs/009-envelope-budgeting/contracts/budget-transfer-controller.yaml`)
-- [ ] T003 [P] Create `Application/src/main/resources/swagger/budget/budget-repeat-controller.yaml` (copy from `specs/009-envelope-budgeting/contracts/budget-repeat-controller.yaml`)
-- [ ] T004 Add `budget-transfer` and `budget-repeat` `<execution>` blocks to the OpenAPI generator plugin in `Application/pom.xml`, mirroring the existing `budget-post`/`budget-get`/`budget-delete` executions (depends on T002, T003)
-- [ ] T005 Run `./mvnw -pl Application generate-sources` to generate `BudgetTransferApi`, `BudgetRepeatApi`, and the new/updated model classes (`BudgetStatusResponse`, `BudgetStatusEntry`, `TransferAllocationRequest/Response`, `RepeatAllocationsRequest/Response`) into `Application/target/generated-sources/` (depends on T001, T004)
+- [X] T001 [P] Add `unallocated` to `budgetStatusResponse` and `envelopeBalance` to `budgetStatusEntry`, and add the `transferAllocationRequest`/`transferAllocationResponse`/`repeatAllocationsRequest`/`repeatAllocationsResponse` schemas, in `Application/src/main/resources/swagger/budget/budget-model.yaml` (copy field definitions from `specs/009-envelope-budgeting/contracts/budget-model.yaml`)
+- [X] T002 [P] Create `Application/src/main/resources/swagger/budget/budget-transfer-controller.yaml` (copy from `specs/009-envelope-budgeting/contracts/budget-transfer-controller.yaml`)
+- [X] T003 [P] Create `Application/src/main/resources/swagger/budget/budget-repeat-controller.yaml` (copy from `specs/009-envelope-budgeting/contracts/budget-repeat-controller.yaml`)
+- [X] T004 Add `budget-transfer` and `budget-repeat` `<execution>` blocks to the OpenAPI generator plugin in `Application/pom.xml`, mirroring the existing `budget-post`/`budget-get`/`budget-delete` executions (depends on T002, T003)
+- [X] T005 Run `./mvnw -pl Application generate-sources` to generate `BudgetTransferApi`, `BudgetRepeatApi`, and the new/updated model classes (`BudgetStatusResponse`, `BudgetStatusEntry`, `TransferAllocationRequest/Response`, `RepeatAllocationsRequest/Response`) into `Application/target/generated-sources/` (depends on T001, T004)
 
 **Checkpoint**: Generated API surface exists; Application-layer controllers can now be written against it.
 
@@ -59,16 +59,16 @@ helper. Only the read side of `AllocationTransfer` is built here; the write side
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Add `getAll()` to `Domain/src/main/java/at/ymeri/my/finance/domain/spi/budget/GetBudgetPersistencePort.java`
-- [ ] T007 Implement `getAll()` in `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/budget/GetBudgetPostgresAdapter.java` (depends on T006)
-- [ ] T008 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/budget/AllocationTransferDto.java` (fields: `id`, `fromCategoryId`, `toCategoryId`, `year`, `month`, `amount`, `createdAt`)
-- [ ] T009 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/AllocationTransferEntity.java` (`@Entity`, same field shape as T008, `amount` as `BigDecimal`, `createdAt` as `OffsetDateTime`)
-- [ ] T010 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/AllocationTransferRepository.java` (Spring Data `JpaRepository<AllocationTransferEntity, UUID>`)
-- [ ] T011 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/mapper/AllocationTransferMapper.java` (MapStruct, `AllocationTransferEntity` ↔ `AllocationTransferDto`, mirrors the existing `BudgetMapper`)
-- [ ] T012 Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/budget/GetAllocationTransferPersistencePort.java` with `List<AllocationTransferDto> getAll()` (depends on T008)
-- [ ] T013 Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/budget/AllocationTransferPostgresAdapter.java` implementing `GetAllocationTransferPersistencePort.getAll()` (depends on T009, T010, T011, T012)
-- [ ] T014 [P] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/EnvelopeBalancesTest.java` covering `unallocatedAsOf(year, month)`: zero allocations, some allocations in one month, allocations spanning multiple months summed cumulatively, income and allocations in different months (needs T015 to exist to compile, but MUST fail before T015's logic is implemented)
-- [ ] T015 Create `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/EnvelopeBalances.java` with `unallocatedAsOf(int year, int month)`, composed from `GetBudgetPersistencePort.getAll()` and `GetIncomePersistencePort.getAll()` per the formula in `data-model.md` (depends on T006, T014)
+- [X] T006 Add `getAll()` to `Domain/src/main/java/at/ymeri/my/finance/domain/spi/budget/GetBudgetPersistencePort.java`
+- [X] T007 Implement `getAll()` in `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/budget/GetBudgetPostgresAdapter.java` (depends on T006)
+- [X] T008 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/budget/AllocationTransferDto.java` (fields: `id`, `fromCategoryId`, `toCategoryId`, `year`, `month`, `amount`, `createdAt`)
+- [X] T009 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/AllocationTransferEntity.java` (`@Entity`, same field shape as T008, `amount` as `BigDecimal`, `createdAt` as `OffsetDateTime`)
+- [X] T010 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/AllocationTransferRepository.java` (Spring Data `JpaRepository<AllocationTransferEntity, UUID>`)
+- [X] T011 [P] Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/mapper/AllocationTransferMapper.java` (MapStruct, `AllocationTransferEntity` ↔ `AllocationTransferDto`, mirrors the existing `BudgetMapper`)
+- [X] T012 Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/budget/GetAllocationTransferPersistencePort.java` with `List<AllocationTransferDto> getAll()` (depends on T008)
+- [X] T013 Create `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/budget/AllocationTransferPostgresAdapter.java` implementing `GetAllocationTransferPersistencePort.getAll()` (depends on T009, T010, T011, T012)
+- [X] T014 [P] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/EnvelopeBalancesTest.java` covering `unallocatedAsOf(year, month)`: zero allocations, some allocations in one month, allocations spanning multiple months summed cumulatively, income and allocations in different months (needs T015 to exist to compile, but MUST fail before T015's logic is implemented)
+- [X] T015 Create `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/EnvelopeBalances.java` with `unallocatedAsOf(int year, int month)`, composed from `GetBudgetPersistencePort.getAll()` and `GetIncomePersistencePort.getAll()` per the formula in `data-model.md` (depends on T006, T014)
 
 **Checkpoint**: `AllocationTransfer` read-side and the cumulative-balance helper exist and are unit-tested. User story implementation can now begin.
 
@@ -87,19 +87,19 @@ cumulative allocations to date.
 
 ### Tests for User Story 1
 
-- [ ] T016 [P] [US1] Add cases to `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/GetBudgetStatusServiceImplTest.java` asserting the response's `unallocated` field: no allocations (equals total income), allocations in the current month only, allocations carried in from a prior month (must still be included)
+- [X] T016 [P] [US1] Add cases to `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/GetBudgetStatusServiceImplTest.java` asserting the response's `unallocated` field: no allocations (equals total income), allocations in the current month only, allocations carried in from a prior month (must still be included)
 
 ### Implementation for User Story 1
 
-- [ ] T017 [US1] Add `unallocated` field to `Domain/src/main/java/at/ymeri/my/finance/domain/data/budget/BudgetStatusDto.java`'s containing response shape — add a sibling `getUnallocated()` result alongside the existing `List<BudgetStatusDto>` in `GetBudgetStatusServiceImpl` (introduce a small wrapper return type, e.g. `BudgetStatusResult { List<BudgetStatusDto> entries; BigDecimal unallocated; }`, in the same file or package)
-- [ ] T018 [US1] Wire `EnvelopeBalances.unallocatedAsOf(year, month)` into `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/GetBudgetStatusServiceImpl.java` and return it via the new wrapper from T017 (depends on T015, T017, T016 must fail first)
-- [ ] T019 [US1] Update `Application/src/main/java/at/ymeri/my/finance/controller/budget/BudgetGetController.java` to map the new `unallocated` field onto `BudgetStatusResponse` (depends on T018, T005)
-- [ ] T020 [P] [US1] Add `unallocated: number` to `BudgetStatusResponse`-equivalent type and extend `BudgetStatusEntry` in `frontend/src/types/index.ts`
-- [ ] T021 [P] [US1] Add `fetchBudgets(year, month)` to `frontend/src/api/client.ts` (`GET /api/v1/budgets`, mirrors the existing `fetchBudgetStatus`)
-- [ ] T022 [US1] Create `frontend/src/hooks/useBudgetAllocations.ts` fetching budgets + budget status for the selected month (mirrors `useAccounts.ts`) (depends on T020, T021)
-- [ ] T023 [US1] Create `frontend/src/components/BudgetingPage.tsx` — header showing total income, total allocated, and unallocated, colour-coding unallocated red when negative (mirrors the negative-balance treatment in `AccountList.tsx` from feature 007) (depends on T022)
-- [ ] T024 [US1] Add a `'budgeting'` view state and nav button to `frontend/src/App.tsx`, rendering `BudgetingPage` (depends on T023)
-- [ ] T025 [US1] Add an integration test case to `integration-tests/src/test/java/at/ymeri/my/finance/integration/tests/BudgetControllerIntegrationTest.java`: seed income and allocations across two consecutive months, verify `GET /budgets/status` for the second month returns `unallocated` reflecting both months' cumulative totals (depends on T019)
+- [X] T017 [US1] Add `unallocated` field to `Domain/src/main/java/at/ymeri/my/finance/domain/data/budget/BudgetStatusDto.java`'s containing response shape — add a sibling `getUnallocated()` result alongside the existing `List<BudgetStatusDto>` in `GetBudgetStatusServiceImpl` (introduce a small wrapper return type, e.g. `BudgetStatusResult { List<BudgetStatusDto> entries; BigDecimal unallocated; }`, in the same file or package)
+- [X] T018 [US1] Wire `EnvelopeBalances.unallocatedAsOf(year, month)` into `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/GetBudgetStatusServiceImpl.java` and return it via the new wrapper from T017 (depends on T015, T017, T016 must fail first)
+- [X] T019 [US1] Update `Application/src/main/java/at/ymeri/my/finance/controller/budget/BudgetGetController.java` to map the new `unallocated` field onto `BudgetStatusResponse` (depends on T018, T005)
+- [X] T020 [P] [US1] Add `unallocated: number` to `BudgetStatusResponse`-equivalent type and extend `BudgetStatusEntry` in `frontend/src/types/index.ts`
+- [X] T021 [P] [US1] Add `fetchBudgets(year, month)` to `frontend/src/api/client.ts` (`GET /api/v1/budgets`, mirrors the existing `fetchBudgetStatus`)
+- [X] T022 [US1] Create `frontend/src/hooks/useBudgetAllocations.ts` fetching budgets + budget status for the selected month (mirrors `useAccounts.ts`) (depends on T020, T021)
+- [X] T023 [US1] Create `frontend/src/components/BudgetingPage.tsx` — header showing total income, total allocated, and unallocated, colour-coding unallocated red when negative (mirrors the negative-balance treatment in `AccountList.tsx` from feature 007) (depends on T022)
+- [X] T024 [US1] Add a `'budgeting'` view state and nav button to `frontend/src/App.tsx`, rendering `BudgetingPage` (depends on T023)
+- [X] T025 [US1] Add an integration test case to `integration-tests/src/test/java/at/ymeri/my/finance/integration/tests/BudgetControllerIntegrationTest.java`: seed income and allocations across two consecutive months, verify `GET /budgets/status` for the second month returns `unallocated` reflecting both months' cumulative totals (depends on T019)
 
 **Checkpoint**: User Story 1 is fully functional — the budgeting view accurately shows the running unallocated balance for any month, using allocations created via the API as before.
 
@@ -119,19 +119,19 @@ verify it is rejected.
 
 ### Tests for User Story 2
 
-- [ ] T026 [P] [US2] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/EnvelopeBalancesTest.java` cases for `envelopeBalanceAsOf(categoryId, year, month)`: zero allocations/spend, allocated with no spend, allocated with some spend (including a reversed/corrected bill netting to its post-correction value per feature 008), allocations carried in from a prior month
-- [ ] T027 [P] [US2] Add a case to `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/SetBudgetServiceImplTest.java` asserting an `IllegalArgumentException` when the target category's type is `INCOME`
+- [X] T026 [P] [US2] Write `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/EnvelopeBalancesTest.java` cases for `envelopeBalanceAsOf(categoryId, year, month)`: zero allocations/spend, allocated with no spend, allocated with some spend (including a reversed/corrected bill netting to its post-correction value per feature 008), allocations carried in from a prior month
+- [X] T027 [P] [US2] Add a case to `Domain/src/test/java/at/ymeri/my/finance/domain/service/budget/SetBudgetServiceImplTest.java` asserting an `IllegalArgumentException` when the target category's type is `INCOME`
 
 ### Implementation for User Story 2
 
-- [ ] T028 [US2] Add `envelopeBalanceAsOf(String categoryId, int year, int month)` to `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/EnvelopeBalances.java`, composed from `GetBudgetPersistencePort.getAll()`, `GetAllocationTransferPersistencePort.getAll()`, and `GetBillPersistencePort.getAll()` per the formula in `data-model.md` (depends on T012, T015, T026 must fail first)
-- [ ] T029 [US2] Add `envelopeBalance` to `Domain/src/main/java/at/ymeri/my/finance/domain/data/budget/BudgetStatusDto.java` and wire `EnvelopeBalances.envelopeBalanceAsOf` into `GetBudgetStatusServiceImpl.java` per category (depends on T028)
-- [ ] T030 [US2] Add the category-type check (`EXPENSE` or `BOTH` only) to `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/SetBudgetServiceImpl.java` (depends on T027 must fail first)
-- [ ] T031 [US2] Update `Application/src/main/java/at/ymeri/my/finance/controller/budget/BudgetGetController.java` to map `envelopeBalance` onto `BudgetStatusEntry` (depends on T029, T019)
-- [ ] T032 [P] [US2] Add `createOrUpdateBudget(request)` to `frontend/src/api/client.ts` (`POST /api/v1/budgets`)
-- [ ] T033 [US2] Create `frontend/src/components/AllocationForm.tsx` — category picker filtered to `EXPENSE`/`BOTH` types, amount field (`type="text"`, string state, per the project's money-input convention), submit calls `createOrUpdateBudget` (depends on T032)
-- [ ] T034 [US2] Wire `AllocationForm` into `BudgetingPage.tsx`, showing each category's current-month assigned amount and envelope balance, refreshing `useBudgetAllocations` on submit (depends on T033, T023)
-- [ ] T035 [US2] Add integration test cases to `BudgetControllerIntegrationTest.java`: assign to a category and verify `envelopeBalance` in `GET /budgets/status`; assign, then reassign, and verify upsert (not duplication); attempt `POST /budgets` targeting an INCOME category and verify 400 (depends on T030, T031)
+- [X] T028 [US2] Add `envelopeBalanceAsOf(String categoryId, int year, int month)` to `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/EnvelopeBalances.java`, composed from `GetBudgetPersistencePort.getAll()`, `GetAllocationTransferPersistencePort.getAll()`, and `GetBillPersistencePort.getAll()` per the formula in `data-model.md` (depends on T012, T015, T026 must fail first)
+- [X] T029 [US2] Add `envelopeBalance` to `Domain/src/main/java/at/ymeri/my/finance/domain/data/budget/BudgetStatusDto.java` and wire `EnvelopeBalances.envelopeBalanceAsOf` into `GetBudgetStatusServiceImpl.java` per category (depends on T028)
+- [X] T030 [US2] Add the category-type check (`EXPENSE` or `BOTH` only) to `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/SetBudgetServiceImpl.java` (depends on T027 must fail first)
+- [X] T031 [US2] Update `Application/src/main/java/at/ymeri/my/finance/controller/budget/BudgetGetController.java` to map `envelopeBalance` onto `BudgetStatusEntry` (depends on T029, T019)
+- [X] T032 [P] [US2] Add `createOrUpdateBudget(request)` to `frontend/src/api/client.ts` (`POST /api/v1/budgets`)
+- [X] T033 [US2] Create `frontend/src/components/AllocationForm.tsx` — category picker filtered to `EXPENSE`/`BOTH` types, amount field (`type="text"`, string state, per the project's money-input convention), submit calls `createOrUpdateBudget` (depends on T032)
+- [X] T034 [US2] Wire `AllocationForm` into `BudgetingPage.tsx`, showing each category's current-month assigned amount and envelope balance, refreshing `useBudgetAllocations` on submit (depends on T033, T023)
+- [X] T035 [US2] Add integration test cases to `BudgetControllerIntegrationTest.java`: assign to a category and verify `envelopeBalance` in `GET /budgets/status`; assign, then reassign, and verify upsert (not duplication); attempt `POST /budgets` targeting an INCOME category and verify 400 (depends on T030, T031)
 
 **Checkpoint**: Users can assign money to categories entirely from the app. Combined with US1, this is the core give-every-dollar-a-job loop.
 
