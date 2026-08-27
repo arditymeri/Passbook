@@ -1,0 +1,107 @@
+components:
+  schemas:
+    transactionType:
+      type: "string"
+      enum:
+        - BILL
+        - INCOME
+
+    recurringSeriesStatus:
+      type: "string"
+      enum:
+        - PROPOSED
+        - CONFIRMED
+        - DISMISSED
+
+    recurringFrequency:
+      type: "string"
+      enum:
+        - DAILY
+        - WEEKLY
+        - MONTHLY
+        - YEARLY
+
+    recurringSeriesResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        transactionType:
+          $ref: '#/components/schemas/transactionType'
+        categoryId:
+          type: "string"
+          format: "uuid"
+        description:
+          type: "string"
+        frequency:
+          $ref: '#/components/schemas/recurringFrequency'
+        status:
+          $ref: '#/components/schemas/recurringSeriesStatus'
+        createdAt:
+          type: "string"
+          format: "date-time"
+
+    recurringSeriesListResponse:
+      type: "object"
+      properties:
+        series:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/recurringSeriesResponse'
+
+    upcomingRecurringItem:
+      type: "object"
+      properties:
+        seriesId:
+          type: "string"
+          format: "uuid"
+        transactionType:
+          $ref: '#/components/schemas/transactionType'
+        categoryId:
+          type: "string"
+          format: "uuid"
+        description:
+          type: "string"
+        predictedDate:
+          type: "string"
+          format: "date-time"
+        predictedAmount:
+          type: "number"
+        overdue:
+          type: "boolean"
+          description: "True when predictedDate has passed with no matching new transaction recorded yet"
+
+    priceChangeAlert:
+      type: "object"
+      properties:
+        transactionId:
+          type: "string"
+          format: "uuid"
+          description: "The newly recorded occurrence whose amount differs from the series' prior amount"
+        transactionType:
+          $ref: '#/components/schemas/transactionType'
+        categoryId:
+          type: "string"
+          format: "uuid"
+        description:
+          type: "string"
+        priorAmount:
+          type: "number"
+        newAmount:
+          type: "number"
+        delta:
+          type: "number"
+          description: "newAmount minus priorAmount; positive means the charge increased"
+
+    recurringDashboardResponse:
+      type: "object"
+      properties:
+        upcoming:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/upcomingRecurringItem'
+        recentPriceChanges:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/priceChangeAlert'

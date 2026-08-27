@@ -1,0 +1,39 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Recurring Series Dismiss API"
+  description: "Dismiss a proposed series, or stop tracking a confirmed one"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /recurring-series/{id}/dismiss:
+    post:
+      summary: "Dismiss a recurring series"
+      operationId: dismissRecurringSeries
+      description: >
+        Moves a PROPOSED or CONFIRMED series to DISMISSED. On a PROPOSED series this rejects the
+        proposal (it will not be re-proposed). On a CONFIRMED series this stops tracking it — it
+        no longer appears in the upcoming dashboard or produces price-change alerts. Dismissing an
+        already-DISMISSED series is rejected.
+      tags:
+        - recurringDismiss
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: "Series dismissed"
+          content:
+            application/json:
+              schema:
+                $ref: "recurring-model.yaml#/components/schemas/recurringSeriesResponse"
+        "400":
+          description: "Series is already DISMISSED"
+        "404":
+          description: "Series not found"
+        default:
+          description: "Unexpected error"

@@ -1,0 +1,41 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Recurring Series Get API"
+  description: "List recognized recurring series, and view the upcoming/price-change dashboard"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /recurring-series:
+    get:
+      summary: "List all recognized recurring series"
+      operationId: listRecurringSeries
+      description: "Returns every recurring series in any status (proposed, confirmed, or dismissed). A pure read — does not run detection; see POST /recurring-series/detect."
+      tags:
+        - recurringGet
+      responses:
+        "200":
+          description: "Recurring series list returned"
+          content:
+            application/json:
+              schema:
+                $ref: "recurring-model.yaml#/components/schemas/recurringSeriesListResponse"
+        default:
+          description: "Unexpected error"
+
+  /recurring-series/dashboard:
+    get:
+      summary: "Get upcoming recurring items and recent price-change alerts"
+      operationId: getRecurringDashboard
+      description: "For every CONFIRMED series, returns its predicted next date/amount (and whether it's overdue), plus an alert for any series whose most recently recorded occurrence differs in amount from the one before it."
+      tags:
+        - recurringGet
+      responses:
+        "200":
+          description: "Recurring dashboard returned"
+          content:
+            application/json:
+              schema:
+                $ref: "recurring-model.yaml#/components/schemas/recurringDashboardResponse"
+        default:
+          description: "Unexpected error"

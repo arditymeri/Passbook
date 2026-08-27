@@ -73,7 +73,7 @@ As a user, I want to be told when a new occurrence of a recurring bill costs a d
 ### Functional Requirements
 
 - **FR-001**: System MUST identify a "recurring series" by matching bills (or, separately, incomes) that share a category and a sufficiently similar description/payee, recur at roughly the same interval, and have amounts within a reasonable tolerance of each other — from transaction history generally, regardless of whether any of the matched transactions were ever marked with the existing `recurring` flag. A transaction already marked `recurring` MAY be used as a hint that shortens how many matching occurrences are needed (see US2 Scenario 4), but the flag is never required for a series to be proposed.
-- **FR-002**: System MUST require at least two matching occurrences before proposing a series, and MUST require explicit user confirmation before a proposed series starts producing predictions (US2).
+- **FR-002**: System MUST require at least three matching occurrences before proposing a series — or two, if at least one of the matching transactions was already marked with the existing `recurring` flag (US2 Scenario 4) — and MUST require explicit user confirmation before a proposed series starts producing predictions (US2).
 - **FR-003**: Users MUST be able to dismiss a proposed series, after which the same set of transactions is not re-proposed.
 - **FR-004**: System MUST predict the next expected date and amount for each confirmed recurring series, based on its most recent occurrences and its cadence.
 - **FR-005**: System MUST display confirmed recurring series expected within a near-term window (see Assumptions) in an "Upcoming" view, showing category/description, predicted date, and predicted amount.
