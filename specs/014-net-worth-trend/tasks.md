@@ -43,8 +43,8 @@ on.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T001 [P] Add `NetWorthRangeMonths` (`3 | 6 | 12`) and `NetWorthTrendPoint` (`label: string`, `cutoff: string`, `netWorth: number`) to `frontend/src/types/index.ts`, per `data-model.md`
-- [ ] T002 Create `frontend/src/utils/netWorthTrend.ts`: `currentNetWorth(accounts: Account[]): number` (sums `account.balance`, `0` for an empty list) and `computeNetWorthTrend(accounts: Account[], allTransactions: Transaction[], monthsBack: NetWorthRangeMonths): NetWorthTrendPoint[]` implementing `data-model.md`'s formula exactly — `monthsBack` cutoffs (end-of-UTC-month for every point except the most recent, which uses `now`), each point's `netWorth = currentNetWorth(accounts) − Σ(future income) + Σ(future bills)`, oldest first (depends on T001)
+- [X] T001 [P] Add `NetWorthRangeMonths` (`3 | 6 | 12`) and `NetWorthTrendPoint` (`label: string`, `cutoff: string`, `netWorth: number`) to `frontend/src/types/index.ts`, per `data-model.md`
+- [X] T002 Create `frontend/src/utils/netWorthTrend.ts`: `currentNetWorth(accounts: Account[]): number` (sums `account.balance`, `0` for an empty list) and `computeNetWorthTrend(accounts: Account[], allTransactions: Transaction[], monthsBack: NetWorthRangeMonths): NetWorthTrendPoint[]` implementing `data-model.md`'s formula exactly — `monthsBack` cutoffs (end-of-UTC-month for every point except the most recent, which uses `now`), each point's `netWorth = currentNetWorth(accounts) − Σ(future income) + Σ(future bills)`, oldest first (depends on T001)
 
 **Checkpoint**: The trend-point type and both derivation functions exist, matching `data-model.md`'s worked example. User story UI work can now begin.
 
