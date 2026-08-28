@@ -82,7 +82,7 @@ with type — before applying it.
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Extend `frontend/src/components/SetupTemplateDialog.tsx`: before the "Apply" button, render the template's `categoryItems` and `accountItems` as two grouped lists (name + type for each), so the user reviews the full contents before the same T005 apply action runs (depends on T005)
+- [X] T008 [US2] Extend `frontend/src/components/SetupTemplateDialog.tsx`: before the "Apply" button, render the template's `categoryItems` and `accountItems` as two grouped lists (name + type for each), so the user reviews the full contents before the same T005 apply action runs (depends on T005)
 
 **Checkpoint**: Users can review exactly what a template contains before committing to apply it.
 

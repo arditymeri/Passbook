@@ -6,6 +6,9 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 
 interface SetupTemplateDialogProps {
   open: boolean;
@@ -59,6 +62,25 @@ export function SetupTemplateDialog({ open, onClose, onApplied }: SetupTemplateD
         ) : (
           <>
             <Typography color="text.secondary">{template.description}</Typography>
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Categories</Typography>
+            <List disablePadding dense>
+              {template.categoryItems.map((item) => (
+                <ListItem key={item.name} disablePadding>
+                  <ListItemText primary={item.name} secondary={item.type} />
+                </ListItem>
+              ))}
+            </List>
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Accounts</Typography>
+            <List disablePadding dense>
+              {template.accountItems.map((item) => (
+                <ListItem key={item.name} disablePadding>
+                  <ListItemText primary={item.name} secondary={item.type} />
+                </ListItem>
+              ))}
+            </List>
+
             <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
               <Button variant="outlined" onClick={handleClose}>Cancel</Button>
               <Button variant="contained" onClick={handleApply} disabled={applying}>
