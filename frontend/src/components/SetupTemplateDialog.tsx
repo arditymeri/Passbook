@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { SETUP_TEMPLATES } from '../data/setupTemplates';
 import { allKeysFor, applySetupTemplate } from '../utils/applySetupTemplate';
+import type { ApplyTemplateResult } from '../types';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -19,19 +20,19 @@ interface SetupTemplateDialogProps {
 export function SetupTemplateDialog({ open, onClose, onApplied }: SetupTemplateDialogProps) {
   const template = SETUP_TEMPLATES[0];
   const [applying, setApplying] = useState(false);
-  const [applied, setApplied] = useState(false);
+  const [result, setResult] = useState<ApplyTemplateResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setApplying(false);
-      setApplied(false);
+      setResult(null);
       setError(null);
     }
   }, [open]);
 
   function handleClose() {
-    if (applied) onApplied();
+    if (result) onApplied();
     onClose();
   }
 
@@ -39,8 +40,7 @@ export function SetupTemplateDialog({ open, onClose, onApplied }: SetupTemplateD
     setApplying(true);
     setError(null);
     try {
-      await applySetupTemplate(template, allKeysFor(template));
-      setApplied(true);
+      setResult(await applySetupTemplate(template, allKeysFor(template)));
     } catch {
       setError('Could not apply the template — please try again');
     } finally {
@@ -52,9 +52,37 @@ export function SetupTemplateDialog({ open, onClose, onApplied }: SetupTemplateD
     <Modal open={open} onClose={handleClose} title={template.name}>
       <Stack spacing={2} sx={{ pt: 1 }}>
         {error && <Alert severity="error">{error}</Alert>}
-        {applied ? (
+        {result ? (
           <>
-            <Alert severity="success">Template applied.</Alert>
+            {result.created.length === 0 ? (
+              <Alert severity="info">Nothing new was added — every item already existed.</Alert>
+            ) : (
+              <Alert severity="success">Template applied.</Alert>
+            )}
+            {result.created.length > 0 && (
+              <>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Created</Typography>
+                <List disablePadding dense>
+                  {result.created.map((name) => (
+                    <ListItem key={name} disablePadding>
+                      <ListItemText primary={name} />
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            )}
+            {result.skipped.length > 0 && (
+              <>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Skipped (already existed)</Typography>
+                <List disablePadding dense>
+                  {result.skipped.map((name) => (
+                    <ListItem key={name} disablePadding>
+                      <ListItemText primary={name} />
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            )}
             <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
               <Button variant="contained" onClick={handleClose}>Done</Button>
             </Stack>

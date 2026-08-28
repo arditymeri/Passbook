@@ -99,7 +99,7 @@ created; re-apply and confirm everything is now reported as skipped with nothing
 
 ### Implementation for User Story 3
 
-- [ ] T009 [US3] Extend `frontend/src/components/SetupTemplateDialog.tsx`: replace the generic "Template applied" confirmation from T005 with the actual `ApplyTemplateResult` — two lists, "Created" and "Skipped (already existed)", each showing the item names from the result; when both lists are non-empty this is the common case, and when `created` is empty the message makes clear nothing new was needed rather than reading as a failure (depends on T005, T008)
+- [X] T009 [US3] Extend `frontend/src/components/SetupTemplateDialog.tsx`: replace the generic "Template applied" confirmation from T005 with the actual `ApplyTemplateResult` — two lists, "Created" and "Skipped (already existed)", each showing the item names from the result; when both lists are non-empty this is the common case, and when `created` is empty the message makes clear nothing new was needed rather than reading as a failure (depends on T005, T008)
 
 **Checkpoint**: Applying a template is now safe to repeat — every outcome is visible, nothing is ever silently duplicated.
 
