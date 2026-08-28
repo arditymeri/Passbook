@@ -80,7 +80,7 @@ month's point on reload.
 
 ### Implementation for User Story 2
 
-- [ ] T005 [US2] Extend `frontend/src/components/NetWorthCard.tsx`: below the current total, render a trend chart via a small inline-SVG line (a `<polyline>` scaled to the data's min/max, a `<circle>` and a currency value label per point, month labels below each point — per `research.md`'s hand-rolled-SVG decision), using `computeNetWorthTrend(accounts, allTransactions, 6)` (a fixed default range for now; the `6` becomes a real selection in US3) (depends on T003)
+- [X] T005 [US2] Extend `frontend/src/components/NetWorthCard.tsx`: below the current total, render a trend chart via a small inline-SVG line (a `<polyline>` scaled to the data's min/max, a `<circle>` and a currency value label per point, month labels below each point — per `research.md`'s hand-rolled-SVG decision), using `computeNetWorthTrend(accounts, allTransactions, 6)` (a fixed default range for now; the `6` becomes a real selection in US3) (depends on T003)
 
 **Checkpoint**: Users see a 6-month net worth trend on the dashboard, combined with US1's live total.
 
