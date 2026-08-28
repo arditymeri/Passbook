@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { computeNetWorthTrend, currentNetWorth } from '../utils/netWorthTrend';
-import type { Account, NetWorthTrendPoint, Transaction } from '../types';
+import type { Account, NetWorthRangeMonths, NetWorthTrendPoint, Transaction } from '../types';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+
+const RANGE_OPTIONS: NetWorthRangeMonths[] = [3, 6, 12];
 
 interface NetWorthCardProps {
   accounts: Account[];
@@ -68,6 +73,8 @@ function TrendChart({ points }: { points: NetWorthTrendPoint[] }) {
 }
 
 export function NetWorthCard({ accounts, allTransactions }: NetWorthCardProps) {
+  const [rangeMonths, setRangeMonths] = useState<NetWorthRangeMonths>(6);
+
   if (accounts.length === 0) {
     return (
       <Paper sx={{ p: 2 }}>
@@ -78,16 +85,30 @@ export function NetWorthCard({ accounts, allTransactions }: NetWorthCardProps) {
   }
 
   const total = currentNetWorth(accounts);
-  const trend = computeNetWorthTrend(accounts, allTransactions, 6);
+  const trend = computeNetWorthTrend(accounts, allTransactions, rangeMonths);
 
   return (
     <Paper sx={{ p: 2 }}>
       <Stack spacing={1.5}>
-        <Stack spacing={0.5}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Net Worth</Typography>
-          <Typography variant="h4" color={total >= 0 ? 'success.main' : 'error.main'} sx={{ fontWeight: 700 }}>
-            {fmt.format(total)}
-          </Typography>
+        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <Stack spacing={0.5}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Net Worth</Typography>
+            <Typography variant="h4" color={total >= 0 ? 'success.main' : 'error.main'} sx={{ fontWeight: 700 }}>
+              {fmt.format(total)}
+            </Typography>
+          </Stack>
+          <ToggleButtonGroup
+            value={rangeMonths}
+            exclusive
+            size="small"
+            onChange={(_, val: NetWorthRangeMonths | null) => {
+              if (val !== null) setRangeMonths(val);
+            }}
+          >
+            {RANGE_OPTIONS.map((months) => (
+              <ToggleButton key={months} value={months}>{months}mo</ToggleButton>
+            ))}
+          </ToggleButtonGroup>
         </Stack>
         <TrendChart points={trend} />
       </Stack>

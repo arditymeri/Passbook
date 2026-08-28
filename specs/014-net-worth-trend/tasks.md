@@ -96,7 +96,7 @@ more months appear before it.
 
 ### Implementation for User Story 3
 
-- [ ] T006 [US3] Extend `frontend/src/components/NetWorthCard.tsx`: add a range selector (`ToggleButtonGroup`/`ToggleButton`, mirroring `AccountList.tsx`'s existing type-filter pattern) offering `3`/`6`/`12` months, tracked in local state and passed as `computeNetWorthTrend`'s `monthsBack` argument in place of T005's hardcoded `6` (depends on T005)
+- [X] T006 [US3] Extend `frontend/src/components/NetWorthCard.tsx`: add a range selector (`ToggleButtonGroup`/`ToggleButton`, mirroring `AccountList.tsx`'s existing type-filter pattern) offering `3`/`6`/`12` months, tracked in local state and passed as `computeNetWorthTrend`'s `monthsBack` argument in place of T005's hardcoded `6` (depends on T005)
 
 **Checkpoint**: All three user stories are independently functional — the full current-total/trend/range-selection experience works end to end.
 
