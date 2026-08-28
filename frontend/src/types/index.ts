@@ -313,3 +313,26 @@ export interface DashboardData {
   accounts: Account[];
   accountsLoading: boolean;
 }
+
+export interface TemplateCategoryItem {
+  name: string;
+  type: CategoryType;
+}
+
+export interface TemplateAccountItem {
+  name: string;
+  type: AccountType;
+}
+
+export interface SetupTemplate {
+  id: string;
+  name: string;
+  description: string;
+  categoryItems: TemplateCategoryItem[];
+  accountItems: TemplateAccountItem[];
+}
+
+export interface ApplyTemplateResult {
+  created: string[];
+  skipped: string[];
+}

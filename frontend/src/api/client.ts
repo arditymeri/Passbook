@@ -135,6 +135,17 @@ export async function createCategory(req: CreateCategoryRequest): Promise<Catego
   return postAndReturn<Category>('/api/v1/categories', req);
 }
 
+export async function createCategoryIfMissing(req: CreateCategoryRequest): Promise<'created' | 'skipped'> {
+  const res = await fetch('/api/v1/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+  if (res.status === 409) return 'skipped';
+  if (!res.ok) throw new Error(`HTTP ${res.status}: /api/v1/categories`);
+  return 'created';
+}
+
 export async function createBill(req: CreateBillRequest): Promise<void> {
   await post('/api/v1/createBill', req);
 }
@@ -150,6 +161,17 @@ export async function fetchAccounts(): Promise<Account[]> {
 
 export async function createAccount(req: CreateAccountRequest): Promise<Account> {
   return postAndReturn<Account>('/api/v1/accounts', req);
+}
+
+export async function createAccountIfMissing(req: CreateAccountRequest): Promise<'created' | 'skipped'> {
+  const res = await fetch('/api/v1/accounts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+  if (res.status === 409) return 'skipped';
+  if (!res.ok) throw new Error(`HTTP ${res.status}: /api/v1/accounts`);
+  return 'created';
 }
 
 export async function correctBill(id: string, req: CorrectBillRequest): Promise<void> {
