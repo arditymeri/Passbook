@@ -64,9 +64,9 @@ now exists, and that a bill/income form can select them exactly like any manuall
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Create `frontend/src/components/SetupTemplateDialog.tsx`: a modal showing the (currently single) template's name and description with an "Apply" button; clicking it calls `applySetupTemplate(template, allKeysFor(template))` (a local helper building the full key set from every item, since no per-item selection exists yet) and shows a generic "Template applied" confirmation with a "Done" action that closes the dialog and calls an `onApplied` callback (depends on T002, T004)
-- [ ] T006 [US1] Modify `frontend/src/components/CategoriesPage.tsx`: add a "Use a starter template" button near the existing "+ Add Category" action, mount `SetupTemplateDialog`, and call the `useCategories` hook's `refresh()` in `onApplied` (depends on T005)
-- [ ] T007 [US1] Modify `frontend/src/components/AccountsPage.tsx`: same as T006, calling the `useAccounts` hook's `refresh()` in `onApplied` (depends on T005)
+- [X] T005 [US1] Create `frontend/src/components/SetupTemplateDialog.tsx`: a modal showing the (currently single) template's name and description with an "Apply" button; clicking it calls `applySetupTemplate(template, allKeysFor(template))` (a local helper building the full key set from every item, since no per-item selection exists yet) and shows a generic "Template applied" confirmation with a "Done" action that closes the dialog and calls an `onApplied` callback (depends on T002, T004)
+- [X] T006 [US1] Modify `frontend/src/components/CategoriesPage.tsx`: add a "Use a starter template" button near the existing "+ Add Category" action, mount `SetupTemplateDialog`, and call the `useCategories` hook's `refresh()` in `onApplied` (depends on T005)
+- [X] T007 [US1] Modify `frontend/src/components/AccountsPage.tsx`: same as T006, calling the `useAccounts` hook's `refresh()` in `onApplied` (depends on T005)
 
 **Checkpoint**: Users can apply the starter template from either management page and see the results.
 

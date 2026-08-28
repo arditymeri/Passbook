@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
 import { CategoryList } from './CategoryList';
 import { AddCategoryForm } from './AddCategoryForm';
+import { SetupTemplateDialog } from './SetupTemplateDialog';
 import type { Category, CategoryType } from '../types';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 interface CategoriesPageProps {
@@ -14,9 +16,10 @@ interface CategoriesPageProps {
 }
 
 export function CategoriesPage({ onBack }: CategoriesPageProps) {
-  const { categories, loading, error } = useCategories();
+  const { categories, loading, error, refresh } = useCategories();
   const [localCategories, setLocalCategories] = useState<Category[] | null>(null);
   const [addFormOpen, setAddFormOpen] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [activeTypeFilter, setActiveTypeFilter] = useState<CategoryType | 'ALL'>('ALL');
 
   const displayCategories = localCategories ?? categories;
@@ -38,7 +41,10 @@ export function CategoriesPage({ onBack }: CategoriesPageProps) {
         <IconButton onClick={onBack} aria-label="Back">
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>Categories</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, flexGrow: 1 }}>Categories</Typography>
+        <Button variant="outlined" onClick={() => setTemplateDialogOpen(true)}>
+          Use a starter template
+        </Button>
       </Stack>
 
       <CategoryList
@@ -55,6 +61,12 @@ export function CategoriesPage({ onBack }: CategoriesPageProps) {
         onClose={() => setAddFormOpen(false)}
         onSuccess={handleSuccess}
         existingCategories={displayCategories}
+      />
+
+      <SetupTemplateDialog
+        open={templateDialogOpen}
+        onClose={() => setTemplateDialogOpen(false)}
+        onApplied={() => { setLocalCategories(null); refresh(); }}
       />
     </Box>
   );
