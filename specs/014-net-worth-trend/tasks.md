@@ -61,8 +61,8 @@ clear empty state instead of an error.
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Create `frontend/src/components/NetWorthCard.tsx`: a dashboard card (`Paper`, mirroring `SummaryCard.tsx`'s styling) showing `currentNetWorth(accounts)` formatted as currency, with a clear "No accounts yet" message in place of the figure when `accounts.length === 0` (FR-007) (depends on T002)
-- [ ] T004 [US1] Modify `frontend/src/App.tsx`: mount `NetWorthCard` on the dashboard near `SummaryCard` (outside the month-scoped `Box` row containing `CategorySpend`/`BudgetStatus`/`UpcomingRecurring`, since net worth is deliberately independent of the `MonthNav`-selected month), passing the `accounts` and `allTransactions` `useDashboardData` already fetches (depends on T003)
+- [X] T003 [US1] Create `frontend/src/components/NetWorthCard.tsx`: a dashboard card (`Paper`, mirroring `SummaryCard.tsx`'s styling) showing `currentNetWorth(accounts)` formatted as currency, with a clear "No accounts yet" message in place of the figure when `accounts.length === 0` (FR-007) (depends on T002)
+- [X] T004 [US1] Modify `frontend/src/App.tsx`: mount `NetWorthCard` on the dashboard near `SummaryCard` (outside the month-scoped `Box` row containing `CategorySpend`/`BudgetStatus`/`UpcomingRecurring`, since net worth is deliberately independent of the `MonthNav`-selected month), passing the `accounts` and `allTransactions` `useDashboardData` already fetches (depends on T003)
 
 **Checkpoint**: Users see their current total net worth on the dashboard, always live.
 
