@@ -41,20 +41,20 @@ files before writing the tasks below.
 
 ## Phase 1: Setup (OpenAPI contract, spec-first per Constitution Principle VII)
 
-- [ ] T001 [P] Create `Application/src/main/resources/swagger/forecast/forecast-get-controller.yaml`
+- [X] T001 [P] Create `Application/src/main/resources/swagger/forecast/forecast-get-controller.yaml`
   and `Application/src/main/resources/swagger/forecast/forecast-model.yaml`, adapting
   `specs/015-cash-flow-forecast/contracts/forecast-api.yaml` /
   `contracts/forecast-model.yaml` to this repo's existing swagger conventions (compare
   `Application/src/main/resources/swagger/recurring/recurring-get-controller.yaml` /
   `recurring-model.yaml` for style: `servers` block, `tags: [forecastGet]`, `$ref` syntax).
-- [ ] T002 [P] Register a new `forecast-get` code-gen execution in `Application/pom.xml`,
+- [X] T002 [P] Register a new `forecast-get` code-gen execution in `Application/pom.xml`,
   modeled exactly on the existing `recurring-get` `<execution>` block (id `recurring-get`,
   currently around line 539): add `<id>forecast-get</id>`, `<inputSpec>` pointing at
   `swagger/forecast/forecast-get-controller.yaml`, `<apiPackage>${api-package}.forecast</apiPackage>`,
   `<modelPackage>${model-package}</modelPackage>`, and the same `configOptions`
   (`delegatePattern=true`, `interfaceOnly=true`, `useSpringBoot3=true`, `skipOverwrite=true`, etc.)
   as every other execution in that file.
-- [ ] T003 Run `./mvnw -pl Application generate-sources` (depends on T001, T002) and confirm the
+- [X] T003 Run `./mvnw -pl Application generate-sources` (depends on T001, T002) and confirm the
   generated `ForecastGetApi` delegate interface and API models (`CashFlowForecastResponse`,
   `AccountForecast`, `ForecastEntry`) appear under
   `Application/target/generated-sources/openapi/src/main/java/at/ymeri/my/finance/application/controller/forecast/`
@@ -67,7 +67,7 @@ files before writing the tasks below.
 **⚠️ CRITICAL**: Both User Story 1 (warning) and User Story 2 (timeline) read the same backend
 projection — neither can be implemented until this phase is complete.
 
-- [ ] T004 [P] Extract `GetUpcomingRecurringServiceImpl.membersOf(RecurringSeriesDto)`
+- [X] T004 [P] Extract `GetUpcomingRecurringServiceImpl.membersOf(RecurringSeriesDto)`
   (currently package-private, in
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/recurring/GetUpcomingRecurringServiceImpl.java`)
   into a new shared
@@ -78,7 +78,7 @@ projection — neither can be implemented until this phase is complete.
   Update `GetUpcomingRecurringServiceImpl` to delegate to the extracted component instead of its
   own private method; confirm `Domain/src/test/java/.../service/recurring/GetUpcomingRecurringServiceImplTest.java`
   still passes unmodified.
-- [ ] T005 [P] Add
+- [X] T005 [P] Add
   `predictOccurrencesWithinWindow(OffsetDateTime asOf, OffsetDateTime latestOccurrence, boolean overdue, RecurringFrequency frequency, OffsetDateTime windowEnd)`
   to `Domain/src/main/java/at/ymeri/my/finance/domain/service/recurring/RecurringMatching.java`.
   Starting point is `asOf` when `overdue` is true (spec Edge Case: an overdue series is due "now"),
@@ -86,22 +86,22 @@ projection — neither can be implemented until this phase is complete.
   result, collecting every date up to and including the last one `<= windowEnd`, stopping once a
   predicted date exceeds `windowEnd`. Returns `List<OffsetDateTime>` in chronological order (may
   be empty).
-- [ ] T006 [US-shared] Extend
+- [X] T006 [US-shared] Extend
   `Domain/src/test/java/at/ymeri/my/finance/domain/service/recurring/RecurringMatchingTest.java`
   (depends on T005) with unit tests for `predictOccurrencesWithinWindow`: (a) a MONTHLY series
   with only one occurrence inside a 4-week window, (b) a WEEKLY series with multiple occurrences
   inside a 4-week window (asserts every one is returned, in order — SC-002), (c) no occurrences
   when the next predicted date already exceeds the window, (d) an overdue series' first entry is
   `asOf`, not the stale `latestOccurrence`-derived date.
-- [ ] T007 [P] Create Domain DTOs per data-model.md:
+- [X] T007 [P] Create Domain DTOs per data-model.md:
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/forecast/ForecastEntryDto.java`,
   `AccountForecastDto.java`, and `CashFlowForecastResult.java` (wrapping `List<AccountForecastDto>
   accounts`). All amount fields `BigDecimal` (Constitution Principle IV); `timeline` field ordered
   `List<ForecastEntryDto>`.
-- [ ] T008 Create port interface
+- [X] T008 Create port interface
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/GetCashFlowForecastService.java` (depends
   on T007) with a single method `CashFlowForecastResult forecast(int windowWeeks)`.
-- [ ] T009 Implement
+- [X] T009 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/forecast/GetCashFlowForecastServiceImpl.java`
   (depends on T004, T005, T007, T008; `@Service`, constructor-injects `GetAccountService`,
   `GetRecurringSeriesService`, `GetBillService`, `GetIncomeService`). For each account from
@@ -117,7 +117,7 @@ projection — neither can be implemented until this phase is complete.
   and set `atRisk = currentBalance.signum() < 0 || timeline.stream().anyMatch(e ->
   e.getProjectedBalance().signum() < 0)`. An account with no confirmed series attributed to it
   gets an empty `timeline` and `atRisk` reflecting only `currentBalance` (FR-006).
-- [ ] T010 [US-shared] Create
+- [X] T010 [US-shared] Create
   `Domain/src/test/java/at/ymeri/my/finance/domain/service/forecast/GetCashFlowForecastServiceImplTest.java`
   (depends on T009), with fakes/mocks for the four injected ports, covering: confirmed bills
   driving an account negative within the window → `atRisk=true` (US1.1); confirmed income+bills
@@ -129,7 +129,7 @@ projection — neither can be implemented until this phase is complete.
   timeline entry lands at "now", not its stale predicted date; two series both due the same date →
   both entries present and both reflected in that date's balance change; an account with zero
   confirmed series → flat forecast (`timeline` empty), no false warning (FR-006, SC-004).
-- [ ] T011 Implement `Application/src/main/java/at/ymeri/my/finance/controller/forecast/CashFlowForecastController.java`
+- [X] T011 Implement `Application/src/main/java/at/ymeri/my/finance/controller/forecast/CashFlowForecastController.java`
   implementing the generated `ForecastGetApi` delegate (depends on T003, T009), and
   `Application/src/main/java/at/ymeri/my/finance/application/mapper/CashFlowForecastMapper.java`
   (MapStruct interface, `@Mapper` + `INSTANCE` static field, mirroring
@@ -154,18 +154,18 @@ the default forecast window.
 window ends; view the forecast; that account is flagged. An account whose income covers its bills
 shows no warning. An already-negative account is flagged immediately.
 
-- [ ] T012 [P] [US1] Add frontend types to `frontend/src/types/index.ts`: `CashFlowWindowWeeks`
+- [X] T012 [P] [US1] Add frontend types to `frontend/src/types/index.ts`: `CashFlowWindowWeeks`
   (`2 | 4 | 8 | 12`), `ForecastEntry`, `AccountForecast`, `CashFlowForecastResponse` — mirroring
   the `forecast-model.yaml` schemas field-for-field (same pattern as the existing `RecurringSeries`
   / `UpcomingRecurringItem` types added for feature 010).
-- [ ] T013 [P] [US1] Add `fetchCashFlowForecast(weeks?: CashFlowWindowWeeks)` to
+- [X] T013 [P] [US1] Add `fetchCashFlowForecast(weeks?: CashFlowWindowWeeks)` to
   `frontend/src/api/client.ts`, calling `GET /api/v1/cash-flow-forecast` with an optional `weeks`
   query param, returning `Promise<CashFlowForecastResponse>`.
-- [ ] T014 [US1] Create `frontend/src/components/CashFlowForecastCard.tsx` (depends on T012,
+- [X] T014 [US1] Create `frontend/src/components/CashFlowForecastCard.tsx` (depends on T012,
   T013): on mount, call `fetchCashFlowForecast()` (default window); render one row per account
   (name, current balance, a clearly distinct warning chip/color — e.g. MUI `Chip`
   color="error" — shown only when `atRisk` is true). No per-entry timeline yet (US2).
-- [ ] T015 [US1] Mount `<CashFlowForecastCard />` in `frontend/src/App.tsx`, near
+- [X] T015 [US1] Mount `<CashFlowForecastCard />` in `frontend/src/App.tsx`, near
   `<NetWorthCard />` (both summary-style cards near the top of the dashboard).
 
 **Checkpoint**: User Story 1 is independently testable per its Independent Test above.
@@ -183,7 +183,7 @@ the projected running balance visibly changing at each one; a series recurring m
 the window shows every occurrence; correcting a past transaction updates the shown projection on
 reload.
 
-- [ ] T016 [US2] Extend `frontend/src/components/CashFlowForecastCard.tsx` (depends on T014) to
+- [X] T016 [US2] Extend `frontend/src/components/CashFlowForecastCard.tsx` (depends on T014) to
   render each account's `timeline` array in date order under its summary row (date, description,
   signed amount, resulting `projectedBalance`) — e.g. a nested MUI `List`/`Collapse`, consistent
   with the app's existing list-style rendering (`RecentTransactions.tsx`, `UpcomingRecurring.tsx`).
@@ -202,7 +202,7 @@ projection with no additional frontend work.
 period. Select a longer window; forecast extends further out, potentially revealing a risk not
 visible in the shorter window.
 
-- [ ] T017 [US3] Extend `frontend/src/components/CashFlowForecastCard.tsx` (depends on T016) with
+- [X] T017 [US3] Extend `frontend/src/components/CashFlowForecastCard.tsx` (depends on T016) with
   a window selector — MUI `ToggleButtonGroup` with options 2/4/8/12 weeks, default 4, mirroring
   `frontend/src/components/NetWorthCard.tsx`'s existing range-selector pattern — that re-calls
   `fetchCashFlowForecast(weeks)` and re-renders the whole card (summary rows + timelines) on
@@ -214,16 +214,16 @@ visible in the shorter window.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T018 [P] Run `./mvnw -pl Domain test` and confirm every new/updated test (T006, T010) plus
+- [X] T018 [P] Run `./mvnw -pl Domain test` and confirm every new/updated test (T006, T010) plus
   the pre-existing `GetUpcomingRecurringServiceImplTest` (unaffected by the T004 refactor) pass.
-- [ ] T019 [P] Run `cd frontend && npx tsc --noEmit` to typecheck the new frontend code (this repo
+- [X] T019 [P] Run `cd frontend && npx tsc --noEmit` to typecheck the new frontend code (this repo
   has no frontend test runner anywhere — a pre-existing gap this feature does not introduce or
   worsen).
 - [ ] T020 Execute `specs/015-cash-flow-forecast/quickstart.md`'s 7 manual scenarios end-to-end
   against a running stack. BLOCKED in this development sandbox (no Docker daemon available,
   consistent with every prior feature 007-014) — must be run manually once implementation lands
   in an environment with Docker; report honestly rather than marking complete if not actually run.
-- [ ] T021 Mark all tasks in this file `[X]`, then commit and push the implementation to
+- [X] T021 Mark all tasks in this file `[X]`, then commit and push the implementation to
   `claude/project-status-s0au7m`.
 
 ---

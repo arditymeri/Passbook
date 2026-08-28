@@ -1,0 +1,35 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Cash Flow Forecast API"
+  description: "Project every account's balance forward through a near-future window using confirmed recurring series"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /cash-flow-forecast:
+    get:
+      summary: "Get the cash flow forecast for every account"
+      operationId: getCashFlowForecast
+      description: "For every account, projects its balance forward through the requested window using every confirmed recurring series' predicted occurrences within that window. Read-only — never creates, modifies, or removes any bill, income, account, or recurring-series record."
+      tags:
+        - forecastGet
+      parameters:
+        - name: weeks
+          in: query
+          required: false
+          description: "How many weeks ahead to project. Defaults to 4 when omitted."
+          schema:
+            type: integer
+            enum: [2, 4, 8, 12]
+            default: 4
+      responses:
+        "200":
+          description: "Cash flow forecast returned"
+          content:
+            application/json:
+              schema:
+                $ref: "forecast-model.yaml#/components/schemas/cashFlowForecastResponse"
+        "400":
+          description: "weeks was provided but is not one of the supported presets"
+        default:
+          description: "Unexpected error"

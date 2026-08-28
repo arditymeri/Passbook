@@ -17,6 +17,7 @@ import { TransactionHistoryDialog } from './components/TransactionHistoryDialog'
 import { AccountsPage } from './components/AccountsPage';
 import { BudgetingPage } from './components/BudgetingPage';
 import { BudgetStatus } from './components/BudgetStatus';
+import { CashFlowForecastCard } from './components/CashFlowForecastCard';
 import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
 import { MonthNav } from './components/MonthNav';
@@ -200,6 +201,8 @@ function App() {
           />
 
           <NetWorthCard accounts={accounts} allTransactions={allTransactions} />
+
+          <CashFlowForecastCard />
 
           <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap' }}>
             <Box sx={{ flex: 1, minWidth: 280 }}>

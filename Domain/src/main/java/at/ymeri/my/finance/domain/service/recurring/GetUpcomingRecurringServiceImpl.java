@@ -1,21 +1,17 @@
 package at.ymeri.my.finance.domain.service.recurring;
 
-import at.ymeri.my.finance.domain.api.GetBillService;
-import at.ymeri.my.finance.domain.api.GetIncomeService;
 import at.ymeri.my.finance.domain.api.GetRecurringSeriesService;
 import at.ymeri.my.finance.domain.api.GetUpcomingRecurringService;
 import at.ymeri.my.finance.domain.data.recurring.PriceChangeAlertDto;
 import at.ymeri.my.finance.domain.data.recurring.RecurringDashboardResult;
 import at.ymeri.my.finance.domain.data.recurring.RecurringSeriesDto;
 import at.ymeri.my.finance.domain.data.recurring.RecurringSeriesStatus;
-import at.ymeri.my.finance.domain.data.recurring.TransactionType;
 import at.ymeri.my.finance.domain.data.recurring.UpcomingRecurringItemDto;
+import at.ymeri.my.finance.domain.service.recurring.RecurringSeriesMembers.MemberOccurrence;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -27,15 +23,12 @@ import java.util.List;
 public class GetUpcomingRecurringServiceImpl implements GetUpcomingRecurringService {
 
     private final GetRecurringSeriesService getRecurringSeriesService;
-    private final GetBillService getBillService;
-    private final GetIncomeService getIncomeService;
+    private final RecurringSeriesMembers recurringSeriesMembers;
 
     public GetUpcomingRecurringServiceImpl(GetRecurringSeriesService getRecurringSeriesService,
-                                            GetBillService getBillService,
-                                            GetIncomeService getIncomeService) {
+                                            RecurringSeriesMembers recurringSeriesMembers) {
         this.getRecurringSeriesService = getRecurringSeriesService;
-        this.getBillService = getBillService;
-        this.getIncomeService = getIncomeService;
+        this.recurringSeriesMembers = recurringSeriesMembers;
     }
 
     @Override
@@ -47,7 +40,7 @@ public class GetUpcomingRecurringServiceImpl implements GetUpcomingRecurringServ
         List<UpcomingRecurringItemDto> upcoming = new ArrayList<>();
         List<PriceChangeAlertDto> priceChanges = new ArrayList<>();
         for (RecurringSeriesDto series : confirmed) {
-            List<MemberOccurrence> members = membersOf(series);
+            List<MemberOccurrence> members = recurringSeriesMembers.membersOf(series);
             if (members.isEmpty()) {
                 continue;
             }
@@ -87,30 +80,5 @@ public class GetUpcomingRecurringServiceImpl implements GetUpcomingRecurringServ
         result.setUpcoming(upcoming);
         result.setRecentPriceChanges(priceChanges);
         return result;
-    }
-
-    /**
-     * A confirmed series' matching transactions, sorted oldest first — a bill matched on
-     * {@code categoryId}, or an income matched on {@code source.name()}, plus a shared
-     * normalized-description match, mirroring {@link DetectRecurringSeriesServiceImpl}'s grouping.
-     */
-    List<MemberOccurrence> membersOf(RecurringSeriesDto series) {
-        if (series.getTransactionType() == TransactionType.BILL) {
-            return getBillService.getAll().stream()
-                    .filter(b -> series.getGroupKey().equals(b.getCategoryId()))
-                    .filter(b -> series.getDescription().equals(RecurringMatching.normalizeDescription(b.getDescription())))
-                    .map(b -> new MemberOccurrence(b.getId(), b.getTime(), b.getAmount()))
-                    .sorted(Comparator.comparing(MemberOccurrence::time))
-                    .toList();
-        }
-        return getIncomeService.getAll().stream()
-                .filter(i -> i.getSource() != null && series.getGroupKey().equals(i.getSource().name()))
-                .filter(i -> series.getDescription().equals(RecurringMatching.normalizeDescription(i.getDescription())))
-                .map(i -> new MemberOccurrence(i.getId(), i.getTime(), i.getAmount()))
-                .sorted(Comparator.comparing(MemberOccurrence::time))
-                .toList();
-    }
-
-    record MemberOccurrence(String id, OffsetDateTime time, BigDecimal amount) {
     }
 }

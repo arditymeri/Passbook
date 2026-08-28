@@ -344,3 +344,28 @@ export interface NetWorthTrendPoint {
   cutoff: string;
   netWorth: number;
 }
+
+export type CashFlowWindowWeeks = 2 | 4 | 8 | 12;
+
+export interface ForecastEntry {
+  date: string;
+  seriesId: string;
+  transactionType: RecurringTransactionType;
+  description: string;
+  amount: number;
+  projectedBalance: number;
+}
+
+export interface AccountForecast {
+  accountId: string;
+  accountName: string;
+  accountType: AccountType;
+  currentBalance: number;
+  windowWeeks: number;
+  atRisk: boolean;
+  timeline: ForecastEntry[];
+}
+
+export interface CashFlowForecastResponse {
+  accounts: AccountForecast[];
+}

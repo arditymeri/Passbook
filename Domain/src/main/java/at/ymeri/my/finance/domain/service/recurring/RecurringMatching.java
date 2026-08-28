@@ -5,6 +5,8 @@ import at.ymeri.my.finance.domain.data.common.RecurringFrequency;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Shared matching primitives for recurring-series detection, prediction, and price-change
@@ -77,5 +79,28 @@ public final class RecurringMatching {
             case MONTHLY -> last.plusMonths(1);
             case YEARLY -> last.plusYears(1);
         };
+    }
+
+    /**
+     * Every occurrence of a series expected to fall within a forecast window, walking
+     * {@link #predictNextDate} forward one step at a time. The first predicted date is
+     * {@code asOf} itself when the series is {@code overdue} (its previously predicted date has
+     * already passed with nothing new recorded — treated as due "now" rather than at its stale
+     * date), otherwise it is {@code predictNextDate(latestOccurrence, frequency)}; every
+     * subsequent date is {@code predictNextDate} applied to the one before it. Stops as soon as a
+     * predicted date exceeds {@code windowEnd} (exclusive); may return an empty list.
+     */
+    public static List<OffsetDateTime> predictOccurrencesWithinWindow(OffsetDateTime asOf,
+                                                                        OffsetDateTime latestOccurrence,
+                                                                        boolean overdue,
+                                                                        RecurringFrequency frequency,
+                                                                        OffsetDateTime windowEnd) {
+        List<OffsetDateTime> occurrences = new ArrayList<>();
+        OffsetDateTime next = overdue ? asOf : predictNextDate(latestOccurrence, frequency);
+        while (!next.isAfter(windowEnd)) {
+            occurrences.add(next);
+            next = predictNextDate(next, frequency);
+        }
+        return occurrences;
     }
 }
