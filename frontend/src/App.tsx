@@ -26,6 +26,7 @@ import { RecentTransactions } from './components/RecentTransactions';
 import { PriceChangeAlerts } from './components/PriceChangeAlerts';
 import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
 import { SavingsGoalsPage } from './components/SavingsGoalsPage';
+import { SpendingTrendsCard } from './components/SpendingTrendsCard';
 import { TransactionFilterBar } from './components/TransactionFilterBar';
 import { UpcomingRecurring } from './components/UpcomingRecurring';
 import { SummaryCard } from './components/SummaryCard';
@@ -226,6 +227,9 @@ function App() {
                 <UpcomingRecurring categories={categories} refreshKey={refreshKey} />
                 <PriceChangeAlerts categories={categories} refreshKey={refreshKey} />
               </Stack>
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 280 }}>
+              <SpendingTrendsCard allTransactions={allTransactions} categoryNames={categoryNames} />
             </Box>
           </Box>
 

@@ -43,12 +43,12 @@ touches only `frontend/src/`. No backend module (`Domain/`, `Application/`, `Inf
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T001 [P] Add `SpendingTrendRangeMonths` (`3 | 6 | 12`), `CategoryTrendPoint` (`label: string`,
+- [X] T001 [P] Add `SpendingTrendRangeMonths` (`3 | 6 | 12`), `CategoryTrendPoint` (`label: string`,
   `cutoff: string`, `amount: number`), `CategorySpendingTrend` (`categoryId: string`,
   `categoryName: string`, `points: CategoryTrendPoint[]`), and `SpendingMover` (`categoryId:
   string`, `categoryName: string`, `previousAmount: number`, `currentAmount: number`, `change:
   number`, `percentChange: number | null`) to `frontend/src/types/index.ts`, per `data-model.md`
-- [ ] T002 Create `frontend/src/utils/spendingTrends.ts`:
+- [X] T002 Create `frontend/src/utils/spendingTrends.ts`:
   `computeSpendingTrends(allTransactions: Transaction[], categoryNames: CategoryNameMap,
   monthsBack: SpendingTrendRangeMonths): { trends: CategorySpendingTrend[]; movers: SpendingMover[]
   }` implementing `data-model.md`'s algorithm exactly — one pass over `allTransactions` bucketing
@@ -77,13 +77,13 @@ shown month does not appear at all.
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Create `frontend/src/components/SpendingTrendsCard.tsx`: a dashboard card
+- [X] T003 [US1] Create `frontend/src/components/SpendingTrendsCard.tsx`: a dashboard card
   (`Paper`, mirroring `CategorySpend.tsx`'s list styling) rendering
   `computeSpendingTrends(allTransactions, categoryNames, 6).trends` — one row per category with a
   per-month amount breakdown (each month's figure shown explicitly, including zero — FR-002), using
   a fixed default window of 6 months for now (US3 makes it selectable); a clear "No spending data
   yet" message when `trends` is empty (depends on T002)
-- [ ] T004 [US1] Modify `frontend/src/App.tsx`: mount `SpendingTrendsCard` in the month-scoped
+- [X] T004 [US1] Modify `frontend/src/App.tsx`: mount `SpendingTrendsCard` in the month-scoped
   `Box` row alongside `CategorySpend` (which it directly extends — plan.md's Structure Decision),
   passing the `allTransactions` and `categoryNames` `useDashboardData` already fetches (depends on
   T003)
@@ -105,7 +105,7 @@ still appears as a mover.
 
 ### Implementation for User Story 2
 
-- [ ] T005 [US2] Extend `frontend/src/components/SpendingTrendsCard.tsx`: add a "Biggest Movers"
+- [X] T005 [US2] Extend `frontend/src/components/SpendingTrendsCard.tsx`: add a "Biggest Movers"
   section rendering `computeSpendingTrends(allTransactions, categoryNames, 6).movers` — each entry
   showing the category name, the signed euro change (color/icon distinguishing increase from
   decrease), and the percentage change when `previousAmount > 0` (omitted/labeled "new" when
@@ -127,7 +127,7 @@ research.md §3).
 
 ### Implementation for User Story 3
 
-- [ ] T006 [US3] Extend `frontend/src/components/SpendingTrendsCard.tsx`: add a window selector
+- [X] T006 [US3] Extend `frontend/src/components/SpendingTrendsCard.tsx`: add a window selector
   (`ToggleButtonGroup`/`ToggleButton`, mirroring `NetWorthCard.tsx`'s existing range-selector
   pattern) offering `3`/`6`/`12` months, tracked in local state and passed as
   `computeSpendingTrends`'s `monthsBack` argument in place of T003's hardcoded `6` for the
@@ -144,9 +144,9 @@ experience works end to end.
 
 **Purpose**: Full verification once all stories are implemented
 
-- [ ] T007 Run `cd frontend && npx tsc --noEmit` and confirm no type errors across the
+- [X] T007 Run `cd frontend && npx tsc --noEmit` and confirm no type errors across the
   new/modified files
-- [ ] T008 Re-verify `frontend/src/utils/spendingTrends.ts` by hand against `data-model.md`'s
+- [X] T008 Re-verify `frontend/src/utils/spendingTrends.ts` by hand against `data-model.md`'s
   worked example (groceries/dining across Jun/Jul/Aug) and confirm the computed `trends` and
   `movers` output exactly match the worked example's table and tie-handling
 - [ ] T009 Execute `specs/016-spending-trends-insights/quickstart.md` end to end in the browser —

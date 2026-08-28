@@ -369,3 +369,26 @@ export interface AccountForecast {
 export interface CashFlowForecastResponse {
   accounts: AccountForecast[];
 }
+
+export type SpendingTrendRangeMonths = 3 | 6 | 12;
+
+export interface CategoryTrendPoint {
+  label: string;
+  cutoff: string;
+  amount: number;
+}
+
+export interface CategorySpendingTrend {
+  categoryId: string;
+  categoryName: string;
+  points: CategoryTrendPoint[];
+}
+
+export interface SpendingMover {
+  categoryId: string;
+  categoryName: string;
+  previousAmount: number;
+  currentAmount: number;
+  change: number;
+  percentChange: number | null;
+}
