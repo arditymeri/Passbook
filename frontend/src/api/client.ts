@@ -1,4 +1,4 @@
-import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, Income, MonthlySummary, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
+import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, Income, MonthlySummary, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -198,4 +198,9 @@ export async function removeIncome(id: string): Promise<void> {
 export async function fetchIncomeHistory(id: string): Promise<TransactionHistoryEntry[]> {
   const data = await request<{ history: TransactionHistoryEntry[] }>(`/api/v1/incomes/${id}/history`);
   return data.history ?? [];
+}
+
+export async function fetchCashFlowForecast(weeks?: CashFlowWindowWeeks): Promise<CashFlowForecastResponse> {
+  const query = weeks !== undefined ? `?weeks=${weeks}` : '';
+  return request<CashFlowForecastResponse>(`/api/v1/cash-flow-forecast${query}`);
 }

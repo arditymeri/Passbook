@@ -1,0 +1,58 @@
+components:
+  schemas:
+    forecastTransactionType:
+      type: "string"
+      enum:
+        - BILL
+        - INCOME
+
+    forecastEntry:
+      type: "object"
+      properties:
+        date:
+          type: "string"
+          format: "date-time"
+        seriesId:
+          type: "string"
+          format: "uuid"
+        transactionType:
+          $ref: '#/components/schemas/forecastTransactionType'
+        description:
+          type: "string"
+        amount:
+          type: "number"
+          description: "The series' most recently recorded amount, carried forward — same rule the recurring dashboard's next-occurrence prediction already uses"
+        projectedBalance:
+          type: "number"
+          description: "The account's running balance immediately after this entry is applied"
+
+    accountForecast:
+      type: "object"
+      properties:
+        accountId:
+          type: "string"
+          format: "uuid"
+        accountName:
+          type: "string"
+        accountType:
+          type: "string"
+          enum: [CHECKING, SAVINGS, CREDIT_CARD, CASH, INVESTMENT]
+        currentBalance:
+          type: "number"
+        windowWeeks:
+          type: "integer"
+        atRisk:
+          type: "boolean"
+          description: "True when currentBalance is already negative, or any timeline entry's projectedBalance is negative"
+        timeline:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/forecastEntry'
+
+    cashFlowForecastResponse:
+      type: "object"
+      properties:
+        accounts:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/accountForecast'

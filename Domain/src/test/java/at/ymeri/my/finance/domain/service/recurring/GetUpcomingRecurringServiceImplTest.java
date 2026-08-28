@@ -11,9 +11,9 @@ import at.ymeri.my.finance.domain.data.recurring.RecurringSeriesDto;
 import at.ymeri.my.finance.domain.data.recurring.RecurringSeriesStatus;
 import at.ymeri.my.finance.domain.data.recurring.TransactionType;
 import at.ymeri.my.finance.domain.data.recurring.UpcomingRecurringItemDto;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -40,8 +40,14 @@ class GetUpcomingRecurringServiceImplTest {
     @Mock
     private GetIncomeService getIncomeService;
 
-    @InjectMocks
     private GetUpcomingRecurringServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        service = new GetUpcomingRecurringServiceImpl(
+                getRecurringSeriesService,
+                new RecurringSeriesMembers(getBillService, getIncomeService));
+    }
 
     @Test
     void getDashboard_confirmedSeriesWithRecentOccurrence_predictsNextDateAndAmount() {

@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -102,5 +103,58 @@ class RecurringMatchingTest {
         OffsetDateTime last = OffsetDateTime.of(2026, 1, 15, 10, 0, 0, 0, ZoneOffset.UTC);
         assertEquals(OffsetDateTime.of(2026, 1, 16, 10, 0, 0, 0, ZoneOffset.UTC),
                 RecurringMatching.predictNextDate(last, RecurringFrequency.DAILY));
+    }
+
+    @Test
+    void predictOccurrencesWithinWindow_monthly_singleOccurrenceInFourWeekWindow() {
+        OffsetDateTime asOf = OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        OffsetDateTime latest = OffsetDateTime.of(2025, 12, 20, 0, 0, 0, 0, ZoneOffset.UTC);
+        OffsetDateTime windowEnd = asOf.plusWeeks(4);
+
+        List<OffsetDateTime> occurrences = RecurringMatching.predictOccurrencesWithinWindow(
+                asOf, latest, false, RecurringFrequency.MONTHLY, windowEnd);
+
+        assertEquals(List.of(OffsetDateTime.of(2026, 1, 20, 0, 0, 0, 0, ZoneOffset.UTC)), occurrences);
+    }
+
+    @Test
+    void predictOccurrencesWithinWindow_weekly_returnsEveryOccurrenceInOrder() {
+        OffsetDateTime asOf = OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        OffsetDateTime latest = asOf;
+        OffsetDateTime windowEnd = asOf.plusWeeks(4);
+
+        List<OffsetDateTime> occurrences = RecurringMatching.predictOccurrencesWithinWindow(
+                asOf, latest, false, RecurringFrequency.WEEKLY, windowEnd);
+
+        assertEquals(List.of(
+                OffsetDateTime.of(2026, 1, 8, 0, 0, 0, 0, ZoneOffset.UTC),
+                OffsetDateTime.of(2026, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC),
+                OffsetDateTime.of(2026, 1, 22, 0, 0, 0, 0, ZoneOffset.UTC),
+                OffsetDateTime.of(2026, 1, 29, 0, 0, 0, 0, ZoneOffset.UTC)
+        ), occurrences);
+    }
+
+    @Test
+    void predictOccurrencesWithinWindow_nextDateBeyondWindow_returnsEmptyList() {
+        OffsetDateTime asOf = OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        OffsetDateTime latest = asOf;
+        OffsetDateTime windowEnd = asOf.plusWeeks(1);
+
+        List<OffsetDateTime> occurrences = RecurringMatching.predictOccurrencesWithinWindow(
+                asOf, latest, false, RecurringFrequency.MONTHLY, windowEnd);
+
+        assertTrue(occurrences.isEmpty());
+    }
+
+    @Test
+    void predictOccurrencesWithinWindow_overdueSeries_firstOccurrenceIsAsOfNotStaleDate() {
+        OffsetDateTime asOf = OffsetDateTime.of(2026, 1, 15, 0, 0, 0, 0, ZoneOffset.UTC);
+        OffsetDateTime staleLatest = OffsetDateTime.of(2025, 11, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        OffsetDateTime windowEnd = asOf.plusWeeks(4);
+
+        List<OffsetDateTime> occurrences = RecurringMatching.predictOccurrencesWithinWindow(
+                asOf, staleLatest, true, RecurringFrequency.MONTHLY, windowEnd);
+
+        assertEquals(List.of(asOf), occurrences);
     }
 }
