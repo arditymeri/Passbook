@@ -336,3 +336,11 @@ export interface ApplyTemplateResult {
   created: string[];
   skipped: string[];
 }
+
+export type NetWorthRangeMonths = 3 | 6 | 12;
+
+export interface NetWorthTrendPoint {
+  label: string;
+  cutoff: string;
+  netWorth: number;
+}

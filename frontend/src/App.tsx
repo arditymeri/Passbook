@@ -20,6 +20,7 @@ import { BudgetStatus } from './components/BudgetStatus';
 import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
 import { MonthNav } from './components/MonthNav';
+import { NetWorthCard } from './components/NetWorthCard';
 import { RecentTransactions } from './components/RecentTransactions';
 import { PriceChangeAlerts } from './components/PriceChangeAlerts';
 import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
@@ -197,6 +198,8 @@ function App() {
             loading={summaryLoading}
             error={summaryError}
           />
+
+          <NetWorthCard accounts={accounts} allTransactions={allTransactions} />
 
           <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap' }}>
             <Box sx={{ flex: 1, minWidth: 280 }}>
