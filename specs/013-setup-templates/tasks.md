@@ -116,7 +116,7 @@ silently succeed with nothing created.
 
 ### Implementation for User Story 4
 
-- [ ] T010 [US4] Extend `frontend/src/components/SetupTemplateDialog.tsx`: add a checkbox next to each item in the preview list from T008 (all checked by default), track selection in local state, pass the real selected-keys set into `applySetupTemplate()` instead of T005's `allKeysFor(template)` full-selection helper, and disable the "Apply" button when the selection is empty (FR-007) (depends on T008, T009)
+- [X] T010 [US4] Extend `frontend/src/components/SetupTemplateDialog.tsx`: add a checkbox next to each item in the preview list from T008 (all checked by default), track selection in local state, pass the real selected-keys set into `applySetupTemplate()` instead of T005's `allKeysFor(template)` full-selection helper, and disable the "Apply" button when the selection is empty (FR-007) (depends on T008, T009)
 
 **Checkpoint**: All four user stories are independently functional — the full preview/select/apply/report experience works end to end.
 
