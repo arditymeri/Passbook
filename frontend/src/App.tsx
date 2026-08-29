@@ -163,7 +163,7 @@ function App() {
       <AppBar position="static" color="primary" elevation={2}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            MyFinance Dashboard
+            Passbook Dashboard
           </Typography>
           <Stack direction="row" spacing={1}>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('accounts')}>
