@@ -1,147 +1,213 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: [placeholder] → 1.0.0
-Modified principles: N/A (initial fill from template)
-Added sections:
-  - Core Principles (8 finance-specific principles)
-  - Financial Data Standards
-  - Development Workflow
-  - Governance
-Removed sections: N/A (template placeholders replaced)
-Templates requiring updates:
-  - .specify/templates/plan-template.md ✅ Constitution Check gates align with principles below
-  - .specify/templates/spec-template.md ✅ No finance-specific mandatory sections to add
-  - .specify/templates/tasks-template.md ✅ Task categories reflect principle-driven types
-Deferred TODOs: None
+Version change: 1.0.0 → 2.0.0 (MAJOR — principle removed and principles redefined)
+
+Removed:
+  - Principle II "Double-Entry Accounting" — never implemented. There is no journal or
+    entry model; Bill and Income are separate single-line tables. The principle described a
+    product this is not, and every spec written under it inherited a false premise.
+
+Redefined:
+  - Principle III — reworded to describe what the code actually does: `account.balance` is an
+    OPENING balance; the current balance is derived at read time (GetAccountServiceImpl:52-64).
+    The prior wording forbade the stored column outright and was contradicted by the code.
+  - Principle V (audit trail) — "actor" requirement dropped. The app is single-tenant with no
+    users; there is no actor to record. Reinstate if identity is ever introduced.
+  - Principle VIII (hexagonal) — narrowed to the rule actually held: no Spring *context* and no
+    JPA/Kafka in Domain. Domain does use `@Service`/`@Component` annotations (36 of 128 files).
+    Framework-annotation-free was aspirational; context-free and instantiable in plain JUnit is real.
+
+Corrected in Financial Data Standards:
+  - Account types were listed as ASSET/LIABILITY/EQUITY/INCOME/EXPENSE (accounting classes).
+    Actual `AccountType`: CHECKING, SAVINGS, CREDIT_CARD, CASH, INVESTMENT.
+  - Multi-currency: accounts DO carry `currencies` + `defaultCurrency`; transactions carry no
+    currency at all. Recorded as a known gap rather than a satisfied standard.
+  - Reconciliation: no cleared/reconciled status exists. Moved to Roadmap.
+
+Added:
+  - Vision section — the product thesis all principles now serve.
+  - Deliberately Out of Scope — the "no" list.
+  - Self-Hosting Obligations — what distribution to third parties requires.
+
+Templates: plan-template.md derives its gates from this file (no hardcoded principle list) —
+  verified, no change required.
 -->
 
 # MyFinance Constitution
+
+## Vision
+
+**MyFinance is an open-source, self-hosted personal finance app that answers all three
+questions — where the money went, whether I'm on budget, and whether I'll be okay — without
+making you type your transactions in by hand.**
+
+Three jobs, one spine. The breadth (analysis, budgets, envelopes, goals, search, net worth,
+forecast, trends) is the payoff; the spine is a transaction pipeline that fills itself. Manual
+entry is a fallback and an exception path, never the primary way data arrives.
+
+**Audience**: individuals running their own instance. Every instance is single-tenant. The
+trust story is structural, not promissory: the data never leaves the operator's machine.
+
+**Sustainability**: bank synchronisation is the paid service. The aggregator charges per
+connection, so the paid line is the part that genuinely costs money to operate. The sync relay
+forwards bookings and holds connection credentials; it MUST NOT hold user ledgers, balances, or
+transaction history.
 
 ## Core Principles
 
 ### I. Transaction Immutability (NON-NEGOTIABLE)
 
 Financial transactions MUST never be silently modified or deleted after they are persisted.
-Corrections MUST be made via compensating/reversal entries that reference the original transaction.
-The original record remains in the audit log untouched. Any soft-delete or status flag that hides a
-transaction from balances MUST preserve the original row and create a reversal entry so the ledger
-always nets to zero on the corrected amount.
+Corrections MUST be made via compensating/reversal entries that reference the original
+(`correctsTransactionId`, `reversal`). The original row remains untouched. Any soft-delete or
+status flag that hides a transaction from balances MUST preserve the original row and create a
+reversal so the ledger nets to zero on the corrected amount.
 
-**Rationale**: Regulatory compliance and auditability require a tamper-evident ledger. Silent edits
-destroy the ability to reconstruct historical account states.
+**Rationale**: An imported bank booking is a statement of fact and is not the operator's to
+edit. Corrections are opinions layered on facts. Keeping them distinct is what makes
+re-importing safe and reconciliation possible.
 
-### II. Double-Entry Accounting
+### II. Ingestion Is Idempotent (NON-NEGOTIABLE)
 
-Every financial event MUST produce at least two journal lines: one debit and one credit.
-The sum of all debits MUST equal the sum of all credits within any given transaction.
-The system MUST reject any persistence attempt where debits ≠ credits.
+Any transaction arriving from outside the UI MUST carry a stable external identity (bank
+transaction id, or a deterministic hash of the fields when the source provides none). Re-ingesting
+an already-seen identity MUST be a no-op, not a duplicate. Overlapping statement ranges are the
+normal case, not an error.
 
-**Rationale**: Double-entry is the mathematical foundation ensuring the accounting equation
-(Assets = Liabilities + Equity) holds at all times. Violations indicate logic bugs, not edge cases.
+**Rationale**: This is the load-bearing invariant of the vision. A pipeline that fills itself is
+worthless if it also duplicates; the operator would be back to manual reconciliation, which is
+the problem being solved.
 
-### III. Account Integrity & Balance Derivation
+### III. Balance Derivation
 
-Account balances MUST be computed by summing transaction lines, never stored as a mutable
-running total in the primary record. A cached/materialized balance is permitted only as a
-read-optimisation layer and MUST be invalidated atomically with the transaction that caused it.
-The authoritative balance is always the aggregate of ledger entries.
+Current balances MUST be computed by summing transaction history, never read from a stored
+running total. `account.balance` is the **opening** balance — the starting point before any
+recorded transaction — and is the only balance figure permitted in storage. Current balance =
+opening + income − bills, computed at read time. A materialised current balance is permitted
+only as a read-optimisation and MUST be invalidated atomically with the transaction causing it.
 
-**Rationale**: A mutable `currentBalance` column that drifts from the ledger sum is a data
-integrity failure. Deriving balances from the ledger makes reconciliation straightforward and
-prevents silent corruption.
+**Rationale**: A mutable current-balance column drifts from history and corrupts silently.
+Deriving it makes reconciliation against a bank statement a straightforward comparison.
 
 ### IV. Currency Precision (NON-NEGOTIABLE)
 
-Monetary amounts MUST be represented as `java.math.BigDecimal` (backend) or an equivalent
-fixed-point type in any other layer. Floating-point types (`float`, `double`, `number` in JS/TS
-for money) are FORBIDDEN for any monetary value. Rounding MUST use `RoundingMode.HALF_EVEN`
-(banker's rounding) and be applied only at the final presentation layer, never mid-calculation.
-Currency codes MUST follow ISO 4217.
+Monetary amounts MUST be `java.math.BigDecimal` (backend) or an equivalent fixed-point type
+elsewhere. Floating-point types for money are FORBIDDEN. Rounding MUST use `RoundingMode.HALF_EVEN`
+and be applied only at presentation, never mid-calculation. Currency codes follow ISO 4217.
 
-**Rationale**: IEEE-754 floating-point arithmetic produces rounding errors that compound over
-thousands of transactions, leading to balance discrepancies. `BigDecimal` with `HALF_EVEN` is
-the industry standard for financial arithmetic.
+**Rationale**: IEEE-754 error compounds across thousands of transactions into balance
+discrepancies.
 
 ### V. Audit Trail & Observability
 
-Every state-changing operation on financial data (create, reverse, categorise, reconcile) MUST
-be recorded with: timestamp (UTC, ISO 8601), the actor/source, and the resulting state change.
-Structured logging (JSON) is REQUIRED in production. Sensitive fields (account numbers, amounts)
-MUST NOT appear in unstructured log strings at WARN or above without masking.
+Every state-changing operation on financial data (create, reverse, categorise, import,
+reconcile) MUST record a UTC ISO-8601 timestamp, the source of the change (manual entry,
+import, rule engine, recurring auto-post), and the resulting state change. Structured logging
+(JSON) is REQUIRED in production. Account identifiers and amounts MUST NOT appear in
+unstructured log strings at WARN or above without masking.
 
-**Rationale**: Audits, disputes, and incident post-mortems all require a complete, queryable
-timeline of who did what and when.
+**Rationale**: When the pipeline writes transactions on the operator's behalf, "why is this row
+here?" must be answerable. Source provenance matters more than actor identity in a single-tenant
+app — but it becomes far more important, not less, once rows arrive automatically.
 
 ### VI. Test-First Development (NON-NEGOTIABLE)
 
-All financial calculation and business-rule logic in the Domain module MUST be covered by unit
-tests written before or alongside the implementation (TDD or test-concurrent). Integration tests
-MUST verify persistence adapters against a real database (TestContainers). Mocks of the database
-layer in integration tests are FORBIDDEN.
+All financial calculation and business-rule logic in Domain MUST be covered by unit tests
+written before or alongside the implementation. Integration tests MUST verify persistence
+adapters against a real database (TestContainers); mocking the database layer in integration
+tests is FORBIDDEN.
 
-**Rationale**: Finance bugs are often invisible until they compound. Test-first ensures invariants
-(balance derivation, immutability, double-entry) are encoded as executable contracts, not docs.
+**Rationale**: Finance bugs are invisible until they compound. This binds harder now than it did
+as a solo project: a broken migration or balance bug reaches other people's data.
 
 ### VII. API Contract Stability
 
-Public REST API contracts MUST be defined in OpenAPI YAML first, before implementation.
-Breaking changes (field removal, type change, endpoint removal) MUST be introduced under a new
-API version path (`/v2/...`). Additive changes (new optional fields) are non-breaking and do not
-require a new version. Deprecated endpoints MUST remain functional for at least one release cycle.
+Public REST contracts MUST be defined in OpenAPI YAML before implementation. Breaking changes
+(field removal, type change, endpoint removal) MUST go under a new version path (`/v2/...`).
+Additive optional fields are non-breaking. Deprecated endpoints MUST remain functional for at
+least one release cycle.
 
-**Rationale**: External consumers and the React frontend depend on stable contracts. Surprise
-breakage causes data loss or UI failures in production.
+**Rationale**: The frontend and any third-party sync client depend on stable contracts.
 
 ### VIII. Hexagonal Architecture Compliance
 
-The Domain module MUST have zero runtime dependencies on Spring, JPA, Kafka, or any infrastructure
-framework. All I/O (persistence, messaging, HTTP) MUST be mediated through port interfaces defined
-in Domain and implemented in Application or Infrastructure. Domain business logic MUST be
-exercisable in plain JUnit tests with no application context.
+The Domain module MUST NOT depend on JPA, Kafka, HTTP, or any Spring runtime machinery, and
+Domain logic MUST be exercisable in plain JUnit with no application context. Spring *stereotype
+annotations* (`@Service`, `@Component`) are permitted in Domain for wiring; anything requiring a
+running context is not. All I/O MUST be mediated through port interfaces defined in Domain and
+implemented in Application or Infrastructure.
 
-**Rationale**: Isolating the domain from infrastructure keeps financial logic portable, testable
-in milliseconds, and free from framework coupling that obscures invariants.
+**Rationale**: Context-free domain tests run in milliseconds and keep financial invariants legible.
+Banning the annotations too was never enforced and bought nothing beyond what this rule already
+gives.
 
 ## Financial Data Standards
 
-- **Date/Time**: All timestamps stored and transmitted as UTC. Display conversion happens at the
-  presentation layer only. Use `java.time.Instant` or `OffsetDateTime` (UTC offset=0) in the
-  domain; never `java.util.Date` or `Calendar`.
-- **Account Types**: Recognised types are `ASSET`, `LIABILITY`, `EQUITY`, `INCOME`, `EXPENSE`.
-  Normal balance rules (debit/credit increases) MUST be enforced per type.
-- **Multi-Currency**: When a transaction involves more than one currency, an exchange rate
-  snapshot MUST be persisted with the transaction. The functional currency for reporting is
-  defined per account (defaultCurrency field, ISO 4217).
-- **Reconciliation**: Accounts MUST support a reconciled/cleared status per transaction line.
-  Reconciled lines MUST NOT be reversed without an explicit override and audit record.
+- **Date/Time**: All timestamps stored and transmitted as UTC. Display conversion at the
+  presentation layer only. Use `java.time.Instant` or `OffsetDateTime` in Domain; never
+  `java.util.Date` or `Calendar`.
+- **Account Types**: `CHECKING`, `SAVINGS`, `CREDIT_CARD`, `CASH`, `INVESTMENT`. Sign convention
+  is carried by the transaction (bill vs. income), not by an account's normal-balance rule.
+- **Multi-Currency (KNOWN GAP)**: Accounts carry `currencies` and `defaultCurrency` (ISO 4217).
+  **Transactions carry no currency field** — every amount is implicitly in the account's default
+  currency. Cross-currency transactions are therefore not representable. This is the first
+  standard to close if the self-hosted audience is international, and it MUST be closed before
+  bank sync ingests from a multi-currency institution.
+
+## Deliberately Out of Scope
+
+Not oversights. Reopening any of these requires the amendment process below.
+
+- **Double-entry / journal-line accounting.** This is a personal finance app, not a bookkeeping
+  system. Bills and incomes are single-line records.
+- **Multi-user within a single instance.** No auth, no `userId`, no row-level tenancy. One
+  instance, one household. Sharing is achieved by running an instance, not by signing up.
+- **Managed hosting of user ledgers.** The paid service is sync only. Holding other people's
+  transaction history would impose GDPR/DPIA obligations the project is not structured to carry.
+- **Tax reporting, payment initiation, investment performance tracking.**
+
+## Self-Hosting Obligations
+
+Distribution to third parties is a commitment. Before any release intended for others to run:
+
+- **Schema migrations MUST be explicit** (Flyway or Liquibase). `spring.jpa.hibernate.ddl-auto=update`
+  is FORBIDDEN outside local development — upgrading a stranger's data cannot ride on Hibernate
+  inferring intent.
+- **No credentials in version control.** All secrets via environment variables.
+- **Versioned releases with a documented upgrade path**, and documented backup/restore.
+- **Integration tests MUST be enabled and green.** They are the only guard on other people's
+  migrations.
 
 ## Development Workflow
 
-- **Spec-first**: Every new feature MUST have a specification (`spec.md`) reviewed before
-  any implementation begins. The OpenAPI YAML for new endpoints is part of the spec, not the
-  implementation.
-- **Constitution Check**: The plan for every feature MUST explicitly verify compliance with
-  Principles I–VIII before Phase 0 research is considered complete.
-- **Code Review gate**: PRs touching Domain financial logic require at least one reviewer to
-  confirm Principles I (immutability), II (double-entry), and IV (currency precision) are upheld.
-- **No direct SQL in Domain**: Domain services MUST use port interfaces; raw SQL or JPQL belongs
-  exclusively in Infrastructure adapters.
-- **No floating-point money**: CI MUST fail (via ArchUnit or equivalent) if `double`/`float`
-  field types are introduced in Domain DTOs or entity money fields.
+- **Spec-first**: Every feature MUST have a reviewed `spec.md` before implementation. OpenAPI YAML
+  for new endpoints is part of the spec, not the implementation.
+- **Constitution Check**: Every plan MUST verify compliance with Principles I–VIII before Phase 0
+  research is complete.
+- **Pipeline-first bias**: A feature that consumes transaction data SHOULD state how that data
+  arrives without manual entry. Consumer features are not forbidden, but the ratio is watched.
+- **Code Review gate**: PRs touching Domain financial logic require a reviewer to confirm
+  Principles I (immutability), II (idempotent ingestion), and IV (currency precision).
+- **No direct SQL in Domain**: raw SQL/JPQL belongs exclusively in Infrastructure adapters.
+- **No floating-point money**: CI MUST fail (ArchUnit or equivalent) if `double`/`float` money
+  fields appear in Domain DTOs or entities.
 
 ## Governance
 
-This Constitution supersedes all other documented practices in this repository. Amendments require:
+This Constitution supersedes all other documented practices in this repository. It describes what
+the code does and what the project commits to — a principle that the code does not honour is a bug
+in one of the two, and MUST be resolved rather than left standing. Amendments require:
+
 1. A written rationale explaining why the current principle is insufficient.
 2. An impact assessment against existing features and tests.
 3. A migration plan if existing code must change to comply.
 4. Version increment per semantic rules (MAJOR for removals/redefinitions, MINOR for additions,
    PATCH for clarifications).
 
-All PRs and feature reviews MUST verify compliance with this Constitution. Complexity MUST be
-justified by a constitutional principle; gold-plating or speculative generality is prohibited.
+All PRs and feature reviews MUST verify compliance. Complexity MUST be justified by a
+constitutional principle; gold-plating or speculative generality is prohibited.
 
 Refer to `CLAUDE.md` for runtime development commands and project structure guidance.
 
-**Version**: 1.0.0 | **Ratified**: 2026-05-23 | **Last Amended**: 2026-05-23
+**Version**: 2.0.0 | **Ratified**: 2026-05-23 | **Last Amended**: 2026-08-29
