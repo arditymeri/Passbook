@@ -1,10 +1,10 @@
-# MyFinance
+# Passbook
 
 **An open-source, self-hosted personal finance app that tells you where the money went, whether
 you're on budget, and whether you'll be okay — without making you type your transactions in by hand.**
 
 Most personal finance tools ask you to be a diligent data-entry clerk. That's the part nobody
-sustains. MyFinance treats the transaction pipeline as the product: bank data flows in, gets
+sustains. Passbook treats the transaction pipeline as the product: bank data flows in, gets
 categorised, and the dashboards are the payoff. Manual entry exists as a fallback and a
 correction path, not as the way data normally arrives.
 
@@ -209,18 +209,18 @@ reasoning.
 
 Copyright © 2023–2026 Ardit Ymeri.
 
-MyFinance is free software, licensed under the **GNU Affero General Public License v3.0 or later**
+Passbook is free software, licensed under the **GNU Affero General Public License v3.0 or later**
 (AGPL-3.0-or-later). You may use, study, modify, and redistribute it under those terms. See
 [`LICENSE`](LICENSE) for the full text.
 
 The AGPL was chosen deliberately over a permissive licence. Its distinguishing clause is
-**section 13**: if you run a modified version of MyFinance and let other people use it over a
+**section 13**: if you run a modified version of Passbook and let other people use it over a
 network, you must offer those users the source of your modified version. Self-hosting for
 yourself, your household, or internal use triggers nothing — you are not distributing to anyone.
-It only matters if you offer a modified MyFinance *as a service to others*, in which case your
+It only matters if you offer a modified Passbook *as a service to others*, in which case your
 changes must be shared back rather than kept proprietary.
 
-MyFinance is distributed in the hope that it will be useful, but **WITHOUT ANY WARRANTY**; without
+Passbook is distributed in the hope that it will be useful, but **WITHOUT ANY WARRANTY**; without
 even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Read the licence
 before trusting it with financial records that matter to you.
 
@@ -228,7 +228,7 @@ before trusting it with financial records that matter to you.
 
 Section 13 obliges you to offer *your* users the source of the version they are actually using.
 The UI carries a permanent "Get the source code" link in the footer for this purpose. If you have
-modified MyFinance and are letting others use it, point that link at your own repository by
+modified Passbook and are letting others use it, point that link at your own repository by
 setting `VITE_SOURCE_URL` when building the frontend:
 
 ```bash

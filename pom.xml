@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
     <name>My Finance</name>
 	<description>Personal Finance Project</description>
-	<url>https://github.com/arditymeri/MyFinance</url>
+	<url>https://github.com/arditymeri/Passbook</url>
 	<inceptionYear>2023</inceptionYear>
 	<licenses>
 		<license>

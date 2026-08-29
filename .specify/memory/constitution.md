@@ -34,11 +34,11 @@ Templates: plan-template.md derives its gates from this file (no hardcoded princ
   verified, no change required.
 -->
 
-# MyFinance Constitution
+# Passbook Constitution
 
 ## Vision
 
-**MyFinance is an open-source, self-hosted personal finance app that answers all three
+**Passbook is an open-source, self-hosted personal finance app that answers all three
 questions — where the money went, whether I'm on budget, and whether I'll be okay — without
 making you type your transactions in by hand.**
 

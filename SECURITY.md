@@ -1,6 +1,6 @@
 # Security Policy
 
-MyFinance handles financial records. Reports about anything that could expose or corrupt them
+Passbook handles financial records. Reports about anything that could expose or corrupt them
 are taken seriously, and this document tries to be honest about what the project does and does
 not currently protect against.
 
