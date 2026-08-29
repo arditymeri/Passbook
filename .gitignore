@@ -52,3 +52,5 @@ frontend/.env.*
 ### Local tool settings ###
 # Machine-specific Claude Code permissions; contains local filesystem paths.
 .claude/settings.local.json
+# Local JDK pin (jenv); the exact patch version is machine-specific.
+.java-version
