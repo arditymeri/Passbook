@@ -19,9 +19,10 @@
 
     <dependencies>
         <dependency>
+            <!-- Version intentionally omitted: managed by the root pom's dependencyManagement,
+                 which pins spring-kafka.version. A hardcoded version here silently overrode it. -->
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
-            <version>3.3.1</version>
         </dependency>
     </dependencies>
 
