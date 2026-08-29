@@ -134,6 +134,10 @@ release blockers in the [constitution](.specify/memory/constitution.md):
   every transaction amount is implicitly in its account's default currency. Cross-currency
   transactions cannot be represented.
 
+Found a security problem? Please report it privately — see [`SECURITY.md`](SECURITY.md),
+which also lists the limitations above as known and accepted, so you can tell them apart
+from real vulnerabilities.
+
 ---
 
 ## Running Tests
