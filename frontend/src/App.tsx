@@ -26,6 +26,7 @@ import { RecentTransactions } from './components/RecentTransactions';
 import { PriceChangeAlerts } from './components/PriceChangeAlerts';
 import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
 import { SavingsGoalsPage } from './components/SavingsGoalsPage';
+import { SourceFooter } from './components/SourceFooter';
 import { SpendingTrendsCard } from './components/SpendingTrendsCard';
 import { TransactionFilterBar } from './components/TransactionFilterBar';
 import { UpcomingRecurring } from './components/UpcomingRecurring';
@@ -78,6 +79,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <CategoriesPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+        <SourceFooter />
       </ThemeProvider>
     );
   }
@@ -87,6 +89,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <AccountsPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+        <SourceFooter />
       </ThemeProvider>
     );
   }
@@ -96,6 +99,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BudgetingPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+        <SourceFooter />
       </ThemeProvider>
     );
   }
@@ -105,6 +109,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <SavingsGoalsPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+        <SourceFooter />
       </ThemeProvider>
     );
   }
@@ -252,6 +257,8 @@ function App() {
           />
         </Stack>
       </Container>
+
+      <SourceFooter />
 
       <AddBillForm
         open={billFormOpen}
