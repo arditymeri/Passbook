@@ -392,3 +392,18 @@ export interface SpendingMover {
   change: number;
   percentChange: number | null;
 }
+
+export type ImportDirection = 'BILL' | 'INCOME';
+export type ImportRowStatus = 'ok' | 'duplicate' | 'error';
+
+export interface ImportCandidate {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  direction: ImportDirection;
+  categoryId?: string;
+  status: ImportRowStatus;
+  errorMessage?: string;
+  included: boolean;
+}
