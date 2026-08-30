@@ -8,3 +8,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     listener:
       missing-topics-fatal: false
+
+app:
+  demo-data:
+    enabled: false
