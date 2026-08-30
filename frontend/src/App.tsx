@@ -20,6 +20,7 @@ import { BudgetStatus } from './components/BudgetStatus';
 import { CashFlowForecastCard } from './components/CashFlowForecastCard';
 import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
+import { ImportTransactionsDialog } from './components/ImportTransactionsDialog';
 import { MonthNav } from './components/MonthNav';
 import { NetWorthCard } from './components/NetWorthCard';
 import { RecentTransactions } from './components/RecentTransactions';
@@ -51,6 +52,7 @@ function App() {
   const [history, setHistory] = useState<TransactionHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [recurringProposalsOpen, setRecurringProposalsOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [filters, setFilters] = useState<TransactionFilters>(EMPTY_TRANSACTION_FILTERS);
 
   const {
@@ -175,6 +177,9 @@ function App() {
             </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('categories')}>
               Categories
+            </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setImportDialogOpen(true)}>
+              Import
             </Button>
             <Button color="inherit" variant="contained" sx={{ bgcolor: 'secondary.main' }} onClick={() => setBillFormOpen(true)}>
               + Add Expense
@@ -306,6 +311,15 @@ function App() {
         onClose={() => setRecurringProposalsOpen(false)}
         onChanged={handleSaveSuccess}
         categories={categories}
+      />
+
+      <ImportTransactionsDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onImported={handleSaveSuccess}
+        allTransactions={allTransactions}
+        categories={categories}
+        accounts={accounts}
       />
     </ThemeProvider>
   );

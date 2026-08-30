@@ -47,12 +47,12 @@ user story's UI depends on.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T001 [P] Add `ImportDirection` (`'BILL' | 'INCOME'`), `ImportRowStatus`
+- [X] T001 [P] Add `ImportDirection` (`'BILL' | 'INCOME'`), `ImportRowStatus`
   (`'ok' | 'duplicate' | 'error'`), and `ImportCandidate` (`id: string`, `date: string`,
   `description: string`, `amount: number`, `direction: ImportDirection`, `categoryId?: string`,
   `status: ImportRowStatus`, `errorMessage?: string`, `included: boolean`) to
   `frontend/src/types/index.ts`
-- [ ] T002 Create `frontend/src/utils/transactionImport.ts`:
+- [X] T002 Create `frontend/src/utils/transactionImport.ts`:
   `parseImportFile(csvText: string): ImportCandidate[]` — splits the text into lines (handling a
   header row and quoted fields that may contain commas, without a new dependency per plan.md),
   and for each data row builds an `ImportCandidate`: `date`/`description` taken directly,
@@ -61,14 +61,14 @@ user story's UI depends on.
   missing/unparseable (FR-009 — this row is still included in the returned array, just flagged,
   so the rest of the file is unaffected), `status: 'ok'` and `included: true` otherwise,
   `categoryId` left `undefined` (depends on T001)
-- [ ] T003 Extend `frontend/src/utils/transactionImport.ts`:
+- [X] T003 Extend `frontend/src/utils/transactionImport.ts`:
   `suggestCategory(description: string, allTransactions: Transaction[]): string | undefined` —
   normalizes `description` (trim + lowercase, matching `RecurringMatching.normalizeDescription`'s
   backend rule) and returns the `categoryId` of the most recent existing `BILL` transaction whose
   normalized description matches, or `undefined` when nothing matches (FR-005; per spec Assumptions,
   reuses the same description-matching approach recurring-series detection already uses, not a
   new classifier) (depends on T002)
-- [ ] T004 Extend `frontend/src/utils/transactionImport.ts`:
+- [X] T004 Extend `frontend/src/utils/transactionImport.ts`:
   `detectDuplicates(candidates: ImportCandidate[], accountId: string, allTransactions:
   Transaction[]): ImportCandidate[]` — returns a new array where every `'ok'` candidate that
   exactly matches an existing transaction on `accountId` by calendar date, amount, and normalized
@@ -92,7 +92,7 @@ a file with some invalid rows still lets every valid row be reviewed and importe
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Create `frontend/src/components/ImportTransactionsDialog.tsx` (mirroring
+- [X] T005 [US1] Create `frontend/src/components/ImportTransactionsDialog.tsx` (mirroring
   `SetupTemplateDialog.tsx`'s `Modal`-based structure): a file input and an account `Select`
   (FR-002); on file selection, reads it via `FileReader.readAsText` and calls `parseImportFile`
   to build the candidate list into local state; renders a review list — one row per candidate
@@ -102,7 +102,7 @@ a file with some invalid rows still lets every valid row be reviewed and importe
   Confirm button that, for every candidate with `included: true`, calls `createBill`/`createIncome`
   (per its `direction`) with the selected account, then shows a summary of how many were created
   (depends on T004)
-- [ ] T006 [US1] Modify `frontend/src/App.tsx`: add an "Import" button to the toolbar opening
+- [X] T006 [US1] Modify `frontend/src/App.tsx`: add an "Import" button to the toolbar opening
   `ImportTransactionsDialog`, passing the `allTransactions`, `categories`, and `accounts`
   `useDashboardData` already fetches, and calling `handleSaveSuccess` (existing refresh callback)
   after a successful import (depends on T005)
@@ -124,7 +124,7 @@ that one.
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] Extend `frontend/src/components/ImportTransactionsDialog.tsx` (depends on T005):
+- [X] T007 [US2] Extend `frontend/src/components/ImportTransactionsDialog.tsx` (depends on T005):
   after building candidates via `parseImportFile`, call `detectDuplicates(candidates, accountId,
   allTransactions)` before rendering the review list; give every candidate row a checkbox bound
   to its `included` flag (defaulting to `detectDuplicates`'s output — unchecked for duplicates,
@@ -148,7 +148,7 @@ non-duplicate row and verify it's never created.
 
 ### Implementation for User Story 3
 
-- [ ] T008 [US3] Extend `frontend/src/components/ImportTransactionsDialog.tsx` (depends on T007):
+- [X] T008 [US3] Extend `frontend/src/components/ImportTransactionsDialog.tsx` (depends on T007):
   after building candidates, call `suggestCategory(candidate.description, allTransactions)` for
   every `'ok'`/`'duplicate'` candidate to seed its `categoryId`; render each row's category as an
   editable `Select` (options from `categories`, plus "Uncategorized") so the user can change or
@@ -165,9 +165,9 @@ upload/review/correct/confirm experience works end to end.
 
 **Purpose**: Full verification once all stories are implemented
 
-- [ ] T009 Run `cd frontend && npx tsc --noEmit` and confirm no type errors across the
+- [X] T009 Run `cd frontend && npx tsc --noEmit` and confirm no type errors across the
   new/modified files
-- [ ] T010 Hand-verify `frontend/src/utils/transactionImport.ts` against constructed sample data
+- [X] T010 Hand-verify `frontend/src/utils/transactionImport.ts` against constructed sample data
   (a small CSV string with a valid bill row, a valid income row, a row with a missing amount, and
   a row engineered to match an existing sample `Transaction`): confirm `parseImportFile` produces
   the right `direction`/`status`/`errorMessage` per row, `suggestCategory` returns the expected
