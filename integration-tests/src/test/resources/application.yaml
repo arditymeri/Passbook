@@ -8,3 +8,9 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     listener:
       missing-topics-fatal: false
+
+app:
+  # Each test boots the full app context against a fresh, empty TestContainers Postgres, which
+  # would otherwise trigger DemoDataSeeder and pollute every test's starting state.
+  demo-data:
+    enabled: false
