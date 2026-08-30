@@ -92,6 +92,19 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Launcher's application.properties (spring.jpa.hibernate.ddl-auto=update etc.)
+                         is on this module's test classpath, and a same-named/keyed test resource
+                         file can't win against it in Spring's config-file precedence. A JVM system
+                         property does, so disable demo-data seeding that way instead. -->
+                    <systemPropertyVariables>
+                        <app.demo-data.enabled>false</app.demo-data.enabled>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
