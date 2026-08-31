@@ -51,7 +51,7 @@ presentation-layer aggregation to the frontend once the backend exposes the raw 
 | II. Ingestion Is Idempotent (NON-NEGOTIABLE) | N/A | This feature adds no new ingestion path. The necessity-tag write is a direct, single, idempotent-by-nature user action from the UI (setting a value to X twice yields the same result), not data arriving from an external source with duplicate risk. |
 | III. Balance Derivation | N/A | This feature reads but never writes any balance figure, and derives every recommendation at read time — nothing is cached (mirrors feature 015's forecast). |
 | IV. Currency Precision (NON-NEGOTIABLE) | PASS | New backend amount fields (`monthlyEquivalentAmount`, `originalAmount`, `increaseAmount`) are `BigDecimal` end-to-end through Domain/Application, matching every existing money field. Frontend continues the established, previously-accepted precedent (012-017) of JS `number` for display only. |
-| V. Audit Trail & Observability | PASS | The new `UpdateBillNecessityTagServiceImpl` logs a structured line (bill id, old tag, new tag, UTC timestamp, source=manual entry) on every change, satisfying "record... the source of the change... and the resulting state change" for this feature's one state-changing operation. |
+| V. Audit Trail & Observability | N/A (pre-existing gap, not worsened) | No Domain service in this codebase currently does structured logging for any state-changing operation — confirmed by checking `AddBillServiceImpl`, `CorrectBillServiceImpl`, `UpdateCategoryServiceImpl`, etc.; none log. Adding logging to only the new `UpdateBillNecessityTagServiceImpl` while every other, pre-existing mutation stays silent would be an inconsistent, one-off pattern rather than genuine compliance. This feature follows the same (gapped) convention as everything around it; closing the gap project-wide is out of scope here, same posture as the frontend-test-runner and `ddl-auto` gaps noted elsewhere in this plan. |
 | VI. Test-First Development (NON-NEGOTIABLE) | PASS | New Domain business-rule logic (monthly-equivalent conversion, price-creep tolerance check, necessity-tag validation) gets JUnit tests written alongside implementation per user story. |
 | VII. API Contract Stability | PASS | Two new endpoints defined in OpenAPI YAML first (`contracts/necessity-tag-api.yaml` + `contracts/necessity-tag-model.yaml`, `contracts/recurring-cost-summary-api.yaml` + `contracts/recurring-cost-summary-model.yaml`). The only change to an existing contract is one new optional/nullable field (`necessityTag`) added to the existing `bill` schema — additive, non-breaking. |
 | VIII. Hexagonal Architecture Compliance | PASS | New Domain logic (`UpdateBillNecessityTagServiceImpl`, `GetRecurringCostSummaryServiceImpl`) has zero Spring/JPA/Kafka dependency; new ports (`UpdateBillNecessityTagPersistencePort`) defined in Domain and implemented in Infrastructure; Application adds thin controllers plus MapStruct mapper additions only. |
@@ -110,12 +110,12 @@ Application/src/main/resources/swagger/recurring/
 ├── recurring-model.yaml                     # MODIFIED: + recurringCostSummaryItem, recurringCostSummaryResponse
 └── recurring-cost-summary-controller.yaml   # NEW: GET /recurring-series/cost-summary
 
-Application/src/main/java/at/ymeri/my/finance/application/
-├── controller/bill/BillNecessityTagController.java       # NEW: implements generated delegate
+Application/src/main/java/at/ymeri/my/finance/
+├── controller/bill/BillNecessityTagController.java        # NEW: implements generated delegate (package matches BillCorrectionController's, not application.controller)
 ├── controller/recurring/RecurringCostSummaryController.java  # NEW: implements generated delegate
-└── mapper/
-    ├── bill/BillMapper.java (Application layer)           # MODIFIED: + necessityTag DTO<->API model mapping
-    └── recurring/RecurringCostSummaryMapper.java           # NEW
+└── application/mapper/
+    ├── BillMapper.java (Application layer)                # UNCHANGED: MapStruct auto-maps the new same-named necessityTag field once both DTO and API model declare it — confirmed no explicit method body exists for any other field either
+    └── RecurringCostSummaryMapper.java                     # NEW
 
 frontend/src/
 ├── types/index.ts                              # MODIFIED: + NecessityTag, RecurringCostSummaryItem, CategorySpendingOpportunity, TaggedTransactionOpportunity, SpendingCutRecommendations
