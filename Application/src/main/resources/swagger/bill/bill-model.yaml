@@ -51,10 +51,20 @@ components:
           type: "string"
         reversal:
           type: "boolean"
+        necessityTag:
+          $ref: '#/components/schemas/necessityTag'
+          nullable: true
         billItems:
           type: "array"
           items:
             $ref: '#/components/schemas/billItem'
+
+    necessityTag:
+      type: "string"
+      enum:
+        - NECESSARY
+        - AVOIDABLE
+        - UNNECESSARY
 
     billItem:
       type: "object"
@@ -88,6 +98,14 @@ components:
           type: "string"
         accountId:
           type: "string"
+
+    updateNecessityTagRequest:
+      type: "object"
+      properties:
+        tag:
+          # Nullable: absent or null clears the tag back to untagged.
+          $ref: '#/components/schemas/necessityTag'
+          nullable: true
 
     billHistoryResponse:
       type: "object"

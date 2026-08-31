@@ -62,7 +62,9 @@ public class CorrectBillServiceImpl implements CorrectBillService {
 
     /**
      * The corrected replacement carries the user's new values, dated per its own (possibly changed)
-     * time, and points back at the row it replaces.
+     * time, and points back at the row it replaces. {@code necessityTag} carries forward
+     * unchanged: it's the user's own judgment about the purchase, not a financial fact being
+     * corrected, so fixing e.g. the amount shouldn't silently discard it.
      */
     private static BillDto replacement(BillDto current, BillDto correctedValues) {
         BillDto replacement = new BillDto();
@@ -74,6 +76,7 @@ public class CorrectBillServiceImpl implements CorrectBillService {
         replacement.setCurrency(current.getCurrency());
         replacement.setCorrectsTransactionId(current.getId());
         replacement.setReversal(false);
+        replacement.setNecessityTag(current.getNecessityTag());
         return replacement;
     }
 }

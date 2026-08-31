@@ -26,4 +26,5 @@ public class BillDto {
     private RecurringFrequency recurringFrequency;
     private String correctsTransactionId;
     private boolean reversal;
+    private NecessityTag necessityTag;
 }

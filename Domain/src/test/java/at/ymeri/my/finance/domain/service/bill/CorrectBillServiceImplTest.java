@@ -113,6 +113,22 @@ class CorrectBillServiceImplTest {
     }
 
     @Test
+    void correctBill_taggedOriginal_replacementCarriesTheSameTag() {
+        BillDto original = original(new BigDecimal("40.00"));
+        original.setNecessityTag(at.ymeri.my.finance.domain.data.bill.NecessityTag.UNNECESSARY);
+        when(getBillPersistencePort.lockBillById(ORIGINAL_ID)).thenReturn(Optional.of(original));
+        when(addBillPersistencePort.addBill(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.correctBill(ORIGINAL_ID, corrected(new BigDecimal("45.50")));
+
+        ArgumentCaptor<BillDto> captor = ArgumentCaptor.forClass(BillDto.class);
+        verify(addBillPersistencePort, times(2)).addBill(captor.capture());
+        BillDto replacement = captor.getAllValues().get(1);
+
+        assertThat(replacement.getNecessityTag()).isEqualTo(at.ymeri.my.finance.domain.data.bill.NecessityTag.UNNECESSARY);
+    }
+
+    @Test
     void correctBill_onAlreadyCorrectedRow_reversesThatRowsAmount() {
         BillDto secondGeneration = original(new BigDecimal("45.50"));
         secondGeneration.setCorrectsTransactionId(UUID.randomUUID().toString());

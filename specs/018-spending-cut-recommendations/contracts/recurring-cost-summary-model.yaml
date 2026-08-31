@@ -1,0 +1,30 @@
+components:
+  schemas:
+    recurringCostSummaryItem:
+      type: "object"
+      properties:
+        seriesId:
+          type: "string"
+          format: "uuid"
+        description:
+          type: "string"
+        monthlyEquivalentAmount:
+          type: "number"
+          description: "Most recent occurrence amount, normalized to a monthly-equivalent using the series' frequency"
+        originalAmount:
+          type: "number"
+          description: "Earliest recorded occurrence's amount"
+        priceIncreased:
+          type: "boolean"
+          description: "True when the most recent occurrence amount exceeds originalAmount beyond the existing amount-tolerance rule"
+        increaseAmount:
+          type: "number"
+          description: "Most recent occurrence amount minus originalAmount; only meaningful when priceIncreased is true"
+
+    recurringCostSummaryResponse:
+      type: "object"
+      properties:
+        items:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/recurringCostSummaryItem'

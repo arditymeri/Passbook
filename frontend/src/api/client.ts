@@ -1,4 +1,4 @@
-import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, Income, MonthlySummary, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
+import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, Income, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -99,6 +99,11 @@ export async function fetchRecurringDashboard(): Promise<RecurringDashboard> {
   return request<RecurringDashboard>('/api/v1/recurring-series/dashboard');
 }
 
+export async function fetchRecurringCostSummary(): Promise<RecurringCostSummaryItem[]> {
+  const data = await request<{ items: RecurringCostSummaryItem[] }>('/api/v1/recurring-series/cost-summary');
+  return data.items ?? [];
+}
+
 export async function createSavingsGoal(req: CreateSavingsGoalRequest): Promise<SavingsGoalStatus> {
   return postAndReturn<SavingsGoalStatus>('/api/v1/savings-goals', req);
 }
@@ -185,6 +190,11 @@ export async function removeBill(id: string): Promise<void> {
 export async function fetchBillHistory(id: string): Promise<TransactionHistoryEntry[]> {
   const data = await request<{ history: TransactionHistoryEntry[] }>(`/api/v1/bills/${id}/history`);
   return data.history ?? [];
+}
+
+export async function updateBillNecessityTag(id: string, tag: NecessityTag | null): Promise<Bill> {
+  const data = await putAndReturn<{ bill: Bill }>(`/api/v1/bills/${id}/necessity-tag`, { tag });
+  return data.bill;
 }
 
 export async function correctIncome(id: string, req: CorrectIncomeRequest): Promise<void> {

@@ -38,4 +38,7 @@ public class BillEntity {
     @Column(name = "reversal", nullable = false)
     @ColumnDefault("false")
     private boolean reversal;
+
+    @Column(name = "necessity_tag")
+    private String necessityTag;
 }

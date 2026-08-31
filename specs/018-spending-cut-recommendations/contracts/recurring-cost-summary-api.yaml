@@ -1,0 +1,33 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Recurring Cost Summary API"
+  description: "Monthly-equivalent cost and price-creep data for every confirmed recurring series, for cost-cutting recommendations"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /recurring-series/cost-summary:
+    get:
+      summary: "Get every confirmed recurring series' monthly-equivalent cost and price-creep status"
+      operationId: getRecurringCostSummary
+      description: >
+        For every CONFIRMED recurring series, returns its most recent occurrence amount
+        normalized to a monthly-equivalent figure (so DAILY/WEEKLY/MONTHLY/YEARLY series are
+        comparable), plus whether the series' amount has increased since its earliest recorded
+        occurrence beyond the existing amount-tolerance rule used elsewhere for price-change
+        detection. This is a distinct, cumulative signal from GET /recurring-series/dashboard's
+        recentPriceChanges, which only compares the two most recent occurrences.
+      tags:
+        - recurringCostSummary
+      responses:
+        "200":
+          description: "Recurring cost summary returned"
+          content:
+            application/json:
+              schema:
+                $ref: "recurring-cost-summary-model.yaml#/components/schemas/recurringCostSummaryResponse"
+        default:
+          description: "Unexpected error"
+
+components:
+  schemas: {}
