@@ -261,22 +261,22 @@ already-correct backend.
 **Independent Test**: Trigger an export on a device with existing data and confirm a single file
 downloads containing it.
 
-- [ ] T027 [P] [US1] In `frontend/src/types/index.ts`, add `ImportSummary` and
+- [X] T027 [P] [US1] In `frontend/src/types/index.ts`, add `ImportSummary` and
   `EntityMergeCounts` types mirroring `sync-model.yaml` field-for-field. Type `SyncSnapshot` as an
   opaque `Record<string, unknown>` rather than fully mirroring every nested entity shape — the
   frontend only ever fetches it, hands it back unmodified, and downloads/reads it as a file; it
   never constructs or inspects individual snapshot fields itself.
-- [ ] T028 [P] [US1] Create `frontend/src/utils/downloadFile.ts` exporting
+- [X] T028 [P] [US1] Create `frontend/src/utils/downloadFile.ts` exporting
   `downloadJsonFile(filename: string, data: unknown): void` — builds a `Blob`, an
   `URL.createObjectURL`, and a temporary anchor element with a `download` attribute to trigger the
   browser's save flow (this repo's first use of this pattern — confirmed no existing
   `createObjectURL`/`Blob`/`download=` usage anywhere in `frontend/src`).
-- [ ] T029 [P] [US1] Add `fetchSyncExport(): Promise<unknown>` to `frontend/src/api/client.ts`
+- [X] T029 [P] [US1] Add `fetchSyncExport(): Promise<unknown>` to `frontend/src/api/client.ts`
   (`GET /api/v1/sync/export`, returns the raw parsed JSON body).
-- [ ] T030 [US1] Create `frontend/src/components/SyncPage.tsx` with an "Export" button that calls
+- [X] T030 [US1] Create `frontend/src/components/SyncPage.tsx` with an "Export" button that calls
   `fetchSyncExport()` then `downloadJsonFile(...)` with a filename like
   `passbook-sync-<ISO date>.json` (depends on T027, T028, T029).
-- [ ] T031 [US1] Mount `<SyncPage />` in `frontend/src/App.tsx` as its own settings-style entry
+- [X] T031 [US1] Mount `<SyncPage />` in `frontend/src/App.tsx` as its own settings-style entry
   point, mirroring how `CategoriesPage`/`AccountsPage`/`BudgetingPage`/`SavingsGoalsPage` are each
   reached as their own view rather than a dashboard card (depends on T030).
 
@@ -291,10 +291,10 @@ downloads containing it.
 **Independent Test**: Export from a device with data, import into a fresh device with none, and
 verify the fresh device's data now matches the source.
 
-- [ ] T032 [P] [US2] Add `previewSyncImport(snapshot: unknown): Promise<ImportSummary>` and
+- [X] T032 [P] [US2] Add `previewSyncImport(snapshot: unknown): Promise<ImportSummary>` and
   `applySyncImport(snapshot: unknown): Promise<ImportSummary>` to `frontend/src/api/client.ts`
   (`POST /api/v1/sync/import/preview`, `POST /api/v1/sync/import/apply`) (depends on T027).
-- [ ] T033 [US2] Extend `SyncPage.tsx` with an import flow: a file picker
+- [X] T033 [US2] Extend `SyncPage.tsx` with an import flow: a file picker
   (`<input type="file" accept=".json,application/json">` + `FileReader`, mirroring
   `ImportTransactionsDialog.tsx`'s existing pattern) parses the chosen file as JSON, calls
   `previewSyncImport`, and renders a basic summary (total items to be added, total to be updated)
@@ -316,7 +316,7 @@ verify the combined result — this is already guaranteed correct by the Foundat
 `ComputeMergePlanService`/`ApplyMergePlanService` and their tests (T019-T022); this phase's only
 remaining task makes that correctness *visible* to the user.
 
-- [ ] T034 [US3] Extend `SyncPage.tsx`'s import summary (from T033) to surface
+- [X] T034 [US3] Extend `SyncPage.tsx`'s import summary (from T033) to surface
   `correctionConflictsResolved` as its own explicit line whenever it is greater than zero (e.g.
   "2 correction conflicts resolved — the more recently made correction was kept on each"). No
   backend change: the count was already computed correctly by the Foundational merge engine and
@@ -335,7 +335,7 @@ breakdown, not just a total.
 confirming, and confirm cancelling leaves local data untouched (already guaranteed by T033's
 Cancel path — this phase upgrades what Confirm's preview actually shows).
 
-- [ ] T035 [US4] Extend `SyncPage.tsx`'s import summary (from T033/T034) from the basic
+- [X] T035 [US4] Extend `SyncPage.tsx`'s import summary (from T033/T034) from the basic
   added/updated totals into a full per-data-type table — accounts, categories, budgets, recurring
   series, bills, incomes, savings goals, each row showing added/updated/unchanged — reusing the
   already-complete `ImportSummary` shape the Foundational phase's endpoints have returned from the
@@ -347,9 +347,9 @@ Cancel path — this phase upgrades what Confirm's preview actually shows).
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T036 [P] Run `./mvnw -pl Domain test` and confirm T020, T022, plus every pre-existing Domain
+- [X] T036 [P] Run `./mvnw -pl Domain test` and confirm T020, T022, plus every pre-existing Domain
   test, all pass.
-- [ ] T037 [P] Run `cd frontend && npx tsc --noEmit` to typecheck the new frontend code (this repo
+- [X] T037 [P] Run `cd frontend && npx tsc --noEmit` to typecheck the new frontend code (this repo
   has no frontend test runner anywhere — a pre-existing gap this feature does not introduce or
   worsen).
 - [ ] T038 Execute `specs/019-device-sync-export/quickstart.md`'s 6 manual scenarios end-to-end
@@ -358,7 +358,7 @@ Cancel path — this phase upgrades what Confirm's preview actually shows).
   also needs a second simulated device/database beyond what every prior feature's quickstart
   needed) — must be run manually once implementation lands in an environment with Docker; report
   honestly rather than marking complete if not actually run.
-- [ ] T039 Mark all tasks in this file `[X]`, then commit and push the implementation to
+- [X] T039 Mark all tasks in this file `[X]`, then commit and push the implementation to
   `claude/project-status-s0au7m`.
 
 ---
