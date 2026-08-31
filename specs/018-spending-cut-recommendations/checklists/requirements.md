@@ -31,4 +31,5 @@
 
 ## Notes
 
-- All items pass. No clarifications needed — reasonable defaults (confirmed-only recurring series, read-only v1, no new persistence) are documented in the Assumptions section, consistent with how features 015-017 scoped similar ambiguity.
+- All items pass. No clarifications needed — reasonable defaults (confirmed-only recurring series, a fixed three-value necessity tag, which transaction types can be tagged) are documented in the Assumptions section, consistent with how features 015-017 scoped similar ambiguity.
+- Updated after adding User Story 2 (necessity tagging): this is now the one part of the feature that introduces new backend persistence (a tag per bill transaction); the recurring/price-creep/category signals remain purely computed, as originally scoped.
