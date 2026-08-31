@@ -111,6 +111,7 @@ export function useDashboardData(year: number, month: number, refreshKey: number
           categoryId: b.categoryId ?? undefined,
           accountId: b.accountId ?? undefined,
           correctsTransactionId: b.correctsTransactionId ?? undefined,
+          necessityTag: b.necessityTag ?? undefined,
         }));
         const incomeTxns: Transaction[] = incomes.map((i) => ({
           id: i.id,

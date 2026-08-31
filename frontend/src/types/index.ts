@@ -79,6 +79,8 @@ export interface RepeatAllocationsResponse {
   applied: AllocationTopUp[];
 }
 
+export type NecessityTag = 'NECESSARY' | 'AVOIDABLE' | 'UNNECESSARY';
+
 export interface Bill {
   id: string;
   description: string | null;
@@ -88,6 +90,7 @@ export interface Bill {
   accountId?: string | null;
   correctsTransactionId?: string | null;
   reversal?: boolean;
+  necessityTag?: NecessityTag | null;
 }
 
 export interface Income {
@@ -128,6 +131,7 @@ export interface Transaction {
   accountId?: string;
   source?: IncomeSource;
   correctsTransactionId?: string;
+  necessityTag?: NecessityTag | null;
 }
 
 export type CategoryNameMap = Map<string, string>;
@@ -261,6 +265,15 @@ export interface PriceChangeAlert {
 export interface RecurringDashboard {
   upcoming: UpcomingRecurringItem[];
   recentPriceChanges: PriceChangeAlert[];
+}
+
+export interface RecurringCostSummaryItem {
+  seriesId: string;
+  description: string;
+  monthlyEquivalentAmount: number;
+  originalAmount: number;
+  priceIncreased: boolean;
+  increaseAmount: number | null;
 }
 
 export type PaceStatusValue = 'ON_PACE' | 'BEHIND_PACE' | 'OVERDUE';
@@ -406,4 +419,28 @@ export interface ImportCandidate {
   status: ImportRowStatus;
   errorMessage?: string;
   included: boolean;
+}
+
+export interface TaggedTransactionOpportunity {
+  transactionId: string;
+  description: string | null;
+  amount: number;
+  tag: 'AVOIDABLE' | 'UNNECESSARY';
+}
+
+export type CategoryOpportunityReason = 'OVER_BUDGET' | 'TRENDING_UP' | 'BOTH';
+
+export interface CategorySpendingOpportunity {
+  categoryId: string;
+  categoryName: string;
+  excessAmount: number;
+  reason: CategoryOpportunityReason;
+}
+
+export interface SpendingCutRecommendations {
+  recurringItems: RecurringCostSummaryItem[];
+  totalMonthlyRecurringSpend: number;
+  taggedTransactions: TaggedTransactionOpportunity[];
+  categoryOpportunities: CategorySpendingOpportunity[];
+  potentialMonthlySavings: number;
 }

@@ -18,6 +18,7 @@ import { AccountsPage } from './components/AccountsPage';
 import { BudgetingPage } from './components/BudgetingPage';
 import { BudgetStatus } from './components/BudgetStatus';
 import { CashFlowForecastCard } from './components/CashFlowForecastCard';
+import { SpendingCutRecommendationsPage } from './components/SpendingCutRecommendationsPage';
 import { CategoriesPage } from './components/CategoriesPage';
 import { CategorySpend } from './components/CategorySpend';
 import { ImportTransactionsDialog } from './components/ImportTransactionsDialog';
@@ -215,6 +216,8 @@ function App() {
 
           <CashFlowForecastCard />
 
+          <SpendingCutRecommendationsPage allTransactions={allTransactions} categoryNames={categoryNames} />
+
           <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap' }}>
             <Box sx={{ flex: 1, minWidth: 280 }}>
               <CategorySpend
@@ -258,6 +261,7 @@ function App() {
             onCorrect={setCorrectingTransaction}
             onRemove={setRemovingTransaction}
             onHistory={handleOpenHistory}
+            onTagChanged={() => setRefreshKey((k) => k + 1)}
             emptyMessage={isFiltering ? 'No transactions found' : undefined}
           />
         </Stack>

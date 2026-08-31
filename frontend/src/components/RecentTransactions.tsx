@@ -18,6 +18,7 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import type { CategoryNameMap, Transaction } from '../types';
+import { NecessityTagControl } from './NecessityTagControl';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
@@ -27,6 +28,7 @@ interface RecentTransactionsProps {
   onCorrect: (t: Transaction) => void;
   onRemove: (t: Transaction) => void;
   onHistory: (t: Transaction) => void;
+  onTagChanged: () => void;
   emptyMessage?: string;
 }
 
@@ -44,6 +46,7 @@ export function RecentTransactions({
   onCorrect,
   onRemove,
   onHistory,
+  onTagChanged,
   emptyMessage = 'No transactions for this month.',
 }: RecentTransactionsProps) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
@@ -122,12 +125,17 @@ export function RecentTransactions({
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Chip
-                    label={t.type === 'INCOME' ? 'INCOME' : 'EXPENSE'}
-                    color={t.type === 'INCOME' ? 'success' : 'error'}
-                    size="small"
-                    variant="outlined"
-                  />
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <Chip
+                      label={t.type === 'INCOME' ? 'INCOME' : 'EXPENSE'}
+                      color={t.type === 'INCOME' ? 'success' : 'error'}
+                      size="small"
+                      variant="outlined"
+                    />
+                    {t.type === 'BILL' && (
+                      <NecessityTagControl billId={t.id} tag={t.necessityTag} onChanged={onTagChanged} />
+                    )}
+                  </Stack>
                 </TableCell>
                 <TableCell align="right">
                   <IconButton

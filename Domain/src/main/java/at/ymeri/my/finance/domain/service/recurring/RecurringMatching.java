@@ -37,6 +37,20 @@ public final class RecurringMatching {
         return gap.compareTo(lowerBound) >= 0 && gap.compareTo(upperBound) <= 0;
     }
 
+    /**
+     * How many times a series of this frequency occurs per calendar month on average — used to
+     * normalize a per-occurrence amount into a monthly-equivalent figure so series of different
+     * frequencies can be ranked and summed together.
+     */
+    public static double occurrencesPerMonth(RecurringFrequency frequency) {
+        return switch (frequency) {
+            case DAILY -> 30.44;
+            case WEEKLY -> 4.348;
+            case MONTHLY -> 1;
+            case YEARLY -> 1.0 / 12;
+        };
+    }
+
     private static Duration nominalInterval(RecurringFrequency frequency) {
         return switch (frequency) {
             case DAILY -> Duration.ofDays(1);

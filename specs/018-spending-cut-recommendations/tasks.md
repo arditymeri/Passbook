@@ -60,7 +60,7 @@ writing the tasks below:
 
 ## Phase 1: Setup (OpenAPI contracts, spec-first per Constitution Principle VII)
 
-- [ ] T001 [P] Create `Application/src/main/resources/swagger/bill/bill-necessity-tag-controller.yaml`
+- [X] T001 [P] Create `Application/src/main/resources/swagger/bill/bill-necessity-tag-controller.yaml`
   and add `necessityTag` (enum `NECESSARY|AVOIDABLE|UNNECESSARY`, nullable) to the existing `bill`
   schema plus a new `updateNecessityTagRequest` schema in
   `Application/src/main/resources/swagger/bill/bill-model.yaml`, adapting
@@ -69,23 +69,23 @@ writing the tasks below:
   `bill-correction-controller.yaml` for style: `servers` block, `tags:`, `$ref` syntax, and the
   existing `bill` schema in `bill-model.yaml` — add the field there rather than duplicating the
   schema).
-- [ ] T002 [P] Create `Application/src/main/resources/swagger/recurring/recurring-cost-summary-controller.yaml`
+- [X] T002 [P] Create `Application/src/main/resources/swagger/recurring/recurring-cost-summary-controller.yaml`
   and add `recurringCostSummaryItem` / `recurringCostSummaryResponse` schemas to
   `Application/src/main/resources/swagger/recurring/recurring-model.yaml`, adapting
   `specs/018-spending-cut-recommendations/contracts/recurring-cost-summary-api.yaml` /
   `contracts/recurring-cost-summary-model.yaml` (compare `recurring-get-controller.yaml` for
   style).
-- [ ] T003 [P] Register a new `bill-necessity-tag` code-gen execution in `Application/pom.xml`,
+- [X] T003 [P] Register a new `bill-necessity-tag` code-gen execution in `Application/pom.xml`,
   modeled exactly on the existing `bill-correction` `<execution>` block (same `apiPackage`
   `${api-package}.bill`, `modelPackage` `${model-package}`, and `configOptions` —
   `delegatePattern`, `interfaceOnly`, `useSpringBoot3`, `skipOverwrite`, etc. — as every other
   execution in that file): `<id>bill-necessity-tag</id>`, `<inputSpec>` pointing at
   `swagger/bill/bill-necessity-tag-controller.yaml`.
-- [ ] T004 [P] Register a new `recurring-cost-summary` code-gen execution in `Application/pom.xml`,
+- [X] T004 [P] Register a new `recurring-cost-summary` code-gen execution in `Application/pom.xml`,
   modeled on the existing `recurring-get` `<execution>` block: `<id>recurring-cost-summary</id>`,
   `<inputSpec>` pointing at `swagger/recurring/recurring-cost-summary-controller.yaml`,
   `<apiPackage>${api-package}.recurring</apiPackage>`.
-- [ ] T005 Run `./mvnw -pl Application clean generate-sources` (depends on T001-T004) — **must**
+- [X] T005 Run `./mvnw -pl Application clean generate-sources` (depends on T001-T004) — **must**
   use `clean` (or manually delete `Application/target/generated-sources/`) so the stale
   `skipOverwrite=true`-protected `Bill.java` is regenerated with the new `necessityTag` field
   rather than silently kept without it. Confirm the generated `BillNecessityTagApi` delegate,
@@ -102,14 +102,14 @@ until this phase is complete.
 
 ### Necessity tag persistence (feeds US1's page shell and, primarily, US2)
 
-- [ ] T006 [P] Add `Domain/src/main/java/at/ymeri/my/finance/domain/data/bill/NecessityTag.java`
+- [X] T006 [P] Add `Domain/src/main/java/at/ymeri/my/finance/domain/data/bill/NecessityTag.java`
   (enum `NECESSARY, AVOIDABLE, UNNECESSARY`); add a nullable `NecessityTag necessityTag` field to
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/bill/BillDto.java`; add a nullable
   `@Column(name = "necessity_tag") private String necessityTag;` field to
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/BillEntity.java` (stored
   as the enum's `name()`, consistent with how `CategoryEntity.type` stores a String rather than a
   JPA enum type elsewhere in this codebase — check `CategoryEntity.java` for the exact pattern).
-- [ ] T007 [P] Create
+- [X] T007 [P] Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/recurring/RecurringCostSummaryItemDto.java`
   (`seriesId`, `description`, `monthlyEquivalentAmount` `BigDecimal`, `originalAmount`
   `BigDecimal`, `priceIncreased` `boolean`, `increaseAmount` `BigDecimal`, per data-model.md). Add
@@ -118,31 +118,31 @@ until this phase is complete.
   (`DAILY -> 30.44, WEEKLY -> 4.348, MONTHLY -> 1, YEARLY -> 1.0/12`) — this is the same file that
   already owns `nominalInterval`/`toleranceFor`/`predictNextDate`, so every recurring-frequency
   constant lives in one place (research.md R4).
-- [ ] T008 Create
+- [X] T008 Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/spi/bill/UpdateBillNecessityTagPersistencePort.java`
   (single method `BillDto updateNecessityTag(String billId, NecessityTag tag)`, `tag` nullable to
   clear) (depends on T006).
-- [ ] T009 Implement
+- [X] T009 Implement
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/bill/UpdateBillNecessityTagPostgresAdapter.java`
   (`@Service`, constructor-injects `BillRepository`; `findById(UUID.fromString(billId))`, set
   `necessityTag` (or `null`), `save`, map back via `BillMapper.INSTANCE.map(...)` — mirror
   `AddBillPostgresAdapter`'s shape) (depends on T006, T008).
-- [ ] T010 Create
+- [X] T010 Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/UpdateBillNecessityTagService.java`
   (single method `BillDto updateNecessityTag(String billId, NecessityTag tag)`) (depends on T006).
-- [ ] T011 Implement
+- [X] T011 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/bill/UpdateBillNecessityTagServiceImpl.java`
   (`@Service`, constructor-injects `UpdateBillNecessityTagPersistencePort` and `GetBillService`).
   Validates the bill id is one of `getBillService.getAll()`'s current/visible ids — throw
   `NoSuchElementException("Bill not found: " + billId)` otherwise (covers "doesn't exist", "is a
   reversal row", and "has been superseded by a correction" in one check, per data-model.md's
   validation rule) — then delegates to the port (depends on T008, T010).
-- [ ] T012 [US-shared] Create
+- [X] T012 [US-shared] Create
   `Domain/src/test/java/at/ymeri/my/finance/domain/service/bill/UpdateBillNecessityTagServiceImplTest.java`
   (depends on T011), with a fake/mock port and `GetBillService`, covering: setting each of the
   three tag values on a visible bill; clearing a tag (`null`); not-found when the id isn't in
   `getAll()`'s result (covers both "never existed" and "reversal/superseded" cases).
-- [ ] T013 Update `replacement(...)` in
+- [X] T013 Update `replacement(...)` in
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/bill/CorrectBillServiceImpl.java` to
   add `replacement.setNecessityTag(current.getNecessityTag());` (research.md R3 — a tag must
   survive a correction of amount/date/category/account). Do **not** add it to
@@ -153,10 +153,10 @@ until this phase is complete.
 
 ### Recurring cost summary (feeds US1 and US3)
 
-- [ ] T014 Create
+- [X] T014 Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/GetRecurringCostSummaryService.java`
   (single method `List<RecurringCostSummaryItemDto> getSummary()`) (depends on T007).
-- [ ] T015 Implement
+- [X] T015 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/recurring/GetRecurringCostSummaryServiceImpl.java`
   (`@Service`, constructor-injects `GetRecurringSeriesService` and `RecurringSeriesMembers`,
   mirroring `GetUpcomingRecurringServiceImpl`'s constructor shape). For each `CONFIRMED` series
@@ -167,7 +167,7 @@ until this phase is complete.
   !RecurringMatching.isWithinAmountTolerance(first.amount(), last.amount()) &&
   last.amount().compareTo(first.amount()) > 0`; `increaseAmount = priceIncreased ?
   last.amount().subtract(first.amount()) : null` (depends on T007, T014).
-- [ ] T016 [US-shared] Create
+- [X] T016 [US-shared] Create
   `Domain/src/test/java/at/ymeri/my/finance/domain/service/recurring/GetRecurringCostSummaryServiceImplTest.java`
   (depends on T015), covering: monthly-equivalent conversion for each of DAILY/WEEKLY/MONTHLY/YEARLY;
   a series whose latest amount exceeds its first beyond tolerance → `priceIncreased=true` with the
@@ -178,7 +178,7 @@ until this phase is complete.
 
 ### Application layer (both endpoints)
 
-- [ ] T017 [P] Implement
+- [X] T017 [P] Implement
   `Application/src/main/java/at/ymeri/my/finance/controller/bill/BillNecessityTagController.java`
   implementing the generated `BillNecessityTagApi` delegate (depends on T005, T011): calls
   `updateBillNecessityTagService.updateNecessityTag(id, request.getTag() != null ?
@@ -188,29 +188,29 @@ until this phase is complete.
   field once both `BillDto` and the generated `Bill` model declare it, exactly like every other
   field on that interface, which has no hand-written method bodies today), and add
   `@ExceptionHandler(NoSuchElementException.class)` → 404, mirroring `BillCorrectionController`.
-- [ ] T018 [P] Create
+- [X] T018 [P] Create
   `Application/src/main/java/at/ymeri/my/finance/application/mapper/RecurringCostSummaryMapper.java`
   (MapStruct interface, `@Mapper` + `INSTANCE` static field, mirroring `RecurringSeriesMapper`),
   mapping `List<RecurringCostSummaryItemDto>` → the generated `RecurringCostSummaryResponse`
   (depends on T005, T007).
-- [ ] T019 Implement
+- [X] T019 Implement
   `Application/src/main/java/at/ymeri/my/finance/controller/recurring/RecurringCostSummaryController.java`
   implementing the generated `RecurringCostSummaryApi` delegate (depends on T005, T015, T018),
   mirroring `RecurringGetController`'s shape.
 
 ### Frontend data plumbing (both endpoints)
 
-- [ ] T020 [P] In `frontend/src/types/index.ts`: add `export type NecessityTag = 'NECESSARY' |
+- [X] T020 [P] In `frontend/src/types/index.ts`: add `export type NecessityTag = 'NECESSARY' |
   'AVOIDABLE' | 'UNNECESSARY';`; add `necessityTag?: NecessityTag` to the existing `Bill` and
   `Transaction` interfaces; add `RecurringCostSummaryItem` (mirroring
   `recurring-cost-summary-model.yaml` field-for-field, same pattern as the existing
   `UpcomingRecurringItem`/`PriceChangeAlert` types added for feature 010).
-- [ ] T021 [P] In `frontend/src/api/client.ts`: add `updateBillNecessityTag(id: string, tag:
+- [X] T021 [P] In `frontend/src/api/client.ts`: add `updateBillNecessityTag(id: string, tag:
   NecessityTag | null): Promise<Bill>` (`PUT /api/v1/bills/${id}/necessity-tag`, body `{ tag }`,
   mirroring `correctBill`'s `putAndReturn` usage but returning the updated bill rather than
   `void`); add `fetchRecurringCostSummary(): Promise<RecurringCostSummaryItem[]>` (`GET
   /api/v1/recurring-series/cost-summary`, unwrapping `.items`, mirroring `fetchRecurringSeries`).
-- [ ] T022 In `frontend/src/hooks/useDashboardData.ts`, thread `necessityTag: b.necessityTag ??
+- [X] T022 In `frontend/src/hooks/useDashboardData.ts`, thread `necessityTag: b.necessityTag ??
   undefined` into the existing `billTxns` mapping (around line 105-113) so `allTransactions`
   carries each bill's tag (depends on T020).
 
@@ -229,7 +229,7 @@ monthly cost, with a running total.
 the recommendations view, and verify they appear ordered from most to least expensive with a
 correct running total.
 
-- [ ] T023 [P] [US1] Create `frontend/src/utils/spendingCutRecommendations.ts` exporting
+- [X] T023 [P] [US1] Create `frontend/src/utils/spendingCutRecommendations.ts` exporting
   `computeSpendingCutRecommendations(recurringItems: RecurringCostSummaryItem[]):
   SpendingCutRecommendations` (initial shape per data-model.md — `recurringItems` sorted by
   `monthlyEquivalentAmount` descending, `totalMonthlyRecurringSpend` = their sum,
@@ -238,12 +238,12 @@ correct running total.
   body, mirroring how `computeSpendingTrends` (016) grew incrementally). Hand-verify against a
   worked example (three items of different amounts) in a scratch script before moving on, per this
   repo's established no-test-runner convention.
-- [ ] T024 [US1] Create `frontend/src/components/SpendingCutRecommendationsPage.tsx` (depends on
+- [X] T024 [US1] Create `frontend/src/components/SpendingCutRecommendationsPage.tsx` (depends on
   T021, T023): on mount, call `fetchRecurringCostSummary()`, run
   `computeSpendingCutRecommendations`, render the ranked list (description, monthly-equivalent
   amount) and the running total; render the explanatory empty state (FR-018) when there is nothing
   to show yet.
-- [ ] T025 [US1] Mount `<SpendingCutRecommendationsPage />` in `frontend/src/App.tsx` — a new
+- [X] T025 [US1] Mount `<SpendingCutRecommendationsPage />` in `frontend/src/App.tsx` — a new
   navigation entry/section, consistent with how prior feature pages/cards were mounted (depends on
   T024).
 
@@ -260,21 +260,21 @@ transactions appear in the recommendations view, folded into the total.
 recommendations view, and verify the Avoidable/Unnecessary-tagged transactions and their total
 amount are shown, while the Necessary-tagged one is excluded.
 
-- [ ] T026 [P] [US2] Create `frontend/src/components/NecessityTagControl.tsx` (depends on T021): a
+- [X] T026 [P] [US2] Create `frontend/src/components/NecessityTagControl.tsx` (depends on T021): a
   small control (e.g. a `Chip` showing the current tag or a neutral "Tag" placeholder, opening a
   MUI `Menu` with the three tag options plus "Clear tag" on click — mirrors the existing
   three-dot-menu pattern in `RecentTransactions.tsx`), calling `updateBillNecessityTag` and a
   passed-in `onChanged` callback on selection.
-- [ ] T027 [US2] Mount `<NecessityTagControl />` in `frontend/src/components/RecentTransactions.tsx`
+- [X] T027 [US2] Mount `<NecessityTagControl />` in `frontend/src/components/RecentTransactions.tsx`
   for `t.type === 'BILL'` rows only (income has no necessity tag — FR edge case), wired through a
   new `onTagChanged` prop so the existing transactions-refresh mechanism (already used after
   correct/remove) also fires after a tag change (depends on T026).
-- [ ] T028 [US2] Extend `computeSpendingCutRecommendations` in
+- [X] T028 [US2] Extend `computeSpendingCutRecommendations` in
   `frontend/src/utils/spendingCutRecommendations.ts` to accept `allTransactions: Transaction[]`
   and populate `taggedTransactions` (every `BILL` transaction with `necessityTag` `AVOIDABLE` or
   `UNNECESSARY`, per FR-007/008), and fold their amounts into `potentialMonthlySavings` (depends
   on T023).
-- [ ] T029 [US2] Extend `SpendingCutRecommendationsPage.tsx` to fetch `allTransactions` (reuse
+- [X] T029 [US2] Extend `SpendingCutRecommendationsPage.tsx` to fetch `allTransactions` (reuse
   `useDashboardData` or fetch bills directly — match whichever this repo's existing pages do for a
   standalone page vs. the dashboard) and pass them into the util; render the tagged-transactions
   list (depends on T024, T028).
@@ -292,7 +292,7 @@ is called out with the original amount, current amount, and increase size.
 recent occurrence, open the recommendations view, and verify the increase is called out with the
 correct before/after amounts.
 
-- [ ] T030 [US3] Extend `SpendingCutRecommendationsPage.tsx`'s ranked-recurring-list rendering
+- [X] T030 [US3] Extend `SpendingCutRecommendationsPage.tsx`'s ranked-recurring-list rendering
   (from T024) to show a "price increased" badge/annotation (original → current, delta) on any item
   where `priceIncreased` is `true` — every field needed (`originalAmount`, `monthlyEquivalentAmount`,
   `increaseAmount`) is already present on each `RecurringCostSummaryItem` fetched in Phase 2/US1;
@@ -311,7 +311,7 @@ over recent months, are shown with their excess amount versus their typical/targ
 for the most recent completed month, open the recommendations view, and verify the category
 appears with the correct excess amount.
 
-- [ ] T031 [US4] Extend `computeSpendingCutRecommendations` in
+- [X] T031 [US4] Extend `computeSpendingCutRecommendations` in
   `frontend/src/utils/spendingCutRecommendations.ts` to accept `budgetStatusEntries:
   BudgetStatusEntry[]` (for the most recently completed month) and `categoryTrendMovers:
   SpendingMover[]` (the output of the existing `computeSpendingTrends` from
@@ -320,7 +320,7 @@ appears with the correct excess amount.
   (excess = `actual - budgeted`) unioned with every mover where `change > 0` (excess = `change`);
   when a category qualifies both ways, emit it once with the larger excess (FR-008/013). Fold the
   sum into `potentialMonthlySavings` (depends on T023).
-- [ ] T032 [US4] Extend `SpendingCutRecommendationsPage.tsx` to compute the most-recently-completed
+- [X] T032 [US4] Extend `SpendingCutRecommendationsPage.tsx` to compute the most-recently-completed
   calendar month, call the existing `fetchBudgetStatus(year, month)` for it, call the existing
   `computeSpendingTrends` for the movers, pass both into the util, and render the
   category-opportunities section (depends on T024, T031).
@@ -331,17 +331,16 @@ appears with the correct excess amount.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T033 [P] Run `./mvnw -pl Domain test` and confirm T012, T016, and the T013 correction-
+- [X] T033 [P] Run `./mvnw -pl Domain test` and confirm T012, T016, and the T013 correction-
   propagation addition all pass, plus every pre-existing Domain test unaffected.
-- [ ] T034 [P] Run `cd frontend && npx tsc --noEmit` to typecheck the new frontend code (this repo
+- [X] T034 [P] Run `cd frontend && npx tsc --noEmit` to typecheck the new frontend code (this repo
   has no frontend test runner anywhere — a pre-existing gap this feature does not introduce or
   worsen).
 - [ ] T035 Execute `specs/018-spending-cut-recommendations/quickstart.md`'s 6 manual scenarios
-  end-to-end against a running stack. Expected BLOCKED in this development sandbox (no Docker
-  daemon available, consistent with every prior feature 007-015) — must be run manually once
-  implementation lands in an environment with Docker; report honestly rather than marking complete
-  if not actually run.
-- [ ] T036 Mark all tasks in this file `[X]`, then commit and push the implementation to
+  end-to-end against a running stack. **BLOCKED** in this development sandbox — confirmed no Docker
+  daemon available (`docker info` fails), consistent with every prior feature 007-015. Must be run
+  manually once implementation lands in an environment with Docker.
+- [X] T036 Mark all tasks in this file `[X]`, then commit and push the implementation to
   `claude/project-status-s0au7m`.
 
 ---
