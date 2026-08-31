@@ -1,0 +1,130 @@
+components:
+  schemas:
+    # NOTE: at implementation time, `updatedAt`/`recordedAt`/`necessityTagUpdatedAt` are added as
+    # additive fields to each feature's existing model file (bill-model.yaml, category, account,
+    # budget, recurring-model.yaml, savings-goal) rather than duplicating full schemas here. The
+    # per-entity shapes below are a planning-time sketch of exactly which fields matter for sync,
+    # not a replacement for those existing schemas.
+
+    syncAccount:
+      type: "object"
+      properties:
+        id: { type: "string", format: "uuid" }
+        name: { type: "string" }
+        type: { type: "string" }
+        currencies: { type: "array", items: { type: "string" } }
+        defaultCurrency: { type: "string" }
+        balance: { type: "string", description: "Opening balance, decimal string (Constitution Principle IV)" }
+        institution: { type: "string" }
+        updatedAt: { type: "string", format: "date-time" }
+
+    syncCategory:
+      type: "object"
+      properties:
+        id: { type: "string", format: "uuid" }
+        name: { type: "string" }
+        type: { type: "string" }
+        color: { type: "string" }
+        parentCategoryId: { type: "string" }
+        updatedAt: { type: "string", format: "date-time" }
+
+    syncBudget:
+      type: "object"
+      properties:
+        id: { type: "string", format: "uuid" }
+        categoryId: { type: "string" }
+        year: { type: "integer" }
+        month: { type: "integer" }
+        limitAmount: { type: "string", description: "Decimal string" }
+        updatedAt: { type: "string", format: "date-time" }
+
+    syncRecurringSeries:
+      type: "object"
+      properties:
+        id: { type: "string", format: "uuid" }
+        transactionType: { type: "string", enum: [BILL, INCOME] }
+        groupKey: { type: "string" }
+        description: { type: "string" }
+        frequency: { type: "string", enum: [DAILY, WEEKLY, MONTHLY, YEARLY] }
+        status: { type: "string", enum: [PROPOSED, CONFIRMED, DISMISSED] }
+        createdAt: { type: "string", format: "date-time" }
+        updatedAt: { type: "string", format: "date-time" }
+
+    syncBill:
+      type: "object"
+      properties:
+        id: { type: "string", format: "uuid" }
+        description: { type: "string" }
+        amount: { type: "string", description: "Decimal string" }
+        time: { type: "string", format: "date-time" }
+        categoryId: { type: "string" }
+        accountId: { type: "string" }
+        correctsTransactionId: { type: "string" }
+        reversal: { type: "boolean" }
+        necessityTag: { type: "string", enum: [NECESSARY, AVOIDABLE, UNNECESSARY], nullable: true }
+        necessityTagUpdatedAt: { type: "string", format: "date-time", nullable: true }
+        recordedAt: { type: "string", format: "date-time", description: "When this row was first written - not the transaction's occurrence time" }
+
+    syncIncome:
+      type: "object"
+      properties:
+        id: { type: "string", format: "uuid" }
+        description: { type: "string" }
+        amount: { type: "string", description: "Decimal string" }
+        time: { type: "string", format: "date-time" }
+        source: { type: "string" }
+        accountId: { type: "string" }
+        correctsTransactionId: { type: "string" }
+        reversal: { type: "boolean" }
+        recordedAt: { type: "string", format: "date-time" }
+
+    syncSavingsGoal:
+      type: "object"
+      properties:
+        id: { type: "string", format: "uuid" }
+        name: { type: "string" }
+        targetAmount: { type: "string", description: "Decimal string" }
+        targetDate: { type: "string", format: "date-time" }
+        accountId: { type: "string" }
+        createdAt: { type: "string", format: "date-time" }
+        updatedAt: { type: "string", format: "date-time" }
+
+    syncSnapshot:
+      type: "object"
+      required: [schemaVersion, exportedAt]
+      properties:
+        schemaVersion:
+          type: "integer"
+          description: "Import rejects any value it does not recognize exactly (FR-010) - no partial/best-effort read of an unrecognized version"
+        exportedAt: { type: "string", format: "date-time" }
+        accounts: { type: "array", items: { $ref: '#/components/schemas/syncAccount' } }
+        categories: { type: "array", items: { $ref: '#/components/schemas/syncCategory' } }
+        budgets: { type: "array", items: { $ref: '#/components/schemas/syncBudget' } }
+        recurringSeries: { type: "array", items: { $ref: '#/components/schemas/syncRecurringSeries' } }
+        bills: { type: "array", items: { $ref: '#/components/schemas/syncBill' } }
+        incomes: { type: "array", items: { $ref: '#/components/schemas/syncIncome' } }
+        savingsGoals: { type: "array", items: { $ref: '#/components/schemas/syncSavingsGoal' } }
+
+    importSummaryCounts:
+      type: "object"
+      properties:
+        added: { type: "integer" }
+        updated: { type: "integer" }
+        unchanged: { type: "integer" }
+
+    importSummary:
+      type: "object"
+      properties:
+        applied:
+          type: "boolean"
+          description: "false from /sync/import/preview, true from /sync/import/apply"
+        accounts: { $ref: '#/components/schemas/importSummaryCounts' }
+        categories: { $ref: '#/components/schemas/importSummaryCounts' }
+        budgets: { $ref: '#/components/schemas/importSummaryCounts' }
+        recurringSeries: { $ref: '#/components/schemas/importSummaryCounts' }
+        bills: { $ref: '#/components/schemas/importSummaryCounts' }
+        incomes: { $ref: '#/components/schemas/importSummaryCounts' }
+        savingsGoals: { $ref: '#/components/schemas/importSummaryCounts' }
+        correctionConflictsResolved:
+          type: "integer"
+          description: "Count of cases where two sibling corrections of the same original bill/income were found; the more recently recorded one was kept as current"
