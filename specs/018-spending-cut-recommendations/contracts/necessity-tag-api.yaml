@@ -1,0 +1,46 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Bill Necessity Tag API"
+  description: "Set or clear a bill's necessity tag (Necessary / Avoidable / Unnecessary)"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /bills/{id}/necessity-tag:
+    put:
+      summary: "Set or clear a bill's necessity tag"
+      operationId: updateBillNecessityTag
+      description: >
+        Updates only the necessity tag on the bill's current (visible) value, in place — unlike
+        PUT /bills/{id}, this does not go through the correction/reversal mechanism, because a
+        necessity tag is the user's own judgment about a purchase, not a correction of what
+        happened. Omitting `tag` (or sending null) clears it back to untagged.
+      tags:
+        - billNecessityTag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "Id of the bill's current (visible) value to tag"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "necessity-tag-model.yaml#/components/schemas/updateNecessityTagRequest"
+      responses:
+        "200":
+          description: "The bill with its updated necessity tag"
+          content:
+            application/json:
+              schema:
+                $ref: "necessity-tag-model.yaml#/components/schemas/billResponseModel"
+        "404":
+          description: "Not found — no such bill, or it is a reversal row, or it has been superseded by a correction"
+        default:
+          description: "Unexpected error"
+
+components:
+  schemas: {}

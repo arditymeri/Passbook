@@ -1,0 +1,60 @@
+components:
+  schemas:
+    necessityTag:
+      type: "string"
+      enum:
+        - NECESSARY
+        - AVOIDABLE
+        - UNNECESSARY
+
+    updateNecessityTagRequest:
+      type: "object"
+      properties:
+        tag:
+          # Nullable: absent or null clears the tag back to untagged.
+          $ref: '#/components/schemas/necessityTag'
+          nullable: true
+
+    # Shape matches the existing bill-model.yaml `bill`/`billResponseModel` schemas, extended
+    # with necessityTag. At implementation time this becomes an addition to the real
+    # Application/src/main/resources/swagger/bill/bill-model.yaml `bill` schema, not a
+    # duplicate/parallel schema — kept separate here only because /speckit-plan drafts
+    # contracts under specs/ before they're merged into the real swagger sources.
+    bill:
+      type: "object"
+      properties:
+        id:
+          format: "uuid"
+          type: "string"
+        amount:
+          type: "number"
+          format: "double"
+        description:
+          type: "string"
+        time:
+          type: "string"
+          format: "date-time"
+        categoryId:
+          type: "string"
+        accountId:
+          type: "string"
+        correctsTransactionId:
+          type: "string"
+        reversal:
+          type: "boolean"
+        necessityTag:
+          $ref: '#/components/schemas/necessityTag'
+          nullable: true
+
+    billResponseModel:
+      type: "object"
+      properties:
+        common:
+          type: "object"
+          properties:
+            success:
+              type: "boolean"
+            message:
+              type: "string"
+        bill:
+          $ref: '#/components/schemas/bill'
