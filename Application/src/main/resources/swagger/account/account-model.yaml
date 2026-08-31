@@ -71,6 +71,9 @@ components:
           format: "double"
         institution:
           type: "string"
+        updatedAt:
+          type: "string"
+          format: "date-time"
 
     accountListResponse:
       type: "object"

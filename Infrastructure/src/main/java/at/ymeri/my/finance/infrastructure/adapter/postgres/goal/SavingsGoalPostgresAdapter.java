@@ -10,6 +10,7 @@ import at.ymeri.my.finance.infrastructure.mapper.SavingsGoalMapper;
 import at.ymeri.my.finance.infrastructure.repository.SavingsGoalRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -40,9 +41,17 @@ public class SavingsGoalPostgresAdapter implements GetSavingsGoalPersistencePort
         return savingsGoalRepository.findByAccountId(accountId).map(SavingsGoalMapper.INSTANCE::map);
     }
 
+    /**
+     * {@code updatedAt} is stamped "now" only when the caller didn't already set one — see
+     * {@code AddAccountPostgresAdapter} for why sync's import merge preserves the source
+     * device's original timestamp instead.
+     */
     @Override
     public SavingsGoalDto add(SavingsGoalDto goal) {
         SavingsGoalEntity entity = SavingsGoalMapper.INSTANCE.map(goal);
+        if (entity.getUpdatedAt() == null) {
+            entity.setUpdatedAt(OffsetDateTime.now());
+        }
         SavingsGoalEntity saved = savingsGoalRepository.save(entity);
         return SavingsGoalMapper.INSTANCE.map(saved);
     }
@@ -54,6 +63,7 @@ public class SavingsGoalPostgresAdapter implements GetSavingsGoalPersistencePort
         entity.setName(goal.getName());
         entity.setTargetAmount(goal.getTargetAmount());
         entity.setTargetDate(goal.getTargetDate());
+        entity.setUpdatedAt(goal.getUpdatedAt() != null ? goal.getUpdatedAt() : OffsetDateTime.now());
         SavingsGoalEntity saved = savingsGoalRepository.save(entity);
         return SavingsGoalMapper.INSTANCE.map(saved);
     }

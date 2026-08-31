@@ -1,0 +1,30 @@
+openapi: "3.0.0"
+tags:
+  - name: "SyncExportController"
+    description: "API for exporting a full-state snapshot of this device's data"
+info:
+  title: "Personal Finance Service - Device Sync Export API"
+  description: "Export every account, category, budget, bill, income, recurring series, and savings goal on this device, for moving to another device"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /sync/export:
+    get:
+      summary: "Export a full-state snapshot of this device's data"
+      operationId: exportSyncSnapshot
+      description: >
+        Every account, category, budget, bill, income, recurring series, and savings goal
+        currently on this device, in one file. Bills/incomes include correction-replacement and
+        reversal rows exactly as stored. Read-only.
+      tags:
+        - syncExport
+      responses:
+        "200":
+          description: "Snapshot returned"
+          content:
+            application/json:
+              schema:
+                $ref: "sync-model.yaml#/components/schemas/syncSnapshot"
+        default:
+          description: "Unexpected error"

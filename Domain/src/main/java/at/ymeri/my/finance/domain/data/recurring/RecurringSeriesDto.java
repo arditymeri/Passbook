@@ -21,4 +21,5 @@ public class RecurringSeriesDto {
     private RecurringFrequency frequency;
     private RecurringSeriesStatus status;
     private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 }

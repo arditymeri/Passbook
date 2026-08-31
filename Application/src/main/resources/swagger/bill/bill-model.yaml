@@ -54,6 +54,13 @@ components:
         necessityTag:
           $ref: '#/components/schemas/necessityTag'
           nullable: true
+        necessityTagUpdatedAt:
+          type: "string"
+          format: "date-time"
+        recordedAt:
+          type: "string"
+          format: "date-time"
+          description: "When this row was first written - not the transaction's occurrence time (time)"
         billItems:
           type: "array"
           items:

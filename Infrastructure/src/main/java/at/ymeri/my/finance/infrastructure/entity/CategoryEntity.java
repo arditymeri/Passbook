@@ -3,6 +3,7 @@ package at.ymeri.my.finance.infrastructure.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
@@ -25,4 +26,7 @@ public class CategoryEntity {
 
     @Column(name = "parent_category_id")
     private String parentCategoryId;
+
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 }

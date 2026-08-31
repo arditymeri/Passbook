@@ -21,4 +21,5 @@ public class IncomeDto {
     private RecurringFrequency recurringFrequency;
     private String correctsTransactionId;
     private boolean reversal;
+    private OffsetDateTime recordedAt;
 }

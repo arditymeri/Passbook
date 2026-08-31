@@ -56,4 +56,7 @@ public class IncomeEntity {
     @Column(name = "reversal", nullable = false)
     @ColumnDefault("false")
     private boolean reversal;
+
+    @Column(name = "recorded_at")
+    private OffsetDateTime recordedAt;
 }

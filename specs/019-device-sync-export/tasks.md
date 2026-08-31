@@ -52,30 +52,30 @@ gotcha feature 018 hit).
 
 ## Phase 1: Setup (OpenAPI contracts, spec-first per Constitution Principle VII)
 
-- [ ] T001 [P] Create `Application/src/main/resources/swagger/sync/sync-export-controller.yaml`
+- [X] T001 [P] Create `Application/src/main/resources/swagger/sync/sync-export-controller.yaml`
   (`GET /sync/export`) and `Application/src/main/resources/swagger/sync/sync-model.yaml`
   (`syncSnapshot` plus its seven entity-list sub-schemas and `importSummary`/
   `importSummaryCounts`), adapting `specs/019-device-sync-export/contracts/sync-api.yaml` /
   `contracts/sync-model.yaml` to this repo's real swagger conventions (compare
   `recurring-get-controller.yaml` for style). Every amount field is a decimal string, matching
   `correctBillRequest`'s existing convention (Constitution Principle IV).
-- [ ] T002 [P] Create `Application/src/main/resources/swagger/sync/sync-import-controller.yaml`
+- [X] T002 [P] Create `Application/src/main/resources/swagger/sync/sync-import-controller.yaml`
   with both `POST /sync/import/preview` and `POST /sync/import/apply` operations (one controller
   file, one generated delegate with two methods — both take a `syncSnapshot` body and return an
   `importSummary`), referencing `sync-model.yaml`.
-- [ ] T003 [P] Add additive fields to the existing model files, each a small, non-breaking
+- [X] T003 [P] Add additive fields to the existing model files, each a small, non-breaking
   extension of an already-shipped schema: `updatedAt` on `account` (`account-model.yaml`),
   `category` (`category-model.yaml`), `budget` (`budget-model.yaml`), and
   `recurringSeriesResponse` (`recurring-model.yaml`); `updatedAt` on the goal schema in
   `goal-model.yaml`; `recordedAt` on `bill` (`bill-model.yaml`, alongside the `necessityTag` field
   feature 018 already added) and on `income` (`income-model.yaml`); `necessityTagUpdatedAt`
   (nullable) on `bill`.
-- [ ] T004 [P] Register two new codegen executions in `Application/pom.xml`, modeled on the
+- [X] T004 [P] Register two new codegen executions in `Application/pom.xml`, modeled on the
   existing `bill-necessity-tag`/`recurring-cost-summary` executions (same `configOptions` as
   every other execution in that file): `<id>sync-export</id>` (`apiPackage`
   `${api-package}.sync`, input `swagger/sync/sync-export-controller.yaml`) and
   `<id>sync-import</id>` (same `apiPackage`, input `swagger/sync/sync-import-controller.yaml`).
-- [ ] T005 Run `./mvnw -pl Application clean generate-sources` (depends on T001-T004) — **must**
+- [X] T005 Run `./mvnw -pl Application clean generate-sources` (depends on T001-T004) — **must**
   use `clean` so the already-stale `skipOverwrite=true`-protected generated `Bill`/`Account`/etc.
   models are regenerated with their new fields rather than silently kept without them. Confirm
   `SyncExportApi`, `SyncImportApi`, `SyncSnapshot`, `ImportSummary`, and the per-entity sync
@@ -92,35 +92,35 @@ its own tests pass.
 
 ### Schema, DTOs, and timestamp bookkeeping (research.md R3/R4)
 
-- [ ] T006 [P] Add `updatedAt` (`OffsetDateTime`) to
+- [X] T006 [P] Add `updatedAt` (`OffsetDateTime`) to
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/account/AccountDto.java` and an
   `updated_at` (nullable timestamp) column to
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/AccountEntity.java`.
   Set it to `now()` in `AddAccountPostgresAdapter`'s insert and bump it in
   `UpdateAccountPostgresAdapter`'s update.
-- [ ] T007 [P] Add `updatedAt` to
+- [X] T007 [P] Add `updatedAt` to
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/category/CategoryDto.java` and
   `updated_at` to
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/CategoryEntity.java`.
   Set/bump it in `AddCategoryPostgresAdapter` and `UpdateCategoryPostgresAdapter`.
-- [ ] T008 [P] Add `updatedAt` to
+- [X] T008 [P] Add `updatedAt` to
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/budget/BudgetDto.java` and `updated_at`
   to `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/BudgetEntity.java`.
   Set it to `now()` on every call into `SetBudgetPostgresAdapter.upsert` — both the insert and
   update case, since `upsert` handles both today.
-- [ ] T009 [P] Add `updatedAt` to
+- [X] T009 [P] Add `updatedAt` to
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/recurring/RecurringSeriesDto.java` and
   `updated_at` to
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/RecurringSeriesEntity.java`.
   Set it alongside `createdAt` in `RecurringSeriesPostgresAdapter.add(...)`, and bump it in the
   same adapter's status-update method (`UpdateRecurringSeriesStatusPersistencePort`
   implementation — confirm/dismiss both go through it).
-- [ ] T010 [P] Add `updatedAt` to
+- [X] T010 [P] Add `updatedAt` to
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/goal/SavingsGoalDto.java` and
   `updated_at` to
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/SavingsGoalEntity.java`.
   Set/bump it in `SavingsGoalPostgresAdapter`'s add and update methods.
-- [ ] T011 [P] Add `recordedAt` (`OffsetDateTime`, set once, never changed) and
+- [X] T011 [P] Add `recordedAt` (`OffsetDateTime`, set once, never changed) and
   `necessityTagUpdatedAt` (nullable `OffsetDateTime`) to
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/bill/BillDto.java`, and matching
   `recorded_at` / `necessity_tag_updated_at` columns on
@@ -129,12 +129,12 @@ its own tests pass.
   replacements, and reversals alike, since `CorrectBillServiceImpl` writes both through this same
   adapter). Set `necessityTagUpdatedAt = now()` in
   `UpdateBillNecessityTagPostgresAdapter` (feature 018).
-- [ ] T012 [P] Add `recordedAt` to
+- [X] T012 [P] Add `recordedAt` to
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/income/IncomeDto.java` and `recorded_at`
   to `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/IncomeEntity.java`.
   Set it to `now()` in `AddIncomePostgresAdapter` (covers original incomes, correction
   replacements, and reversals via `CorrectIncomeServiceImpl`).
-- [ ] T013 Add `List<BudgetDto> getAll()` to
+- [X] T013 Add `List<BudgetDto> getAll()` to
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/GetBudgetService.java` and its
   implementation `Domain/src/main/java/at/ymeri/my/finance/domain/service/budget/GetBudgetServiceImpl.java`
   — a pure pass-through to the persistence port's `getAll()`, which already exists (used today by
@@ -142,15 +142,15 @@ its own tests pass.
 
 ### Export engine
 
-- [ ] T014 Create
+- [X] T014 Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/sync/SyncSnapshotDto.java`
   (`schemaVersion` int, `exportedAt`, and one `List<...Dto>` field per entity type — accounts,
   categories, budgets, recurringSeries, bills, incomes, savingsGoals) (depends on T006-T012 for
   the field additions each list element needs).
-- [ ] T015 Create
+- [X] T015 Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/ExportSyncSnapshotService.java`
   (single method `SyncSnapshotDto export()`) (depends on T014).
-- [ ] T016 Implement
+- [X] T016 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/sync/ExportSyncSnapshotServiceImpl.java`
   (`@Service`, constructor-injects `GetAccountService`, `GetCategoryService`, `GetBudgetService`,
   `GetRecurringSeriesService`, `GetBillService`, `GetIncomeService`, `GetSavingsGoalService`).
@@ -165,11 +165,11 @@ its own tests pass.
 
 ### Merge engine (the substantial new business logic — Constitution Principle VI applies in full)
 
-- [ ] T017 [P] Create
+- [X] T017 [P] Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/data/sync/MergePlanDto.java`,
   `EntityMergeCounts.java` (`added`, `updated`, `unchanged` ints), and
   `CorrectionConflict.java` (the two sibling rows and which one won) (depends on T014).
-- [ ] T018 [P] Create
+- [X] T018 [P] Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/sync/SyncEntityMatching.java` — one
   matching method per entity type with a natural key, per data-model.md's table: `matchAccount`
   (by `name`), `matchCategory` (by `name`), `matchBudget` (by `categoryId`+`year`+`month`),
@@ -177,7 +177,7 @@ its own tests pass.
   `RecurringMatching.normalizeDescription(description)`, reusing the existing normalizer rather
   than reimplementing it). Savings goals and bills/incomes have no natural-key method — they match
   by `id` only, directly in the merge planner (depends on T014).
-- [ ] T019 Implement
+- [X] T019 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/sync/ComputeMergePlanService.java` —
   pure and read-only (loads current local state via the `Get*Service`/`Get*PersistencePort`s, is
   handed the incoming `SyncSnapshotDto`, never writes anything). Processes entity types in
@@ -190,7 +190,7 @@ its own tests pass.
   latest `recordedAt` is the winner (added to the plan as the entity's current value if not
   already applied locally) and every other sibling is recorded as a `CorrectionConflict` entry,
   never dropped (depends on T016, T017, T018).
-- [ ] T020 [US-shared] Create
+- [X] T020 [US-shared] Create
   `Domain/src/test/java/at/ymeri/my/finance/domain/service/sync/ComputeMergePlanServiceTest.java`
   (depends on T019), covering per entity type: a new incoming item with no local match →
   `toInsert`; an id match with a later incoming `updatedAt` → `toUpdate`; an id match with an
@@ -201,7 +201,7 @@ its own tests pass.
   resolve deterministically to the later one, and the earlier one appears as a `CorrectionConflict`
   rather than vanishing; re-planning against an already-fully-merged snapshot produces an
   all-`unchanged` plan (idempotency, mirrors FR-009).
-- [ ] T021 Implement
+- [X] T021 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/sync/ApplyMergePlanService.java` —
   takes a `MergePlanDto` and writes it, in the same dependency order as T019, through each
   entity's persistence port *directly* (`AddAccountPersistencePort`, `AddBillPersistencePort`,
@@ -209,7 +209,7 @@ its own tests pass.
   research.md R5, since those re-run origin-device validation that could incorrectly reject
   already-valid incoming data), wrapped in one transaction via the existing `UnitOfWork` port
   (depends on T019).
-- [ ] T022 [US-shared] Create
+- [X] T022 [US-shared] Create
   `Domain/src/test/java/at/ymeri/my/finance/domain/service/sync/ApplyMergePlanServiceTest.java`
   (depends on T021), covering: a plan with only `toInsert`/`toUpdate` entries never calls any
   delete-capable port method (FR-011's never-deletes guarantee, verified via mock interaction,
@@ -219,18 +219,18 @@ its own tests pass.
 
 ### Preview/Apply services + Application layer
 
-- [ ] T023 [P] Create
+- [X] T023 [P] Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/PreviewSyncImportService.java` and
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/ApplySyncImportService.java` (each a
   single method taking a `SyncSnapshotDto` and returning an `ImportSummaryDto`) (depends on T017).
-- [ ] T024 Implement
+- [X] T024 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/sync/PreviewSyncImportServiceImpl.java`
   (calls `ComputeMergePlanService` only, summarizes the resulting `MergePlanDto` into an
   `ImportSummaryDto` with `applied=false`, never calls `ApplyMergePlanService`) and
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/sync/ApplySyncImportServiceImpl.java`
   (calls `ComputeMergePlanService` then `ApplyMergePlanService` then summarizes with
   `applied=true`) (depends on T019, T021, T023).
-- [ ] T025 [P] Implement
+- [X] T025 [P] Implement
   `Application/src/main/java/at/ymeri/my/finance/controller/sync/SyncExportController.java`
   (implements the generated `SyncExportApi` delegate) and
   `Application/src/main/java/at/ymeri/my/finance/application/mapper/SyncMapper.java` (MapStruct
@@ -238,7 +238,7 @@ its own tests pass.
   `SyncSnapshotDto` ↔ the generated `SyncSnapshot`, and `ImportSummaryDto` ↔ the generated
   `ImportSummary`; amount fields need explicit `@Mapping` decimal-string conversion, matching how
   `correctBillRequest` is handled in `BillCorrectionController.toAmount`) (depends on T005, T016).
-- [ ] T026 Implement
+- [X] T026 Implement
   `Application/src/main/java/at/ymeri/my/finance/controller/sync/SyncImportController.java`
   (implements the generated `SyncImportApi` delegate; both `previewSyncImport` and
   `applySyncImport` methods map the incoming API `SyncSnapshot` to `SyncSnapshotDto` via
