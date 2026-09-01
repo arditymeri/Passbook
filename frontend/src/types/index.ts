@@ -468,3 +468,28 @@ export interface ImportSummary {
   savingsGoals: EntityMergeCounts;
   correctionConflictsResolved: number;
 }
+
+export interface AuthStatus {
+  adminAccountConfigured: boolean;
+}
+
+export interface SetupRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface Session {
+  token: string;
+  username: string;
+  expiresAt: string;
+}

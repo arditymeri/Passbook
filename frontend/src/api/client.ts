@@ -1,7 +1,27 @@
-import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, SyncSnapshot, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
+import type { Account, Allocation, AuthStatus, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, ChangePasswordRequest, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, LoginRequest, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, Session, SetupRequest, SyncSnapshot, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
+import { clearToken, getToken, sessionDied } from '../auth/authToken';
+
+function authHeaders(): HeadersInit {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// Every existing data endpoint now requires a valid session (feature 020) — these helpers attach
+// it, and a 401 here always means the session itself died (expired, rejected, or logged out
+// elsewhere), never a business-logic rejection, so it's safe to always clear the token and
+// notify the rest of the app. The three /auth/* endpoints below are called separately, without
+// this handling: /auth/status, /auth/setup, and /auth/login are public (no token to attach, and
+// a 401 from login just means "wrong credentials", not "session died").
+function handlePossibleSessionDeath(res: Response): void {
+  if (res.status === 401) {
+    clearToken();
+    sessionDied();
+  }
+}
 
 async function request<T>(url: string): Promise<T> {
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: authHeaders() });
+  handlePossibleSessionDeath(res);
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
   return res.json();
 }
@@ -9,18 +29,20 @@ async function request<T>(url: string): Promise<T> {
 async function post(url: string, body: unknown): Promise<void> {
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(body),
   });
+  handlePossibleSessionDeath(res);
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
 }
 
 async function postAndReturn<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(body),
   });
+  handlePossibleSessionDeath(res);
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
   return res.json();
 }
@@ -28,16 +50,61 @@ async function postAndReturn<T>(url: string, body: unknown): Promise<T> {
 async function putAndReturn<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(body),
   });
+  handlePossibleSessionDeath(res);
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
   return res.json();
 }
 
 async function del(url: string): Promise<void> {
-  const res = await fetch(url, { method: 'DELETE' });
+  const res = await fetch(url, { method: 'DELETE', headers: authHeaders() });
+  handlePossibleSessionDeath(res);
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+}
+
+export async function fetchAuthStatus(): Promise<AuthStatus> {
+  const res = await fetch('/api/v1/auth/status');
+  if (!res.ok) throw new Error(`HTTP ${res.status}: /auth/status`);
+  return res.json();
+}
+
+export async function setupAdminAccount(req: SetupRequest): Promise<Session> {
+  const res = await fetch('/api/v1/auth/setup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: /auth/setup`);
+  return res.json();
+}
+
+export async function login(req: LoginRequest): Promise<Session> {
+  const res = await fetch('/api/v1/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: /auth/login`);
+  return res.json();
+}
+
+// Deliberately not routed through post()/handlePossibleSessionDeath: a 401 here can mean either
+// "your session already died" or (for changePasswordRequest specifically) "wrong current
+// password" — the backend can't distinguish these in the status code, so the caller decides how
+// to present it instead of this layer guessing.
+export async function logoutRequest(): Promise<void> {
+  await fetch('/api/v1/auth/logout', { method: 'POST', headers: authHeaders() });
+}
+
+export async function changePasswordRequest(req: ChangePasswordRequest): Promise<void> {
+  const res = await fetch('/api/v1/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: /auth/change-password`);
 }
 
 export async function fetchMonthlySummary(year: number, month: number): Promise<MonthlySummary> {

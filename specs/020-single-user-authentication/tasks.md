@@ -47,27 +47,27 @@ gotcha every prior feature with new generated models has hit).
 
 ## Phase 1: Setup (OpenAPI contracts, spec-first per Constitution Principle VII)
 
-- [ ] T001 [P] Create `Application/src/main/resources/swagger/auth/auth-api-controller.yaml`
+- [X] T001 [P] Create `Application/src/main/resources/swagger/auth/auth-api-controller.yaml`
   (`GET /auth/status`, `POST /auth/setup`, `POST /auth/login`, `POST /auth/logout`,
   `POST /auth/change-password`), adapting `specs/020-single-user-authentication/contracts/auth-api.yaml`
   to this repo's real swagger conventions (compare `sync-export-controller.yaml`/
   `sync-import-controller.yaml` for style — one file, one generated delegate with all five
   methods, matching how `sync-import-controller.yaml` already puts two related operations in one
   file).
-- [ ] T002 [P] Create `Application/src/main/resources/swagger/auth/auth-model.yaml`
+- [X] T002 [P] Create `Application/src/main/resources/swagger/auth/auth-model.yaml`
   (`authStatus`, `setupRequest`, `loginRequest`, `changePasswordRequest`, `session`), adapting
   `specs/020-single-user-authentication/contracts/auth-model.yaml`.
-- [ ] T003 [P] Add `spring-boot-starter-security` to the root `pom.xml`'s `<dependencies>` (same
+- [X] T003 [P] Add `spring-boot-starter-security` to the root `pom.xml`'s `<dependencies>` (same
   place `spring-boot-starter-web`/`spring-boot-starter-hateoas` already live, inherited by every
   module — Domain will have it on the classpath but, per research.md R1, will never import it,
   exactly like it already never imports `spring-boot-starter-web` today despite it being
   available). Add `io.jsonwebtoken:jjwt-api`, `jjwt-impl`, and `jjwt-jackson` (latest 0.12.x,
   pinned exact version) to `Application/pom.xml`, where `JwtTokenService` (T018) will use them.
-- [ ] T004 [P] Register a new `auth` codegen execution in `Application/pom.xml`, modeled on the
+- [X] T004 [P] Register a new `auth` codegen execution in `Application/pom.xml`, modeled on the
   existing `sync-export`/`sync-import` executions (same `configOptions` as every other execution
   in that file): `<id>auth</id>` (`apiPackage` `${api-package}.auth`, input
   `swagger/auth/auth-api-controller.yaml`).
-- [ ] T005 Run `./mvnw -pl Application clean generate-sources` (depends on T001-T004) — **must**
+- [X] T005 Run `./mvnw -pl Application clean generate-sources` (depends on T001-T004) — **must**
   use `clean` per the stale-generated-file gotcha. Confirm `AuthApi`, `AuthStatus`,
   `SetupRequest`, `LoginRequest`, `ChangePasswordRequest`, and `Session` all appear under
   `Application/target/generated-sources/openapi/src/main/java/at/ymeri/my/finance/application/`.
@@ -82,49 +82,49 @@ complete, every existing endpoint is actually enforcing authentication, and its 
 
 ### Domain (research.md R1 — framework-free credential/session business logic)
 
-- [ ] T006 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/auth/AdminAccountDto.java`
+- [X] T006 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/data/auth/AdminAccountDto.java`
   (`id`, `username`, `passwordHash`, `tokenVersion` (int), `createdAt`, `updatedAt` —
   data-model.md).
-- [ ] T007 [P] Create
+- [X] T007 [P] Create
   `Domain/src/main/java/at/ymeri/my/finance/domain/spi/auth/GetAdminAccountPersistencePort.java`
   (`Optional<AdminAccountDto> get()` — at most one row ever exists) and
   `Domain/src/main/java/at/ymeri/my/finance/domain/spi/auth/SaveAdminAccountPersistencePort.java`
   (`AdminAccountDto save(AdminAccountDto)` — used for both the initial create and every
   subsequent update, matching the `save()`-as-upsert convention already established in this
   codebase, e.g. `SetBudgetPostgresAdapter`).
-- [ ] T008 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/auth/PasswordHasher.java`
+- [X] T008 [P] Create `Domain/src/main/java/at/ymeri/my/finance/domain/spi/auth/PasswordHasher.java`
   (`String hash(String rawPassword)`, `boolean matches(String rawPassword, String hash)`).
-- [ ] T009 Implement
+- [X] T009 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/SetupAdminAccountService.java` and
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/auth/SetupAdminAccountServiceImpl.java`
   — `setup(username, password)`: throws `IllegalStateException` if
   `GetAdminAccountPersistencePort.get()` already returns a value (FR-002); otherwise hashes the
   password via `PasswordHasher` and saves a new `AdminAccountDto` with `tokenVersion=0` (depends
   on T006-T008).
-- [ ] T010 Implement `Domain/src/main/java/at/ymeri/my/finance/domain/api/AuthenticateService.java`
+- [X] T010 Implement `Domain/src/main/java/at/ymeri/my/finance/domain/api/AuthenticateService.java`
   and
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/auth/AuthenticateServiceImpl.java` —
   `authenticate(username, password): Optional<AdminAccountDto>`: empty if no account exists, empty
   if the username doesn't match, empty if `PasswordHasher.matches` fails — the same generic
   "no match" result whichever it was (FR-012 is enforced by the caller never being able to tell
   these apart from this return type alone) (depends on T006-T008).
-- [ ] T011 Implement
+- [X] T011 Implement
   `Domain/src/main/java/at/ymeri/my/finance/domain/api/ValidateSessionService.java` and
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/auth/ValidateSessionServiceImpl.java`
   — `isValid(username, tokenVersion): boolean`: true only if an account exists, the username
   matches, and `tokenVersion` equals the account's current `tokenVersion` (research.md R2)
   (depends on T006-T008).
-- [ ] T012 Implement `Domain/src/main/java/at/ymeri/my/finance/domain/api/ChangePasswordService.java`
+- [X] T012 Implement `Domain/src/main/java/at/ymeri/my/finance/domain/api/ChangePasswordService.java`
   and
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/auth/ChangePasswordServiceImpl.java` —
   `changePassword(currentPassword, newPassword)`: loads the one account, verifies
   `currentPassword` via `PasswordHasher`, throws on mismatch (leaving the stored hash and
   `tokenVersion` untouched), otherwise hashes `newPassword`, increments `tokenVersion`, updates
   `updatedAt`, and saves (depends on T006-T008).
-- [ ] T013 Implement `Domain/src/main/java/at/ymeri/my/finance/domain/api/LogoutService.java` and
+- [X] T013 Implement `Domain/src/main/java/at/ymeri/my/finance/domain/api/LogoutService.java` and
   `Domain/src/main/java/at/ymeri/my/finance/domain/service/auth/LogoutServiceImpl.java` —
   `logout()`: increments the one account's `tokenVersion` and saves (depends on T006-T008).
-- [ ] T014 [P] Create
+- [X] T014 [P] Create
   `Domain/src/test/java/at/ymeri/my/finance/domain/service/auth/SetupAdminAccountServiceImplTest.java`,
   `AuthenticateServiceImplTest.java`, `ValidateSessionServiceImplTest.java`,
   `ChangePasswordServiceImplTest.java`, `LogoutServiceImplTest.java` — covering: setup rejects a
@@ -136,23 +136,23 @@ complete, every existing endpoint is actually enforcing authentication, and its 
 
 ### Infrastructure (persistence + hashing)
 
-- [ ] T015 [P] Create
+- [X] T015 [P] Create
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/entity/AdminAccountEntity.java`
   (`id` UUID, `username`, `password_hash`, `token_version` int, `created_at`, `updated_at`) and
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/repository/AdminAccountRepository.java`
   (Spring Data JPA, `findFirstByOrderByCreatedAtAsc()` or equivalent single-row lookup).
-- [ ] T016 Implement
+- [X] T016 Implement
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/adapter/postgres/auth/AdminAccountPostgresAdapter.java`
   implementing both `GetAdminAccountPersistencePort` and `SaveAdminAccountPersistencePort` (depends
   on T007, T015).
-- [ ] T017 [P] Implement
+- [X] T017 [P] Implement
   `Infrastructure/src/main/java/at/ymeri/my/finance/infrastructure/security/BCryptPasswordHasher.java`
   implementing `PasswordHasher` via Spring Security's `BCryptPasswordEncoder` (depends on T008,
   T003).
 
 ### Application (JWT + Spring Security wiring + REST layer)
 
-- [ ] T018 [P] Implement
+- [X] T018 [P] Implement
   `Application/src/main/java/at/ymeri/my/finance/security/JwtTokenService.java` —
   `issue(username, tokenVersion): (token, expiresAt)` and
   `parse(token): Optional<{username, tokenVersion}>` (empty on bad signature, malformed token, or
@@ -160,10 +160,10 @@ complete, every existing endpoint is actually enforcing authentication, and its 
   a cryptographically random key once at startup and logs a clear warning that it changes every
   restart (research.md R4 — never a hardcoded secret). Token expiry: a fixed duration read from
   `app.security.jwt-expiry` (default 24h) (depends on T003).
-- [ ] T019 [P] Implement `Application/src/main/java/at/ymeri/my/finance/application/mapper/AuthMapper.java`
+- [X] T019 [P] Implement `Application/src/main/java/at/ymeri/my/finance/application/mapper/AuthMapper.java`
   (MapStruct — `AdminAccountDto`/session fields to the generated `Session`/`AuthStatus` API
   models; never maps a raw or hashed password onto anything logged) (depends on T005).
-- [ ] T020 Implement `Application/src/main/java/at/ymeri/my/finance/controller/auth/AuthController.java`
+- [X] T020 Implement `Application/src/main/java/at/ymeri/my/finance/controller/auth/AuthController.java`
   implementing the generated `AuthApi` delegate — `getAuthStatus` (public, calls
   `GetAdminAccountPersistencePort` — or a small pass-through, whichever keeps Domain/Application
   boundaries clean — to report whether an account exists), `setupAdminAccount` (calls
@@ -172,20 +172,20 @@ complete, every existing endpoint is actually enforcing authentication, and its 
   empty result, else `JwtTokenService.issue`), `logout` (calls `LogoutService`), `changePassword`
   (calls `ChangePasswordService`, 401 on the current-password mismatch) (depends on T009-T013,
   T018, T019).
-- [ ] T021 Implement
+- [X] T021 Implement
   `Application/src/main/java/at/ymeri/my/finance/security/JwtAuthenticationFilter.java` — a
   `OncePerRequestFilter` that reads the `Authorization: Bearer <token>` header, calls
   `JwtTokenService.parse`, and — if present — calls `ValidateSessionService.isValid`; on success
   sets an authenticated `SecurityContext`; on any failure (missing header, bad token, stale
   `tokenVersion`) leaves the context unauthenticated and lets Spring Security's own entry point
   return 401 (depends on T011, T018).
-- [ ] T022 Implement `Application/src/main/java/at/ymeri/my/finance/security/SecurityConfig.java` —
+- [X] T022 Implement `Application/src/main/java/at/ymeri/my/finance/security/SecurityConfig.java` —
   a `SecurityFilterChain` bean: stateless session policy, CSRF disabled (a bearer-token API, not
   cookie-based — no CSRF surface), `permitAll` on `/auth/status`, `/auth/setup`, `/auth/login`,
   `/swagger-ui/**`, `/v3/api-docs/**` (research.md R5), `authenticated()` on everything else,
   registers `JwtAuthenticationFilter` before Spring Security's standard authentication filter
   (depends on T021).
-- [ ] T023 [P] Create
+- [X] T023 [P] Create
   `Application/src/test/java/at/ymeri/my/finance/security/SecurityConfigTest.java` — a
   `@WebMvcTest`-slice test (no database, no Docker) asserting: a request to an arbitrary existing
   endpoint (e.g. `GET /accounts`) with no `Authorization` header returns 401; the same request
@@ -194,13 +194,13 @@ complete, every existing endpoint is actually enforcing authentication, and its 
 
 ### Frontend shared session plumbing
 
-- [ ] T024 [P] Add `AuthStatus` and `Session` types to `frontend/src/types/index.ts`, mirroring
+- [X] T024 [P] Add `AuthStatus` and `Session` types to `frontend/src/types/index.ts`, mirroring
   `auth-model.yaml` field-for-field.
-- [ ] T025 [P] Create `frontend/src/auth/authToken.ts` — `getToken()`/`setToken()`/`clearToken()`
+- [X] T025 [P] Create `frontend/src/auth/authToken.ts` — `getToken()`/`setToken()`/`clearToken()`
   over `localStorage`, plus a small `EventTarget`-based "session died" signal
   (`sessionDied()`/`onSessionDied(listener)`) other modules can dispatch/subscribe to without a
   new state-management dependency (research.md R6).
-- [ ] T026 Extend `frontend/src/api/client.ts`: add `fetchAuthStatus()`, `setupAdminAccount(req)`,
+- [X] T026 Extend `frontend/src/api/client.ts`: add `fetchAuthStatus()`, `setupAdminAccount(req)`,
   `login(req)`, `logoutRequest()`, `changePasswordRequest(req)`; modify the existing `request`,
   `post`, `postAndReturn`, `putAndReturn`, `del` helpers to attach
   `Authorization: Bearer <token>` (from `authToken.ts`) to every call, and to call
