@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import { AddBillForm } from './components/AddBillForm';
+import { ChangePasswordDialog } from './components/ChangePasswordDialog';
 import { AddIncomeForm } from './components/AddIncomeForm';
 import { CorrectBillForm } from './components/CorrectBillForm';
 import { CorrectIncomeForm } from './components/CorrectIncomeForm';
@@ -35,7 +36,8 @@ import { TransactionFilterBar } from './components/TransactionFilterBar';
 import { UpcomingRecurring } from './components/UpcomingRecurring';
 import { SummaryCard } from './components/SummaryCard';
 import { useDashboardData } from './hooks/useDashboardData';
-import { fetchBillHistory, fetchIncomeHistory, removeBill, removeIncome } from './api/client';
+import { fetchBillHistory, fetchIncomeHistory, logoutRequest, removeBill, removeIncome } from './api/client';
+import { clearToken, sessionDied } from './auth/authToken';
 import { filterTransactions } from './utils/transactionFilters';
 import { theme } from './theme';
 import { EMPTY_TRANSACTION_FILTERS } from './types';
@@ -56,6 +58,7 @@ function App() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [recurringProposalsOpen, setRecurringProposalsOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [changePasswordDialogOpen, setChangePasswordDialogOpen] = useState(false);
   const [filters, setFilters] = useState<TransactionFilters>(EMPTY_TRANSACTION_FILTERS);
 
   const {
@@ -144,6 +147,17 @@ function App() {
     setRefreshKey((k) => k + 1);
   }
 
+  async function handleLogout() {
+    try {
+      await logoutRequest();
+    } finally {
+      // Always end up back at the login screen, whether or not the request itself succeeded —
+      // the point is that this browser no longer holds a usable credential either way.
+      clearToken();
+      sessionDied();
+    }
+  }
+
   async function handleConfirmRemove() {
     if (!removingTransaction) return;
     setRemoving(true);
@@ -200,6 +214,12 @@ function App() {
             </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('sync')}>
               Sync
+            </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setChangePasswordDialogOpen(true)}>
+              Change Password
+            </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={handleLogout}>
+              Log Out
             </Button>
             <Button color="inherit" variant="contained" sx={{ bgcolor: 'secondary.main' }} onClick={() => setBillFormOpen(true)}>
               + Add Expense
@@ -345,6 +365,11 @@ function App() {
         allTransactions={allTransactions}
         categories={categories}
         accounts={accounts}
+      />
+
+      <ChangePasswordDialog
+        open={changePasswordDialogOpen}
+        onClose={() => setChangePasswordDialogOpen(false)}
       />
     </ThemeProvider>
   );

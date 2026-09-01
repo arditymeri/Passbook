@@ -223,15 +223,15 @@ around either.
 setup screen appears instead of the dashboard; complete setup; confirm a new session (private
 window, no stored token) is shown a login screen, not the dashboard.
 
-- [ ] T027 [US1] Create `frontend/src/components/SetupPage.tsx` — username/password form, calls
+- [X] T027 [US1] Create `frontend/src/components/SetupPage.tsx` — username/password form, calls
   `setupAdminAccount`, stores the returned token via `authToken.ts`, then calls an
   `onAuthenticated` callback (depends on T024-T026).
-- [ ] T028 [US1] Create `frontend/src/auth/AuthGate.tsx` — on mount, calls `fetchAuthStatus()`;
+- [X] T028 [US1] Create `frontend/src/auth/AuthGate.tsx` — on mount, calls `fetchAuthStatus()`;
   while loading, renders nothing (no flash of dashboard content, per FR-009); if
   `!adminAccountConfigured`, renders `SetupPage`; if configured but no stored token (or a stored
   token that a first authenticated call rejects — checked in Phase 4/5), renders a placeholder
   gate for now; if authenticated, renders `children` (depends on T027).
-- [ ] T029 [US1] Mount `<AuthGate>` around the existing app root in `frontend/src/main.tsx` (or
+- [X] T029 [US1] Mount `<AuthGate>` around the existing app root in `frontend/src/main.tsx` (or
   `App.tsx`, whichever currently owns the top-level render) so nothing in the existing dashboard,
   including its own data-fetching `useEffect`s, ever runs before `AuthGate` decides the user is
   authenticated (depends on T028).
@@ -251,11 +251,11 @@ that the dashboard is *not* shown).
 and confirm the dashboard loads; attempt several unrelated actions and confirm none re-prompt;
 attempt login with a wrong password and confirm a generic, non-revealing error.
 
-- [ ] T030 [US2] Create `frontend/src/components/LoginPage.tsx` — username/password form, calls
+- [X] T030 [US2] Create `frontend/src/components/LoginPage.tsx` — username/password form, calls
   `login`, stores the returned token, calls `onAuthenticated`; on a `401` shows one generic
   "Incorrect username or password" message (FR-012), never distinguishing which field was wrong
   (depends on T024-T026).
-- [ ] T031 [US2] Replace `AuthGate.tsx`'s Phase-3 placeholder gate with `LoginPage` when configured
+- [X] T031 [US2] Replace `AuthGate.tsx`'s Phase-3 placeholder gate with `LoginPage` when configured
   but unauthenticated (depends on T028, T030).
 
 **Checkpoint**: User Stories 1 AND 2 both independently functional — the full login gate now works
@@ -273,11 +273,11 @@ to the login screen from anywhere in the app, never a broken dashboard or raw er
 backend-calling action, and confirm a clean return to the login screen; log in, log out, and
 confirm the app returns to the login screen with the old token no longer accepted.
 
-- [ ] T032 [US3] Wire `AuthGate.tsx` to subscribe to `authToken.ts`'s `onSessionDied` (T025) for
+- [X] T032 [US3] Wire `AuthGate.tsx` to subscribe to `authToken.ts`'s `onSessionDied` (T025) for
   its whole lifetime (not just on mount) and re-render as unauthenticated the moment it fires —
   T026's `401` handling in `api/client.ts` is what triggers this from anywhere any component calls
   the backend (depends on T025, T026, T028).
-- [ ] T033 [US3] Add a "Log out" action reachable from the main app UI (e.g. the app bar, next to
+- [X] T033 [US3] Add a "Log out" action reachable from the main app UI (e.g. the app bar, next to
   the other settings-style buttons already there) that calls `logoutRequest()`, then `clearToken()`
   and `sessionDied()` regardless of whether the request itself succeeded, so the frontend always
   ends up back at the login screen (depends on T026, T032).
@@ -294,13 +294,13 @@ confirm the app returns to the login screen with the old token no longer accepte
 and the new one works on the next login; confirm an incorrect current password is rejected without
 changing anything.
 
-- [ ] T034 [US4] Create `frontend/src/components/ChangePasswordDialog.tsx` — current-password +
+- [X] T034 [US4] Create `frontend/src/components/ChangePasswordDialog.tsx` — current-password +
   new-password form, calls `changePasswordRequest`; a `401` (wrong current password) shows an
   inline error and leaves the dialog open; on success, since a password change invalidates every
   session including the caller's own (research.md R2), calls `clearToken()` + `sessionDied()` and
   closes, returning the operator to the login screen to log in with the new password (depends on
   T026).
-- [ ] T035 [US4] Surface a "Change Password" action reachable from the main app UI (e.g. the app
+- [X] T035 [US4] Surface a "Change Password" action reachable from the main app UI (e.g. the app
   bar) opening `ChangePasswordDialog` (depends on T034).
 
 **Checkpoint**: All four user stories independently functional.
@@ -309,10 +309,10 @@ changing anything.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T036 [P] Run `./mvnw -pl Domain test` and confirm T014's five new test classes, plus every
+- [X] T036 [P] Run `./mvnw -pl Domain test` and confirm T014's five new test classes, plus every
   pre-existing Domain test, all pass.
-- [ ] T037 [P] Run `./mvnw -pl Application test` and confirm T023's `SecurityConfigTest` passes.
-- [ ] T038 [P] Run `cd frontend && npx tsc --noEmit` to typecheck the new frontend code (this repo
+- [X] T037 [P] Run `./mvnw -pl Application test` and confirm T023's `SecurityConfigTest` passes.
+- [X] T038 [P] Run `cd frontend && npx tsc --noEmit` to typecheck the new frontend code (this repo
   has no frontend test runner anywhere — a pre-existing gap this feature does not introduce or
   worsen).
 - [ ] T039 Execute `specs/020-single-user-authentication/quickstart.md`'s 4 manual scenarios
@@ -320,7 +320,7 @@ changing anything.
   daemon available, consistent with every prior feature) — must be run manually once
   implementation lands in an environment with Docker; report honestly rather than marking complete
   if not actually run.
-- [ ] T040 Mark all tasks in this file `[X]` (except any genuinely not run, per T039), then commit
+- [X] T040 Mark all tasks in this file `[X]` (except any genuinely not run, per T039), then commit
   and push the implementation to `claude/project-status-s0au7m`.
 
 ---
