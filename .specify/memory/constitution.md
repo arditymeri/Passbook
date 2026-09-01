@@ -1,37 +1,29 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 2.0.0 (MAJOR — principle removed and principles redefined)
-
-Removed:
-  - Principle II "Double-Entry Accounting" — never implemented. There is no journal or
-    entry model; Bill and Income are separate single-line tables. The principle described a
-    product this is not, and every spec written under it inherited a false premise.
+Version change: 2.0.0 → 2.1.0 (MINOR — out-of-scope boundary narrowed, no principle
+  added/removed/renamed)
 
 Redefined:
-  - Principle III — reworded to describe what the code actually does: `account.balance` is an
-    OPENING balance; the current balance is derived at read time (GetAccountServiceImpl:52-64).
-    The prior wording forbade the stored column outright and was contradicted by the code.
-  - Principle V (audit trail) — "actor" requirement dropped. The app is single-tenant with no
-    users; there is no actor to record. Reinstate if identity is ever introduced.
-  - Principle VIII (hexagonal) — narrowed to the rule actually held: no Spring *context* and no
-    JPA/Kafka in Domain. Domain does use `@Service`/`@Component` annotations (36 of 128 files).
-    Framework-annotation-free was aspirational; context-free and instantiable in plain JUnit is real.
-
-Corrected in Financial Data Standards:
-  - Account types were listed as ASSET/LIABILITY/EQUITY/INCOME/EXPENSE (accounting classes).
-    Actual `AccountType`: CHECKING, SAVINGS, CREDIT_CARD, CASH, INVESTMENT.
-  - Multi-currency: accounts DO carry `currencies` + `defaultCurrency`; transactions carry no
-    currency at all. Recorded as a known gap rather than a satisfied standard.
-  - Reconciliation: no cleared/reconciled status exists. Moved to Roadmap.
+  - Deliberately Out of Scope, "Multi-user within a single instance" bullet — the blanket
+    "No auth" was written to rule out multi-tenancy (separate accounts, `userId`, row-level data
+    isolation), but read literally it also blocked a single shared instance-level credential gate,
+    which creates no tenancy and no `userId` at all. Narrowed to explicitly permit that gate while
+    keeping multi-user/userId/row-level-tenancy/signup out of scope, unchanged.
 
 Added:
-  - Vision section — the product thesis all principles now serve.
-  - Deliberately Out of Scope — the "no" list.
-  - Self-Hosting Obligations — what distribution to third parties requires.
+  - Self-Hosting Obligations — a bullet requiring an instance-level auth gate before distributing
+    to third parties (an unauthenticated instance reachable on a network is not an acceptable
+    default once "distribution to third parties is a commitment" applies).
 
-Templates: plan-template.md derives its gates from this file (no hardcoded principle list) —
-  verified, no change required.
+Rationale: feature 020 (single-user authentication — one admin credential protecting the whole
+  instance) was blocked by the prior literal wording despite not being "multi-user" in the sense
+  the bullet exists to prevent. This amendment resolves that gate failure ahead of feature 020's
+  planning phase.
+
+Templates: plan-template.md derives its gates from this file (no hardcoded principle list) — no
+  change required. spec-template.md, tasks-template.md — no change required (neither references
+  the out-of-scope list directly).
 -->
 
 # Passbook Constitution
@@ -161,8 +153,12 @@ Not oversights. Reopening any of these requires the amendment process below.
 
 - **Double-entry / journal-line accounting.** This is a personal finance app, not a bookkeeping
   system. Bills and incomes are single-line records.
-- **Multi-user within a single instance.** No auth, no `userId`, no row-level tenancy. One
-  instance, one household. Sharing is achieved by running an instance, not by signing up.
+- **Multi-user within a single instance.** No `userId`, no row-level tenancy, no per-account data
+  isolation, no signup flow. One instance, one household. Sharing is achieved by running an
+  instance, not by signing up. This does **not** rule out a single shared instance-level
+  credential gate (one admin username/password protecting the whole instance) — that creates no
+  `userId` and no tenancy; it only protects the one instance that already exists, and is required
+  before self-hosting reaches anyone but the operator (see Self-Hosting Obligations).
 - **Managed hosting of user ledgers.** The paid service is sync only. Holding other people's
   transaction history would impose GDPR/DPIA obligations the project is not structured to carry.
 - **Tax reporting, payment initiation, investment performance tracking.**
@@ -178,6 +174,10 @@ Distribution to third parties is a commitment. Before any release intended for o
 - **Versioned releases with a documented upgrade path**, and documented backup/restore.
 - **Integration tests MUST be enabled and green.** They are the only guard on other people's
   migrations.
+- **An instance-level authentication gate MUST be enabled.** An unauthenticated instance reachable
+  on a network is not an acceptable default once run by anyone but the operator testing locally.
+  This is the single shared credential gate permitted under Deliberately Out of Scope, not a
+  multi-user system.
 
 ## Development Workflow
 
@@ -210,4 +210,4 @@ constitutional principle; gold-plating or speculative generality is prohibited.
 
 Refer to `CLAUDE.md` for runtime development commands and project structure guidance.
 
-**Version**: 2.0.0 | **Ratified**: 2026-05-23 | **Last Amended**: 2026-08-29
+**Version**: 2.1.0 | **Ratified**: 2026-05-23 | **Last Amended**: 2026-09-01
