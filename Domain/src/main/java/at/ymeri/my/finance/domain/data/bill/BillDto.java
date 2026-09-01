@@ -27,4 +27,6 @@ public class BillDto {
     private String correctsTransactionId;
     private boolean reversal;
     private NecessityTag necessityTag;
+    private OffsetDateTime necessityTagUpdatedAt;
+    private OffsetDateTime recordedAt;
 }

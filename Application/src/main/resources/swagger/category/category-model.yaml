@@ -44,6 +44,9 @@ components:
           type: "string"
         parentCategoryId:
           type: "string"
+        updatedAt:
+          type: "string"
+          format: "date-time"
 
     categoryListResponse:
       type: "object"

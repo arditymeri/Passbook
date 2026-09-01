@@ -27,4 +27,9 @@ public class GetBudgetServiceImpl implements GetBudgetService {
     public Optional<BudgetDto> getById(UUID id) {
         return getBudgetPersistencePort.findById(id);
     }
+
+    @Override
+    public List<BudgetDto> getAll() {
+        return getBudgetPersistencePort.getAll();
+    }
 }

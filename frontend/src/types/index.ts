@@ -444,3 +444,27 @@ export interface SpendingCutRecommendations {
   categoryOpportunities: CategorySpendingOpportunity[];
   potentialMonthlySavings: number;
 }
+
+// A full-state device-sync export/import payload. The frontend only ever fetches it, hands it
+// back unmodified to /sync/import/preview|apply, and downloads/reads it as a file — it never
+// constructs or inspects individual snapshot fields, so it stays opaque here rather than
+// mirroring every nested entity shape from sync-model.yaml.
+export type SyncSnapshot = Record<string, unknown>;
+
+export interface EntityMergeCounts {
+  added: number;
+  updated: number;
+  unchanged: number;
+}
+
+export interface ImportSummary {
+  applied: boolean;
+  accounts: EntityMergeCounts;
+  categories: EntityMergeCounts;
+  budgets: EntityMergeCounts;
+  recurringSeries: EntityMergeCounts;
+  bills: EntityMergeCounts;
+  incomes: EntityMergeCounts;
+  savingsGoals: EntityMergeCounts;
+  correctionConflictsResolved: number;
+}

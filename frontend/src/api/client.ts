@@ -1,4 +1,4 @@
-import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, Income, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
+import type { Account, Allocation, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, SyncSnapshot, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -213,4 +213,16 @@ export async function fetchIncomeHistory(id: string): Promise<TransactionHistory
 export async function fetchCashFlowForecast(weeks?: CashFlowWindowWeeks): Promise<CashFlowForecastResponse> {
   const query = weeks !== undefined ? `?weeks=${weeks}` : '';
   return request<CashFlowForecastResponse>(`/api/v1/cash-flow-forecast${query}`);
+}
+
+export async function fetchSyncExport(): Promise<SyncSnapshot> {
+  return request<SyncSnapshot>('/api/v1/sync/export');
+}
+
+export async function previewSyncImport(snapshot: SyncSnapshot): Promise<ImportSummary> {
+  return postAndReturn<ImportSummary>('/api/v1/sync/import/preview', snapshot);
+}
+
+export async function applySyncImport(snapshot: SyncSnapshot): Promise<ImportSummary> {
+  return postAndReturn<ImportSummary>('/api/v1/sync/import/apply', snapshot);
 }

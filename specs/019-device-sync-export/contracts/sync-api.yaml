@@ -1,0 +1,86 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Device Sync API"
+  description: "Export a full-state snapshot for moving to another device, and preview/apply importing one"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /sync/export:
+    get:
+      summary: "Export a full-state snapshot of this device's data"
+      operationId: exportSyncSnapshot
+      description: >
+        Every account, category, budget, bill, income, recurring series, and savings goal
+        currently on this device, in one file. Bills/incomes include correction-replacement and
+        reversal rows exactly as stored. Read-only.
+      tags:
+        - sync
+      responses:
+        "200":
+          description: "Snapshot returned"
+          content:
+            application/json:
+              schema:
+                $ref: "sync-model.yaml#/components/schemas/syncSnapshot"
+        default:
+          description: "Unexpected error"
+
+  /sync/import/preview:
+    post:
+      summary: "Compute what importing a snapshot would do, without applying it"
+      operationId: previewSyncImport
+      description: >
+        Computes the same merge plan /sync/import/apply would, but never writes anything.
+        Returns counts of items that would be added, updated, or resolved as conflicts, by
+        data type.
+      tags:
+        - sync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "sync-model.yaml#/components/schemas/syncSnapshot"
+      responses:
+        "200":
+          description: "Merge preview computed"
+          content:
+            application/json:
+              schema:
+                $ref: "sync-model.yaml#/components/schemas/importSummary"
+        "400":
+          description: "Snapshot is malformed, or its schemaVersion is not recognized by this build"
+        default:
+          description: "Unexpected error"
+
+  /sync/import/apply:
+    post:
+      summary: "Apply a previously previewed snapshot import"
+      operationId: applySyncImport
+      description: >
+        Computes the same merge plan as /sync/import/preview and persists it in one transaction.
+        Never deletes anything locally; only inserts new items and updates items whose incoming
+        value is more recently modified than the local one.
+      tags:
+        - sync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "sync-model.yaml#/components/schemas/syncSnapshot"
+      responses:
+        "200":
+          description: "Import applied"
+          content:
+            application/json:
+              schema:
+                $ref: "sync-model.yaml#/components/schemas/importSummary"
+        "400":
+          description: "Snapshot is malformed, or its schemaVersion is not recognized by this build"
+        default:
+          description: "Unexpected error"
+
+components:
+  schemas: {}

@@ -7,6 +7,7 @@ import at.ymeri.my.finance.infrastructure.mapper.AccountMapper;
 import at.ymeri.my.finance.infrastructure.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Service
@@ -18,6 +19,11 @@ public class UpdateAccountPostgresAdapter implements UpdateAccountPersistencePor
         this.accountRepository = accountRepository;
     }
 
+    /**
+     * {@code updatedAt} is stamped "now" only when the caller didn't already set one — see
+     * {@link AddAccountPostgresAdapter#addAccount} for why sync's import merge preserves the
+     * source device's original timestamp instead.
+     */
     @Override
     public AccountDto updateAccount(String id, AccountDto accountDto) {
         AccountEntity entity = accountRepository.findById(UUID.fromString(id)).orElseThrow();
@@ -27,6 +33,7 @@ public class UpdateAccountPostgresAdapter implements UpdateAccountPersistencePor
         entity.setDefaultCurrency(accountDto.getDefaultCurrency());
         entity.setBalance(accountDto.getBalance());
         entity.setInstitution(accountDto.getInstitution());
+        entity.setUpdatedAt(accountDto.getUpdatedAt() != null ? accountDto.getUpdatedAt() : OffsetDateTime.now());
         return AccountMapper.INSTANCE.map(accountRepository.save(entity));
     }
 }

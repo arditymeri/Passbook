@@ -29,6 +29,7 @@ import { PriceChangeAlerts } from './components/PriceChangeAlerts';
 import { RecurringSeriesProposals } from './components/RecurringSeriesProposals';
 import { SavingsGoalsPage } from './components/SavingsGoalsPage';
 import { SourceFooter } from './components/SourceFooter';
+import { SyncPage } from './components/SyncPage';
 import { SpendingTrendsCard } from './components/SpendingTrendsCard';
 import { TransactionFilterBar } from './components/TransactionFilterBar';
 import { UpcomingRecurring } from './components/UpcomingRecurring';
@@ -42,7 +43,7 @@ import type { Period, Transaction, TransactionFilters, TransactionHistoryEntry }
 
 function App() {
   const now = new Date();
-  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts' | 'budgeting' | 'goals'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'categories' | 'accounts' | 'budgeting' | 'goals' | 'sync'>('dashboard');
   const [period, setPeriod] = useState<Period>({ year: now.getFullYear(), month: now.getMonth() + 1 });
   const [refreshKey, setRefreshKey] = useState(0);
   const [billFormOpen, setBillFormOpen] = useState(false);
@@ -117,6 +118,16 @@ function App() {
     );
   }
 
+  if (view === 'sync') {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <SyncPage onBack={() => { setView('dashboard'); setRefreshKey((k) => k + 1); }} />
+        <SourceFooter />
+      </ThemeProvider>
+    );
+  }
+
   function handlePrevious() {
     setPeriod((p) =>
       p.month === 1 ? { year: p.year - 1, month: 12 } : { year: p.year, month: p.month - 1 }
@@ -186,6 +197,9 @@ function App() {
             </Button>
             <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setImportDialogOpen(true)}>
               Import
+            </Button>
+            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('sync')}>
+              Sync
             </Button>
             <Button color="inherit" variant="contained" sx={{ bgcolor: 'secondary.main' }} onClick={() => setBillFormOpen(true)}>
               + Add Expense

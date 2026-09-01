@@ -41,4 +41,10 @@ public class BillEntity {
 
     @Column(name = "necessity_tag")
     private String necessityTag;
+
+    @Column(name = "necessity_tag_updated_at")
+    private OffsetDateTime necessityTagUpdatedAt;
+
+    @Column(name = "recorded_at")
+    private OffsetDateTime recordedAt;
 }

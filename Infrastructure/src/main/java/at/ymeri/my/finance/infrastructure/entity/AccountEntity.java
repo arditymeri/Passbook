@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,4 +36,7 @@ public class AccountEntity {
 
     @Column(name = "institution")
     private String institution;
+
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 }

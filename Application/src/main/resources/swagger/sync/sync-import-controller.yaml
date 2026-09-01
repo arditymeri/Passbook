@@ -1,0 +1,65 @@
+openapi: "3.0.0"
+tags:
+  - name: "SyncImportController"
+    description: "API for previewing and applying an import of a device sync snapshot"
+info:
+  title: "Personal Finance Service - Device Sync Import API"
+  description: "Preview or apply merging a snapshot exported from another device into this one"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /sync/import/preview:
+    post:
+      summary: "Compute what importing a snapshot would do, without applying it"
+      operationId: previewSyncImport
+      description: >
+        Computes the same merge plan /sync/import/apply would, but never writes anything. Returns
+        counts of items that would be added, updated, or resolved as conflicts, by data type.
+      tags:
+        - syncImport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "sync-model.yaml#/components/schemas/syncSnapshot"
+      responses:
+        "200":
+          description: "Merge preview computed"
+          content:
+            application/json:
+              schema:
+                $ref: "sync-model.yaml#/components/schemas/importSummary"
+        "400":
+          description: "Snapshot is malformed, or its schemaVersion is not recognized by this build"
+        default:
+          description: "Unexpected error"
+
+  /sync/import/apply:
+    post:
+      summary: "Apply a previously previewed snapshot import"
+      operationId: applySyncImport
+      description: >
+        Computes the same merge plan as /sync/import/preview and persists it in one transaction.
+        Never deletes anything locally; only inserts new items and updates items whose incoming
+        value is more recently modified than the local one.
+      tags:
+        - syncImport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "sync-model.yaml#/components/schemas/syncSnapshot"
+      responses:
+        "200":
+          description: "Import applied"
+          content:
+            application/json:
+              schema:
+                $ref: "sync-model.yaml#/components/schemas/importSummary"
+        "400":
+          description: "Snapshot is malformed, or its schemaVersion is not recognized by this build"
+        default:
+          description: "Unexpected error"

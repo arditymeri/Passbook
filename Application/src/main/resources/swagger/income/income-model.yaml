@@ -61,6 +61,10 @@ components:
           type: "string"
         reversal:
           type: "boolean"
+        recordedAt:
+          type: "string"
+          format: "date-time"
+          description: "When this row was first written - not the transaction's occurrence time (time)"
 
     incomeListResponse:
       type: "object"

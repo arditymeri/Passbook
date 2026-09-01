@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
@@ -28,4 +29,7 @@ public class BudgetEntity {
 
     @Column(name = "limit_amount", nullable = false)
     private BigDecimal limitAmount;
+
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 }

@@ -43,6 +43,9 @@ components:
           type: "integer"
         limitAmount:
           type: "number"
+        updatedAt:
+          type: "string"
+          format: "date-time"
 
     budgetListResponse:
       type: "object"

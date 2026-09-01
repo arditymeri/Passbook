@@ -14,4 +14,5 @@ public class SavingsGoalDto {
     private OffsetDateTime targetDate;
     private String accountId;
     private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 }
