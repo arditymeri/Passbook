@@ -27,7 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(
-        classes = {MyFinanceApplication.class, TestConfig.class, TestDataSourceConfig.class},
+        classes = {MyFinanceApplication.class, TestConfig.class, TestDataSourceConfig.class, TestSecurityConfig.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @EmbeddedKafka(partitions = 1, topics = {"booking.topic", "transaction.topic"}, bootstrapServersProperty = "spring.kafka.bootstrap-servers")
