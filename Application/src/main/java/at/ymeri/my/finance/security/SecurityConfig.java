@@ -39,6 +39,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/status", "/auth/setup", "/auth/login").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        // Spring Boot's error handling resolves an unhandled exception (e.g. a
+                        // failed @Valid bean-validation check with no local @ExceptionHandler,
+                        // which Spring's DefaultHandlerExceptionResolver turns into
+                        // response.sendError(400)) via an internal servlet-container forward to
+                        // /error. JwtAuthenticationFilter, being a OncePerRequestFilter, skips
+                        // that ERROR dispatch by default (its shouldNotFilterErrorDispatch()
+                        // defaults to true), so no authentication is re-established for it — but
+                        // Spring Security's own authorization filter DOES run on ERROR dispatches,
+                        // and would otherwise reject this internal forward as unauthenticated,
+                        // overwriting the original 400 with 401. Permitting /error is the
+                        // standard fix (it reveals nothing beyond the status/body the original
+                        // handler already decided to send).
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
