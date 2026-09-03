@@ -493,3 +493,13 @@ export interface Session {
   username: string;
   expiresAt: string;
 }
+
+/**
+ * What version this instance is running, from the backend rather than the frontend build — the
+ * two can diverge, and it is the running backend an operator needs to identify.
+ */
+export interface SystemVersion {
+  version: string;
+  /** Absent when the backend runs from an unfiltered classpath (an IDE run). */
+  buildTime?: string;
+}

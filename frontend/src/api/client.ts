@@ -1,4 +1,4 @@
-import type { Account, Allocation, AuthStatus, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, ChangePasswordRequest, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, LoginRequest, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, Session, SetupRequest, SyncSnapshot, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
+import type { Account, Allocation, AuthStatus, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, ChangePasswordRequest, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, LoginRequest, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, Session, SetupRequest, SyncSnapshot, SystemVersion, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
 import { clearToken, getToken, sessionDied } from '../auth/authToken';
 
 function authHeaders(): HeadersInit {
@@ -292,4 +292,8 @@ export async function previewSyncImport(snapshot: SyncSnapshot): Promise<ImportS
 
 export async function applySyncImport(snapshot: SyncSnapshot): Promise<ImportSummary> {
   return postAndReturn<ImportSummary>('/api/v1/sync/import/apply', snapshot);
+}
+
+export function fetchSystemVersion(): Promise<SystemVersion> {
+  return request<SystemVersion>('/api/v1/system/version');
 }

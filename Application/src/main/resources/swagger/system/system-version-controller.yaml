@@ -1,0 +1,52 @@
+openapi: "3.0.0"
+tags:
+  - name: "SystemVersionController"
+    description: "API for reporting which version of Passbook this instance is running"
+info:
+  title: "Personal Finance Service - System Version API"
+  description: "Report the running instance's version so an operator can tell what they are on without reading source or build files"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /system/version:
+    get:
+      summary: "The version this instance is running"
+      operationId: getSystemVersion
+      description: >
+        The release identifier of the running backend, taken from the build rather than from any
+        client-side constant, so it always describes the instance actually serving the request.
+        Read-only. Requires authentication like every other endpoint: it is for the operator of
+        the instance, not for anonymous fingerprinting.
+      tags:
+        - systemVersion
+      responses:
+        "200":
+          description: "Version returned"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/systemVersion"
+        default:
+          description: "Unexpected error"
+components:
+  schemas:
+    systemVersion:
+      type: object
+      description: "What version this instance is, and when it was built"
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          description: >
+            The release identifier, e.g. "0.1.0". Matches the newest heading in CHANGELOG.md and
+            the project version in the POMs.
+          example: "0.1.0"
+        buildTime:
+          type: string
+          format: date-time
+          description: >
+            When this artifact was built, UTC. Absent when the instance is running from an
+            unfiltered classpath (an IDE run), which is why it is optional rather than required.
+          example: "2026-09-03T10:15:30Z"

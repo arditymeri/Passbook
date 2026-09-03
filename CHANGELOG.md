@@ -1,0 +1,87 @@
+# Changelog
+
+All notable changes to Passbook are recorded here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses
+[semantic versioning](https://semver.org/).
+
+Versions before 0.1.0 were not released — the project ran as `0.0.1-SNAPSHOT` with no version an
+operator could identify. The 0.1.0 entry therefore covers everything up to the first release that
+is safe to hand to someone else, not just the last change.
+
+## [Unreleased]
+
+Nothing yet.
+
+## [0.1.0] — 2026-09-03
+
+The first release intended for someone other than its author to run. Earlier states of this
+repository were development snapshots: the schema was inferred at every startup, the database
+password shipped in the source, there was no backup procedure, and no way to tell versions apart.
+All four are closed here.
+
+### ⚠ Operator action required
+
+**If you are already running an instance, read this before upgrading.**
+
+1. **Create a `.env` file.** The app no longer ships any credential and will refuse to start
+   without `POSTGRES_PASSWORD` and `JWT_SECRET`. `cp .env.example .env` and fill it in.
+2. **Rotate your database password.** The password this project used to ship is in its published
+   git history. Removing it from the source does not remove it from history, and rewriting the
+   history of a public repository is not something you can rely on. Set a new password — in
+   `.env` *and* on the database itself — rather than assuming removal was enough.
+3. **Take a backup first.** See [docs/UPGRADING.md](docs/UPGRADING.md), where this is step one,
+   and [docs/BACKUP.md](docs/BACKUP.md) for how.
+4. **Setting `JWT_SECRET` for the first time logs out existing sessions.** Expected: previously
+   the signing key was regenerated on every restart, so sessions did not survive restarts anyway.
+
+Your data is preserved. The first startup on this version adopts your existing database as the
+migration baseline without dropping, recreating, or emptying any table.
+
+### Added
+
+- **Explicit schema migrations (Flyway).** Every schema change is now a versioned, ordered step
+  recorded once applied. An already-running instance adopts the current schema as its baseline;
+  a new empty database has it created from the same file.
+- **Documented and tested backup/restore.** [docs/BACKUP.md](docs/BACKUP.md). The procedure runs
+  against a real PostgreSQL on every CI build, so it is verified rather than merely written down.
+- **Documented upgrade path.** [docs/UPGRADING.md](docs/UPGRADING.md).
+- **`GET /system/version`.** Reports the running version, also shown in the app footer, so you
+  can tell what an instance is without reading source or build files.
+- **`.env.example`.** Documents every secret the app needs; contains no real values.
+- **Single-user authentication** (0.1.0 also carries this, from before the release existed): one
+  admin username and password protecting the whole instance, with logout and password change both
+  invalidating existing sessions.
+- **Device sync export/import**, spending trends, cash-flow forecast, recurring-cost detection
+  and necessity tagging, envelope budgeting with allocation transfers, savings goals, and
+  client-side transaction import — all built before this release existed.
+
+### Changed
+
+- **`spring.jpa.hibernate.ddl-auto` is now `validate`, not `update`.** The app refuses to start
+  when the database disagrees with what the code expects, instead of silently reshaping it.
+  Hibernate's validation checks tables, columns and column types; it does not check indexes,
+  unique constraints, foreign keys or defaults, so a stale *extra* column will not stop startup.
+- **All secrets come from the environment.** `spring.datasource.password` and the JWT signing key
+  have no built-in default, and startup fails naming what is missing.
+- **The JWT signing key is required.** It previously fell back to a random per-process key, which
+  logged every session out on each restart.
+- **Docker Compose reads credentials from `.env`** and refuses to start if they are absent.
+
+### Fixed
+
+- `.env` is excluded from the Docker build context. Without this, an operator's local `.env`
+  would have been copied into the image by the `COPY . .` in the Dockerfile.
+
+### Known limitations
+
+Carried forward, and honest about them:
+
+- **No transport encryption.** TLS is yours to terminate, via a reverse proxy.
+- **Transactions carry no currency field.** Every amount is implicitly in its account's default
+  currency; cross-currency transactions cannot be represented.
+- **One integration test class remains disabled** (`BillGetControllerIntegrationTest`).
+- **Kafka is present but unused** for transaction ingestion; the pipeline that fills itself is
+  still the roadmap, not the reality.
+
+[Unreleased]: https://github.com/arditymeri/Passbook/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/arditymeri/Passbook/releases/tag/v0.1.0
