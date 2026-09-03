@@ -1,3 +1,10 @@
+# Values for the environment-sourced secrets that Launcher's application.properties now
+# requires (feature 021). They are test fixtures, not credentials: the database they name is a
+# throwaway Testcontainer on a random port, discarded when the suite ends. They live here so the
+# ${...} placeholders resolve when the full application context boots.
+POSTGRES_PASSWORD: integration-test-password
+JWT_SECRET: integration-test-jwt-secret
+
 spring:
   kafka:
     consumer:

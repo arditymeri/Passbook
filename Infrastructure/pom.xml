@@ -24,6 +24,19 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Explicit schema migrations (feature 021). Flyway 10 split database support out of
+             flyway-core: with core alone, startup fails with "No database found to handle
+             jdbc:postgresql". Both artifacts are required, and both are version-managed by
+             spring-boot-starter-parent. -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>

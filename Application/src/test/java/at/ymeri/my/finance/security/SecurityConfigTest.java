@@ -30,7 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * {@link SecurityConfig}/{@link JwtAuthenticationFilter} apply uniformly to every controller,
  * which {@code /auth/logout} demonstrates just as validly as any other endpoint would.
  */
-@WebMvcTest(controllers = AuthController.class)
+@WebMvcTest(controllers = AuthController.class,
+        properties = "app.security.jwt-secret=slice-test-secret")
 @Import({SecurityConfig.class, JwtAuthenticationFilter.class, JwtTokenService.class})
 class SecurityConfigTest {
 
