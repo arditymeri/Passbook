@@ -5,8 +5,6 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +12,6 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -27,17 +24,15 @@ import java.util.Optional;
  * {@code tokenVersion} is Domain's {@code ValidateSessionService}, not this class — research.md
  * R1/R2).
  *
- * <p>Signing key: {@code app.security.jwt-secret} (typically set via the
- * {@code APP_SECURITY_JWT_SECRET} environment variable) if configured, normalized to a 256-bit
- * key via SHA-256 so any non-empty string is accepted. If unset, a random key is generated once
- * for this process — every existing session then needs to log in again after any restart, which
- * is an acceptable local-dev default but never appropriate for a real deployment (research.md
- * R4; Self-Hosting Obligations: no credentials in version control).
+ * <p>Signing key: {@code app.security.jwt-secret}, sourced from the {@code JWT_SECRET}
+ * environment variable, normalized to a 256-bit key via SHA-256 so any non-empty string is
+ * accepted. It is <strong>required</strong>: startup fails with an actionable message when it is
+ * missing. Feature 021 removed the previous random-key fallback — it silently invalidated every
+ * session on restart, and a built-in default is exactly what makes every install share a
+ * credential (Self-Hosting Obligations: no credentials in version control; 021 research R8).
  */
 @Service
 public class JwtTokenService {
-
-    private static final Logger log = LoggerFactory.getLogger(JwtTokenService.class);
 
     private final String configuredSecret;
     private final Duration expiry;
@@ -51,16 +46,16 @@ public class JwtTokenService {
 
     @PostConstruct
     void init() {
-        if (configuredSecret != null && !configuredSecret.isBlank()) {
-            key = Keys.hmacShaKeyFor(sha256(configuredSecret));
-        } else {
-            byte[] random = new byte[32];
-            new SecureRandom().nextBytes(random);
-            key = Keys.hmacShaKeyFor(random);
-            log.warn("APP_SECURITY_JWT_SECRET is not set - generated a random signing key for "
-                    + "this process only. Every existing session will need to log in again after "
-                    + "any restart. Set APP_SECURITY_JWT_SECRET for a stable, real deployment.");
+        if (configuredSecret == null || configuredSecret.isBlank()) {
+            throw new IllegalStateException(
+                    "JWT_SECRET is not set. Passbook signs session tokens with it, and there is "
+                            + "deliberately no built-in default: a shipped fallback would mean "
+                            + "every install shares a signing key, and a randomly generated one "
+                            + "would log every session out on each restart. Copy .env.example to "
+                            + ".env and set JWT_SECRET to a long random string, e.g. "
+                            + "`openssl rand -base64 32`.");
         }
+        key = Keys.hmacShaKeyFor(sha256(configuredSecret));
     }
 
     public record IssuedToken(String token, OffsetDateTime expiresAt) {

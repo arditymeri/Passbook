@@ -57,7 +57,7 @@ an existing instance it does not execute at all.
 - **The baseline must change nothing.** No added foreign keys, no tightened nullability, no
   renamed constraints. A baseline that "improves" the schema can fail against an operator's
   existing data — the exact opposite of FR-003.
-- **`FinanceDbPassword` is in published git history.** Removal from the working tree is not
+- **the password this project used to ship is in published git history.** Removal from the working tree is not
   rotation; the documentation must say so plainly (FR-010).
 - **Migrations are immutable once applied.** Flyway checksums them; `V1` is frozen the moment any
   instance runs it.

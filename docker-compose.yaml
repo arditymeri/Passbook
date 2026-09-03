@@ -1,3 +1,8 @@
+# Secrets come from .env, which Compose reads from this directory automatically. Copy
+# .env.example to .env and fill it in — `docker compose up` stays a single command after that.
+# The `:?` substitutions make Compose itself refuse to start, naming the missing variable,
+# rather than silently falling back to a value shipped in this repository.
+
 services:
 
   postgres:
@@ -6,9 +11,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: myfinance
-      POSTGRES_USER: diti
-      POSTGRES_PASSWORD: FinanceDbPassword
+      POSTGRES_DB: ${POSTGRES_DB:-myfinance}
+      POSTGRES_USER: ${POSTGRES_USER:-diti}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env — copy .env.example}
     networks:
       - finance-net
 
@@ -18,8 +23,8 @@ services:
     ports:
       - "5050:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?set PGADMIN_DEFAULT_PASSWORD in .env — copy .env.example}
     depends_on:
       - postgres
     networks:
@@ -80,6 +85,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      # The backend reads these as ${...} placeholders; POSTGRES_PASSWORD and JWT_SECRET have no
+      # usable default, so a missing one fails startup by name instead of falling back.
+      POSTGRES_USER: ${POSTGRES_USER:-diti}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env — copy .env.example}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env — copy .env.example}
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-myfinance}
     depends_on:
       - kafka
       - postgres

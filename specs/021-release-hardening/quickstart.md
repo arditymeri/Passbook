@@ -145,8 +145,15 @@ this feature sets explicitly so the behaviour is visible in configuration rather
 **Verifies**: acceptance scenario 1 — no usable credential in any tracked file.
 
 ```bash
-# Should return nothing outside .env.example placeholders and this specs/ directory.
-git grep -nI -e 'FinanceDbPassword' -e 'PGADMIN_DEFAULT_PASSWORD: admin' -- . ':!specs/'
+# Every password in the shipped config surface must be an environment placeholder, never a
+# literal. Empty output is the pass condition. The old value is deliberately NOT written out
+# here: a verification command must not itself put a credential into a tracked file.
+git grep -nIE '(password|PASSWORD)[[:space:]]*[:=][[:space:]]*[^$?[:space:]]' \
+  -- '*.properties' '*.yaml' '*.yml' 'Dockerfile' ':!integration-tests/**' ':!specs/**'
+
+# integration-tests/ is excluded knowingly: its values are throwaway Testcontainer fixtures on a
+# random port, not credentials to anything reachable. They are also no longer the same string as
+# the historically published password.
 
 # What an operator actually does:
 cp .env.example .env

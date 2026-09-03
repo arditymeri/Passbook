@@ -257,7 +257,7 @@ the integration suite boots the full Launcher configuration, so `POSTGRES_PASSWO
 start with a named error, plus `env_file: .env`. Compose reads `.env` from the project directory
 automatically, so `docker compose up` stays a single command once `.env` exists.
 
-**Rotation (FR-010)**: `FinanceDbPassword` is in this repository's published git history. Removing
+**Rotation (FR-010)**: the password this project used to ship is in this repository's published git history. Removing
 it from the working tree does not remove it from history, and history rewriting on a public
 repository is not a remedy an operator can rely on. The documentation must therefore say *rotate*,
 not *removed in this version* — this is a documentation obligation, not a code change.
