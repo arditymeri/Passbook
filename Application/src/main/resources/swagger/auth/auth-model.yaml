@@ -1,0 +1,50 @@
+components:
+  schemas:
+    authStatus:
+      type: "object"
+      properties:
+        adminAccountConfigured:
+          type: "boolean"
+          description: "false until /auth/setup has succeeded once; true forever after"
+
+    setupRequest:
+      type: "object"
+      required: [username, password]
+      properties:
+        username:
+          type: "string"
+          minLength: 1
+        password:
+          type: "string"
+          minLength: 1
+
+    loginRequest:
+      type: "object"
+      required: [username, password]
+      properties:
+        username:
+          type: "string"
+        password:
+          type: "string"
+
+    changePasswordRequest:
+      type: "object"
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: "string"
+        newPassword:
+          type: "string"
+          minLength: 1
+
+    session:
+      type: "object"
+      properties:
+        token:
+          type: "string"
+          description: "JWT bearer token - send as `Authorization: Bearer <token>` on every subsequent request"
+        username:
+          type: "string"
+        expiresAt:
+          type: "string"
+          format: "date-time"

@@ -1,0 +1,117 @@
+openapi: "3.0.0"
+info:
+  title: "Personal Finance Service - Authentication API"
+  description: "First-run admin setup, login, session-relevant status, logout, and password change"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /auth/status:
+    get:
+      summary: "Whether an admin account has been set up yet"
+      operationId: getAuthStatus
+      description: >
+        Public. Lets the frontend decide whether to show the first-run setup screen or the login
+        screen, without revealing anything else.
+      tags:
+        - auth
+      responses:
+        "200":
+          description: "Status returned"
+          content:
+            application/json:
+              schema:
+                $ref: "auth-model.yaml#/components/schemas/authStatus"
+
+  /auth/setup:
+    post:
+      summary: "Create the one admin account (first run only)"
+      operationId: setupAdminAccount
+      description: >
+        Public, but only succeeds once. Rejects with 409 if an admin account already exists.
+        Succeeds by returning a session, the same shape /auth/login returns, so completing setup
+        is also being logged in.
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "auth-model.yaml#/components/schemas/setupRequest"
+      responses:
+        "200":
+          description: "Admin account created and session issued"
+          content:
+            application/json:
+              schema:
+                $ref: "auth-model.yaml#/components/schemas/session"
+        "409":
+          description: "An admin account already exists"
+        default:
+          description: "Unexpected error"
+
+  /auth/login:
+    post:
+      summary: "Log in with the admin credential"
+      operationId: login
+      description: "Public. Verifies username and password, returns a session on success."
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "auth-model.yaml#/components/schemas/loginRequest"
+      responses:
+        "200":
+          description: "Session issued"
+          content:
+            application/json:
+              schema:
+                $ref: "auth-model.yaml#/components/schemas/session"
+        "401":
+          description: "Incorrect username or password (never says which)"
+        default:
+          description: "Unexpected error"
+
+  /auth/logout:
+    post:
+      summary: "End the current session"
+      operationId: logout
+      description: >
+        Requires a valid session. Invalidates every outstanding session for this account
+        (there being only one account, this is equivalent to invalidating the caller's own),
+        per FR-008.
+      tags:
+        - auth
+      responses:
+        "204":
+          description: "Session ended"
+        default:
+          description: "Unexpected error"
+
+  /auth/change-password:
+    post:
+      summary: "Change the admin password"
+      operationId: changePassword
+      description: >
+        Requires a valid session and re-confirmation of the current password. Invalidates every
+        outstanding session on success, including the caller's own — the frontend must treat a
+        successful password change as also requiring a fresh login.
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "auth-model.yaml#/components/schemas/changePasswordRequest"
+      responses:
+        "204":
+          description: "Password changed"
+        "401":
+          description: "Current password was incorrect"
+        default:
+          description: "Unexpected error"

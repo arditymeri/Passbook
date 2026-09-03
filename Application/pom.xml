@@ -37,6 +37,31 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
         </dependency>
+
+        <!-- JWT issuance/validation for the security filter chain (JwtTokenService) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -804,6 +829,27 @@
                             <inputSpec>${project.basedir}/src/main/resources/swagger/sync/sync-import-controller.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>${api-package}.sync</apiPackage>
+                            <modelPackage>${model-package}</modelPackage>
+                            <skipOverwrite>true</skipOverwrite>
+                            <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
+                            <configOptions>
+                                <delegatePattern>true</delegatePattern>
+                                <additionalModelTypeAnnotation>@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)</additionalModelTypeAnnotation>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <dateLibary>java8</dateLibary>
+                                <performBeanValidation>true</performBeanValidation>
+                                <useTags>true</useTags>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>auth</id>
+                        <goals><goal>generate</goal></goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/swagger/auth/auth-api-controller.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>${api-package}.auth</apiPackage>
                             <modelPackage>${model-package}</modelPackage>
                             <skipOverwrite>true</skipOverwrite>
                             <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
