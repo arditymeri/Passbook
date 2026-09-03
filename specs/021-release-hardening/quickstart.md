@@ -24,10 +24,10 @@ rather than code paths — several of them become the literal content of `README
 
 ```bash
 # 1. Back up first. This is step one of the documented upgrade, not a suggestion.
-docker compose exec -T postgres pg_dump -U "$POSTGRES_USER" -Fc passbook > passbook-preupgrade.dump
+docker compose exec -T postgres pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" > passbook-preupgrade.dump
 
 # 2. Record what you have, so "nothing was lost" is checkable rather than hopeful.
-docker compose exec -T postgres psql -U "$POSTGRES_USER" -d passbook -c \
+docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
   "SELECT 'account' t, count(*) FROM account
    UNION ALL SELECT 'bill', count(*) FROM bill
    UNION ALL SELECT 'income', count(*) FROM income
@@ -82,7 +82,7 @@ TestContainer database, migrated from empty by Flyway.
 
 ```bash
 # Introduce a mismatch by hand against a scratch database.
-docker compose exec -T postgres psql -U "$POSTGRES_USER" -d passbook -c \
+docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
   "ALTER TABLE bill DROP COLUMN necessity_tag;"
 docker compose restart finance-app
 ```
@@ -105,11 +105,11 @@ writes; it does not claim full structural equivalence.
 
 ```bash
 # Backup — one artifact, compressed, custom format.
-docker compose exec -T postgres pg_dump -U "$POSTGRES_USER" -Fc passbook \
+docker compose exec -T postgres pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" \
   > "passbook-$(date +%F).dump"
 
 # Restore — into an empty database.
-docker compose exec -T postgres pg_restore -U "$POSTGRES_USER" -d passbook \
+docker compose exec -T postgres pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
   --clean --if-exists < "passbook-$(date +%F).dump"
 ```
 
@@ -164,7 +164,9 @@ docker compose up --build       # still one command
 **Expected**: the grep finds nothing; `.env` is gitignored (already covered by the existing
 `### Secrets & local environment ###` block); the stack starts.
 
-**Locally executable**: the grep, yes. The startup, no.
+**Locally executed — result**: the check passes. The historically published password appears in no
+tracked file, including this feature's own planning documents and `.env.example`: a document that
+tells you to rotate a credential should not restate it. The startup half needs Docker.
 
 ---
 
@@ -183,8 +185,16 @@ docker compose up            # Compose itself refuses: ${POSTGRES_PASSWORD:?...}
 `JWT_SECRET` unset, `JwtTokenService` throws an `IllegalStateException` naming the variable —
 replacing today's random-key fallback, which silently logs every session out on restart.
 
-**Locally executable**: the Maven run, partially (it fails on the missing property before it needs
-a database, which is the point).
+**Locally executed — result**: verified by running it. With neither secret set, startup fails with
+*"Passbook cannot start: required secret(s) not configured — JWT_SECRET (...), POSTGRES_PASSWORD
+(...)"* naming both; with only `JWT_SECRET` set it names `POSTGRES_PASSWORD` alone.
+
+**What running it revealed**: a `${VAR}` placeholder with no default is *not* sufficient on its
+own. `@Value` throws on an unresolvable placeholder, but the `@ConfigurationProperties` binder
+that binds `spring.datasource.*` silently leaves it as literal text — so a missing
+`POSTGRES_PASSWORD` originally reached a TCP connection attempt instead of an actionable error.
+`RequiredSecretsEnvironmentPostProcessor` closes that, running before any bean so the failure is
+the first thing the operator sees.
 
 ---
 

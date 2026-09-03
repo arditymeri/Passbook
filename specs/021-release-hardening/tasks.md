@@ -154,12 +154,12 @@ statements of the version (POM, CHANGELOG heading, `GET /system/version`) agree.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T028 Rewrite the "Before you self-host" section and the Database warning in `README.md`. Both are now stale in four places: *"No authentication"* (closed by feature 020), *"No schema migrations"*, *"No secrets management"*, *"No backup/restore tooling or versioned releases"* (all closed here), and *"Integration tests are currently disabled (WIP)"* — which is simply wrong, nine of ten integration test classes are active and green in CI. Replace the hardcoded-credentials paragraph with the `.env` setup, and add the `.env` step to both "Running the Full Stack" options. Link `CHANGELOG.md`, `docs/UPGRADING.md` and `docs/BACKUP.md`.
-- [ ] T029 [P] Update `SECURITY.md`: "Known and Accepted Limitations" still lists *"No authentication or authorisation"* and *"Default credentials in `docker-compose.yaml`"* and *"`spring.jpa.hibernate.ddl-auto=update`"*, all three now untrue; "Supported Versions" still says no released versions exist. Add the rotation notice for the historically published password.
-- [ ] T030 Decide `integration-tests/src/test/java/at/ymeri/my/finance/integration/tests/BillGetControllerIntegrationTest.java`: make it pass or delete it. The constitution's Self-Hosting Obligations require integration tests "enabled and green", and an indefinitely `@Disabled` test is a claim of coverage that does not exist. **This is outside the spec's four user stories and is flagged rather than assumed** — if scope should stay exactly as specified, this is the task to drop; nothing else depends on it.
-- [ ] T031 Run `./mvnw clean install` and `cd frontend && npm run build`. Report both results factually, and state explicitly that the integration suite (T010's real verifier and T017) runs in CI, not here.
-- [ ] T032 Walk `specs/021-release-hardening/quickstart.md` against the delivered files and correct any command that drifted — particularly that `docs/BACKUP.md`'s commands and `BackupRestoreIntegrationTest`'s commands match each other and match the quickstart.
-- [ ] T033 Mark completed tasks `[X]` in this file, then commit and push to `claude/project-status-s0au7m`.
+- [X] T028 Rewrite the "Before you self-host" section and the Database warning in `README.md`. Both are now stale in four places: *"No authentication"* (closed by feature 020), *"No schema migrations"*, *"No secrets management"*, *"No backup/restore tooling or versioned releases"* (all closed here), and *"Integration tests are currently disabled (WIP)"* — which is simply wrong, nine of ten integration test classes are active and green in CI. Replace the hardcoded-credentials paragraph with the `.env` setup, and add the `.env` step to both "Running the Full Stack" options. Link `CHANGELOG.md`, `docs/UPGRADING.md` and `docs/BACKUP.md`.
+- [X] T029 [P] Update `SECURITY.md`: "Known and Accepted Limitations" still lists *"No authentication or authorisation"* and *"Default credentials in `docker-compose.yaml`"* and *"`spring.jpa.hibernate.ddl-auto=update`"*, all three now untrue; "Supported Versions" still says no released versions exist. Add the rotation notice for the historically published password.
+- [X] T030 **DONE — deleted.** Decide `integration-tests/src/test/java/at/ymeri/my/finance/integration/tests/BillGetControllerIntegrationTest.java`: make it pass or delete it. The constitution's Self-Hosting Obligations require integration tests "enabled and green", and an indefinitely `@Disabled` test is a claim of coverage that does not exist. **This is outside the spec's four user stories and is flagged rather than assumed** — if scope should stay exactly as specified, this is the task to drop; nothing else depends on it.
+- [X] T031 Run `./mvnw clean install` and `cd frontend && npm run build`. Report both results factually, and state explicitly that the integration suite (T010's real verifier and T017) runs in CI, not here.
+- [X] T032 Walk `specs/021-release-hardening/quickstart.md` against the delivered files and correct any command that drifted — particularly that `docs/BACKUP.md`'s commands and `BackupRestoreIntegrationTest`'s commands match each other and match the quickstart.
+- [X] T033 Mark completed tasks `[X]` in this file, then commit and push to `claude/project-status-s0au7m`.
 
 ---
 
@@ -236,3 +236,47 @@ this app to anyone, and it is worth landing and watching CI before touching secr
 - Commit after each phase; the baseline (T007) deserves its own commit and its own read-through.
 - **Never edit `V1__baseline_schema.sql` after it is applied anywhere** — Flyway checksums it.
 - Do not claim any Docker-dependent task as verified locally. Say what ran, what did not, and why.
+
+---
+
+## Implementation Outcome
+
+All 33 tasks complete. What differed from the plan, recorded rather than smoothed over:
+
+1. **T011/T012 needed a third piece the plan did not foresee.** A `${VAR}` placeholder with no
+   default does *not* fail startup: `@Value` throws on an unresolvable placeholder, but the
+   `@ConfigurationProperties` binder that binds `spring.datasource.*` silently leaves it as
+   literal text. A missing `POSTGRES_PASSWORD` therefore reached a TCP connection attempt rather
+   than an actionable error — FR-009 was unmet as designed. Found by running it, not by reading
+   it. Closed with `RequiredSecretsEnvironmentPostProcessor` (Launcher), which runs before any
+   bean and names every missing secret at once. Verified by execution.
+
+2. **T013 used an explicit `environment:` block, not `env_file: .env`.** Compose already reads
+   `.env` for `${...}` substitution, so `env_file` would be redundant; listing the variables makes
+   it visible exactly what the backend receives, with `:?` so Compose refuses to start rather than
+   falling back.
+
+3. **T017 restores into a fresh empty database, not over the live one.** That is the case the
+   acceptance criteria describe ("given a backup artifact and an empty database"), and dropping
+   the shared container's schema would have taken the other ~110 integration tests with it.
+
+4. **T030 resolved as delete.** `BillGetControllerIntegrationTest` asserted only that a bean was
+   non-null — implicitly covered by all nine active classes — around three blocks of abandoned
+   Kafka scaffolding and a `DockerComposeContainer` pointing at a compose file with a `zookeeper`
+   service the stack no longer uses. `/bills` is exercised by three other active classes. Its
+   orphaned `src/test/resources/docker-compose.yaml` went with it. No `@Disabled` remains anywhere
+   in the repository.
+
+5. **Two things were added that no task listed**, both genuine gaps found while working:
+   `.env` added to `.dockerignore` (the Dockerfile does `COPY . .`, so an operator's `.env` would
+   have been baked into the image), and the historically published password removed from this
+   feature's own planning documents and `.env.example` — a document that tells you to rotate a
+   credential should not restate it.
+
+**Verification.** 257 tests green across Domain, Application, Events and Launcher; the
+integration module compiles; the frontend type-checks and builds. The integration suite itself did
+**not** run here — this environment has no Docker daemon ("Could not find a valid Docker
+environment") — and it is the real verifier for US1 and US3: under `ddl-auto=validate` any
+disagreement between `V1__baseline_schema.sql` and the JPA mappings fails every one of those tests
+at context startup, and `BackupRestoreIntegrationTest` is the whole of FR-012's evidence. Both run
+in CI.

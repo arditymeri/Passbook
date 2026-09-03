@@ -11,11 +11,11 @@ correction path, not as the way data normally arrives.
 **Your data stays on your machine.** Every instance is single-tenant, run by you, on your own
 hardware. There is no account to sign up for and no server of ours holding your ledger.
 
-> **Status: pre-1.0, and honest about it.** The self-filling pipeline described above is the
-> direction, not yet the reality — today transactions are entered through the UI. See
-> [Roadmap](#roadmap) for what's built and what isn't, and
-> [Before you self-host](#before-you-self-host) for what's missing before you should trust it
-> with data you care about.
+> **Status: v0.1.0 — the first release meant for someone other than its author to run.** The
+> self-filling pipeline described above is the direction, not yet the reality: today transactions
+> are entered through the UI. See [Roadmap](#roadmap) for what's built and what isn't,
+> [CHANGELOG.md](CHANGELOG.md) for what changed, and
+> [Before you self-host](#before-you-self-host) for what is still missing.
 
 ---
 
@@ -35,6 +35,17 @@ in [`.specify/memory/constitution.md`](.specify/memory/constitution.md).
 ---
 
 ## Running the Full Stack
+
+**First, once: create your `.env`.** Passbook ships no credentials, and will not start without
+them.
+
+```bash
+cp .env.example .env
+$EDITOR .env          # set POSTGRES_PASSWORD, JWT_SECRET, PGADMIN_DEFAULT_PASSWORD
+```
+
+Generate a good `JWT_SECRET` with `openssl rand -base64 32`. `.env` is gitignored and never
+enters the Docker image.
 
 ### Option A — Everything in Docker (recommended)
 
@@ -68,9 +79,13 @@ docker-compose up postgres kafka kafdrop
 ```
 
 ```bash
-# In a separate terminal, run the backend
-./mvnw -pl Launcher spring-boot:run
+# In a separate terminal, run the backend. Set DATABASE_URL to localhost: the default targets
+# the `postgres` Compose service, which is not resolvable from your host.
+DATABASE_URL=jdbc:postgresql://localhost:5432/myfinance ./mvnw -pl Launcher spring-boot:run
 ```
+
+> The backend reads `POSTGRES_PASSWORD` and `JWT_SECRET` from your shell environment here, not
+> from `.env` — `.env` is read by Docker Compose. Export them, or use `env $(cat .env | xargs)`.
 
 ```bash
 # In another terminal, run the frontend
@@ -100,39 +115,40 @@ npm run dev
 
 PostgreSQL runs at `localhost:5432`, database `myfinance`, user `diti`.
 
-> **⚠ Development configuration only.** Hibernate DDL auto is set to `update`, so the schema is
-> inferred and applied on startup. This is convenient locally and **unsafe for real data** —
-> it cannot express a migration, silently ignores destructive changes, and gives you no way to
-> upgrade an existing database across versions predictably. Explicit migrations (Flyway or
-> Liquibase) are a prerequisite for the first release intended for others to run.
->
-> Database credentials are currently hardcoded in `Launcher/src/main/resources/application.properties`.
-> They must move to environment variables before any real deployment.
+Schema changes are explicit, versioned Flyway migrations in
+`Infrastructure/src/main/resources/db/migration/`, applied automatically at startup. Hibernate
+runs with `ddl-auto=validate`, so a database that disagrees with the code stops startup instead of
+being silently reshaped.
 
-**pgAdmin credentials** (http://localhost:5050):
+Upgrading an instance that predates migrations is safe: its existing schema is adopted as the
+baseline, with no table dropped, recreated or emptied. See [docs/UPGRADING.md](docs/UPGRADING.md).
 
-| Field | Value |
-|-------|-------|
-| Email | admin@example.com |
-| Password | admin |
+**Back up your data.** [docs/BACKUP.md](docs/BACKUP.md) — one command, and the restore is
+exercised against a real PostgreSQL on every CI build rather than only being written down.
+
+**pgAdmin** (http://localhost:5050) uses `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD`
+from your `.env`.
 
 ---
 
 ## Before you self-host
 
-The project is not yet ready to hold data you would be upset to lose. Known gaps, tracked as
-release blockers in the [constitution](.specify/memory/constitution.md):
+v0.1.0 closes the release blockers the [constitution](.specify/memory/constitution.md) tracked as
+Self-Hosting Obligations: schema migrations are explicit, credentials come from your environment,
+backup/restore is documented and tested, releases are versioned with an upgrade path, and the
+instance is protected by an admin login.
 
-- **No schema migrations.** See the warning above. Upgrading between versions is not yet safe.
-- **No secrets management.** Credentials live in `application.properties`.
-- **No authentication.** The API is unauthenticated and assumes a trusted network. Do not expose
-  it to the internet. This is by design — every instance is single-tenant, one household — but it
-  means network placement is your only access control.
-- **No backup/restore tooling or versioned releases** yet.
-- **Integration tests are currently disabled** (WIP), so migration safety is unverified.
+What is still true, and worth knowing before you trust it with records that matter:
+
+- **No transport encryption.** The app assumes localhost or a trusted network. TLS is yours to
+  terminate, via a reverse proxy. Do not expose an instance directly to the internet.
 - **Transactions have no currency field.** Accounts carry `currencies` and `defaultCurrency`, but
   every transaction amount is implicitly in its account's default currency. Cross-currency
   transactions cannot be represented.
+- **One integration test class is still disabled** (`BillGetControllerIntegrationTest`). The other
+  nine run against a real PostgreSQL on every CI build.
+- **It is 0.1.0.** The API is not frozen, and the pipeline that fills itself is still the roadmap
+  rather than the reality.
 
 Found a security problem? Please report it privately — see [`SECURITY.md`](SECURITY.md),
 which also lists the limitations above as known and accepted, so you can tell them apart
@@ -170,6 +186,7 @@ All paths are prefixed with `/api/v1`.
 | Savings goals | `GET/POST /savings-goals`, `GET/PUT/DELETE /savings-goals/{id}` |
 | Recurring detection | `POST /recurring-series/detect`, `GET /recurring-series`, `GET /recurring-series/dashboard`, `POST /recurring-series/{id}/confirm`, `POST /recurring-series/{id}/dismiss` |
 | Forecast | `GET /cash-flow-forecast` |
+| System | `GET /system/version` |
 
 Net worth trend, spending trends, and transaction search are currently computed **client-side**
 in `frontend/src/utils/` and have no backend endpoints.
@@ -246,11 +263,12 @@ changed the code.
 .
 ├── Domain/             Business logic, domain services, port interfaces
 ├── Application/        REST controllers (generated from OpenAPI YAML), mappers
-├── Infrastructure/     JPA entities, repositories, persistence adapters
+├── Infrastructure/     JPA entities, repositories, persistence adapters, Flyway migrations
 ├── Events/             Kafka consumer — the seam for transaction ingestion
 ├── Launcher/           Spring Boot entry point
 ├── integration-tests/  TestContainers-based integration tests
 ├── frontend/           React 18 + TypeScript dashboard (Vite)
+├── docs/               Operator guides — backup/restore, upgrading
 ├── specs/              Feature specifications and implementation plans
 ├── .specify/memory/    Project constitution — vision and engineering principles
 └── docker-compose.yaml Full-stack infrastructure definition
