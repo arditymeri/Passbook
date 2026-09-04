@@ -1,0 +1,22 @@
+# One origin for the SPA and the API. See frontend/Dockerfile for why that matters.
+#
+# Port 80, plain HTTP, no automatic TLS: whatever fronts this terminates it — Codespaces' port
+# forwarding, a Cloudflare tunnel, or a Caddy/nginx in front on a VPS. Asking Caddy to obtain a
+# certificate here would fail on every one of those, since none of them route port 443 to it.
+:80 {
+	encode gzip
+
+	# The backend's context path is /api/v1, so it receives the path unchanged and matches it
+	# itself — nothing is stripped or rewritten here.
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+
+	# Everything else is the SPA. try_files sends unknown paths to index.html so a deep link or a
+	# refresh renders the app instead of a 404 — client-side routing has no server-side route.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

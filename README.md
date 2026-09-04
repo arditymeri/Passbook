@@ -98,6 +98,18 @@ npm run dev
 
 ---
 
+## Deploying
+
+To reach an instance over the internet — a test instance on GitHub Codespaces, a VPS, or anything
+else with Docker — see **[docs/DEPLOYING.md](docs/DEPLOYING.md)**.
+
+`docker-compose.deploy.yaml` is a separate, smaller stack: Postgres, the backend, and Caddy
+serving the built frontend and proxying `/api` so both answer on one origin. No Kafka, no
+Control Center, no Kafdrop, no pgAdmin, and nothing but the web server binds a port. The
+`docker-compose.yaml` described above stays the development rig.
+
+---
+
 ## Ports
 
 | Service | URL |
@@ -140,8 +152,10 @@ instance is protected by an admin login.
 
 What is still true, and worth knowing before you trust it with records that matter:
 
-- **No transport encryption.** The app assumes localhost or a trusted network. TLS is yours to
-  terminate, via a reverse proxy. Do not expose an instance directly to the internet.
+- **No transport encryption of its own.** The app speaks plain HTTP and assumes localhost or a
+  trusted network. TLS is yours to terminate: [docs/DEPLOYING.md](docs/DEPLOYING.md) covers doing
+  that with Codespaces port forwarding or a Cloudflare Tunnel, both of which handle it for you.
+  Do not put the app itself on a public port without something in front of it.
 - **Transactions have no currency field.** Accounts carry `currencies` and `defaultCurrency`, but
   every transaction amount is implicitly in its account's default currency. Cross-currency
   transactions cannot be represented.

@@ -34,6 +34,17 @@ is safe to hand to someone else, not just the last change.
   dialog). Stopping ends the posting and leaves everything already posted in place — deliberately
   different from dismissing a proposal, which says the detection was wrong to begin with.
 
+- **A deployable stack.** `docker-compose.deploy.yaml` runs Passbook as three containers —
+  Postgres, the backend, and Caddy serving the built frontend and proxying `/api` so both answer
+  on a single origin. Kafka, Control Center, Kafdrop and pgAdmin are all absent, and nothing but
+  the web server binds a port; the development `docker-compose.yaml` is unchanged. The backend
+  image is now multi-stage, so what ships is a JRE and one jar rather than a JDK and Maven's
+  whole repository.
+- **A devcontainer**, so the project runs on GitHub Codespaces with Docker available and a `.env`
+  of generated secrets written on first create. [docs/DEPLOYING.md](docs/DEPLOYING.md) walks
+  through reaching an instance over the internet, and is honest about what a test instance is
+  not: no backup schedule, and the app is still the only copy of what it holds.
+
 ### Fixed
 
 - **Importing a statement containing income could break the app afterwards.** The ingest path wrote

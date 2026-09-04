@@ -1,0 +1,37 @@
+{
+  "name": "Passbook",
+  "image": "mcr.microsoft.com/devcontainers/java:1-21-bookworm",
+
+  "features": {
+    // Needed to run docker compose inside the Codespace. Without it there is no Docker daemon
+    // and nothing in this repository's deployment or integration tests can run.
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" }
+  },
+
+  // 8080 is the only port the deploy compose publishes: Caddy, serving the SPA and proxying the
+  // API. Postgres and the backend stay on the internal network.
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": { "label": "Passbook", "onAutoForward": "notify" }
+  },
+
+  // Generates .env with fresh random secrets if it does not exist. Idempotent — an existing .env
+  // is never touched, so rebuilding the container does not invalidate sessions or lock you out
+  // of the database.
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  },
+
+  // 2 cores is the smallest Codespaces machine and enough for this. Deliberately not asking for
+  // more: a larger machine burns the free monthly allowance faster for no benefit here.
+  "hostRequirements": { "cpus": 2 }
+}
