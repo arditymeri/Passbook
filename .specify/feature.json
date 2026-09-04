@@ -1,3 +1,3 @@
 {
-  "feature_directory": "specs/021-release-hardening"
+  "feature_directory": "specs/022-idempotent-statement-ingestion"
 }
