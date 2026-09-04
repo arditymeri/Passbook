@@ -24,6 +24,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ChangePasswordServiceImplTest {
 
+    /**
+     * The NEW password must satisfy {@link at.ymeri.my.finance.domain.service.auth.PasswordPolicy}
+     * (feature 024). The current one deliberately does not have to, and stays short here on
+     * purpose: that is what proves an account whose password predates the rule can still change it.
+     */
+    private static final String ACCEPTABLE_NEW_PASSWORD = "a-long-enough-new-password";
+
     @Mock
     private GetAdminAccountPersistencePort getAdminAccountPersistencePort;
     @Mock
@@ -46,11 +53,11 @@ class ChangePasswordServiceImplTest {
     void changePassword_correctCurrentPassword_rotatesHashAndBumpsTokenVersion() {
         when(getAdminAccountPersistencePort.get()).thenReturn(Optional.of(account()));
         when(passwordHasher.matches("old", "hashed-old")).thenReturn(true);
-        when(passwordHasher.hash("new")).thenReturn("hashed-new");
+        when(passwordHasher.hash(ACCEPTABLE_NEW_PASSWORD)).thenReturn("hashed-new");
         lenient().when(saveAdminAccountPersistencePort.save(org.mockito.ArgumentMatchers.any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        service.changePassword("old", "new");
+        service.changePassword("old", ACCEPTABLE_NEW_PASSWORD);
 
         ArgumentCaptor<AdminAccountDto> captor = ArgumentCaptor.forClass(AdminAccountDto.class);
         verify(saveAdminAccountPersistencePort).save(captor.capture());
@@ -63,7 +70,7 @@ class ChangePasswordServiceImplTest {
         when(getAdminAccountPersistencePort.get()).thenReturn(Optional.of(account()));
         when(passwordHasher.matches("wrong", "hashed-old")).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> service.changePassword("wrong", "new"));
+        assertThrows(IllegalArgumentException.class, () -> service.changePassword("wrong", ACCEPTABLE_NEW_PASSWORD));
         verifyNoInteractions(saveAdminAccountPersistencePort);
     }
 
@@ -71,7 +78,7 @@ class ChangePasswordServiceImplTest {
     void changePassword_noAccountConfigured_throwsNoSuchElement() {
         when(getAdminAccountPersistencePort.get()).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> service.changePassword("old", "new"));
+        assertThrows(NoSuchElementException.class, () -> service.changePassword("old", ACCEPTABLE_NEW_PASSWORD));
         verifyNoInteractions(saveAdminAccountPersistencePort, passwordHasher);
     }
 }

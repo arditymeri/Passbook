@@ -24,6 +24,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class SetupAdminAccountServiceImplTest {
 
+    /**
+     * Long enough to satisfy {@link at.ymeri.my.finance.domain.service.auth.PasswordPolicy}
+     * (feature 024). The previous fixture was ACCEPTABLE_PASSWORD, which the rule now rejects — the test
+     * failing was the rule working, so the fixture moved rather than the minimum.
+     */
+    private static final String ACCEPTABLE_PASSWORD = "a-long-enough-password";
+
     @Mock
     private GetAdminAccountPersistencePort getAdminAccountPersistencePort;
     @Mock
@@ -37,16 +44,16 @@ class SetupAdminAccountServiceImplTest {
     @Test
     void setup_noExistingAccount_createsAccountWithHashedPasswordAndZeroTokenVersion() {
         when(getAdminAccountPersistencePort.get()).thenReturn(Optional.empty());
-        when(passwordHasher.hash("hunter2")).thenReturn("hashed-hunter2");
+        when(passwordHasher.hash(ACCEPTABLE_PASSWORD)).thenReturn("hashed-password");
         lenient().when(saveAdminAccountPersistencePort.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        service.setup("admin", "hunter2");
+        service.setup("admin", ACCEPTABLE_PASSWORD);
 
         ArgumentCaptor<AdminAccountDto> captor = ArgumentCaptor.forClass(AdminAccountDto.class);
         verify(saveAdminAccountPersistencePort).save(captor.capture());
         AdminAccountDto saved = captor.getValue();
         assertEquals("admin", saved.getUsername());
-        assertEquals("hashed-hunter2", saved.getPasswordHash());
+        assertEquals("hashed-password", saved.getPasswordHash());
         assertEquals(0, saved.getTokenVersion());
     }
 

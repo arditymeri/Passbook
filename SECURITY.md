@@ -44,14 +44,31 @@ about them are not needed — they are already in the
   instance. There are no per-user accounts, no roles, and no row-level isolation — every instance
   is single-tenant, for one person or household, by design. "User B can see user A's data" is not
   a finding; there is only one user.
-- **No transport encryption.** The app assumes it runs on localhost or inside a trusted network.
-  TLS is the operator's responsibility, via a reverse proxy. **Do not expose an instance directly
-  to the internet.**
+- **No transport encryption of its own.** The app speaks plain HTTP. TLS is the operator's
+  responsibility, via a reverse proxy — [docs/DEPLOYING.md](docs/DEPLOYING.md) covers doing that.
+  **Do not put the app itself on a public port with nothing in front of it.**
+- **The session token is held in browser storage.** It is sent as a bearer token and kept in
+  `localStorage`, so any script running on the page can read it. Moving to a server-set httpOnly
+  cookie would mean taking on cross-site request forgery handling — a redesign of how sessions
+  work rather than a hardening of what exists — and it has not been done. Reports of XSS itself
+  are very much wanted; the storage choice is known.
+- **A distributed attacker can lock the operator out.** Login throttling has an instance-wide tier,
+  which is what stops guessing distributed across many addresses. Someone willing to keep it
+  tripped can therefore keep the operator out for as long as they continue. That is a denial of
+  service rather than a break-in, it clears on its own when they stop, the thresholds are
+  configurable, and the alternative — no instance-wide tier — leaves distributed guessing
+  unbounded against financial records.
 - **Session tokens are not individually revocable.** Logging out or changing the password
   invalidates *all* existing sessions (via a token version counter) rather than one device's.
   At single-account scale this is the intended trade-off, not an oversight.
 - **Dependency advisories with no practical exploit path** in this codebase. A version bump is
   welcome as a normal pull request rather than a security report.
+
+The following **were** on this list and are no longer, as of the unreleased hardening work:
+unlimited password guessing against `/auth/login` (attempts are now counted and refused, with the
+refusal expiring unattended), a one-character password minimum (now twelve, enforced where a
+password is set), and a deployed instance serving its own API browser and description to anonymous
+visitors (now off in the deployment configuration).
 
 ## Rotate the historically published database password
 

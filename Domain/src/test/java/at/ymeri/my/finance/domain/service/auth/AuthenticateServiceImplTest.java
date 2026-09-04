@@ -42,6 +42,25 @@ class AuthenticateServiceImplTest {
         assertTrue(service.authenticate("admin", "correct").isPresent());
     }
 
+    /**
+     * FR-010 and SC-004, feature 024. The minimum length applies where a password is SET, never
+     * where one is used — so an account created before that rule existed must go on working. If
+     * this ever fails, an upgrade has locked operators out of their own financial history, which
+     * is a far worse bug than the weak-password exposure the minimum was added to close.
+     *
+     * <p>Also why authentication must not check length: rejecting a short password before
+     * verifying it would tell whoever submitted it that the stored password is short.
+     */
+    @Test
+    void authenticate_passwordShorterThanTodaysMinimum_stillWorks() {
+        AdminAccountDto legacy = account();
+        legacy.setPasswordHash("hashed-abc");
+        when(getAdminAccountPersistencePort.get()).thenReturn(Optional.of(legacy));
+        lenient().when(passwordHasher.matches("abc", "hashed-abc")).thenReturn(true);
+
+        assertTrue(service.authenticate("admin", "abc").isPresent());
+    }
+
     @Test
     void authenticate_wrongPassword_returnsEmpty() {
         when(getAdminAccountPersistencePort.get()).thenReturn(Optional.of(account()));

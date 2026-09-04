@@ -64,9 +64,20 @@ The shortest path: no new account, no card, no DNS. The repository carries a
    docker compose -f docker-compose.deploy.yaml logs -f backend
    ```
 
-5. Open the **Ports** panel. Port 8080 is forwarded; click the globe to open it. To let anyone
-   else reach it, right-click the port → **Port Visibility → Public**.
-6. The first screen is first-run setup. **Complete it immediately** — see below.
+5. Open the **Ports** panel. Port 8080 is forwarded and starts **Private**, which is what you
+   want for the next step: only you can reach it. Click the globe to open it.
+
+6. **Complete first-run setup now, while the port is still private.** The first screen asks you to
+   create the instance's admin account.
+
+7. **Only then**, if you want anyone else to reach it: right-click the port →
+   **Port Visibility → Public**.
+
+   Steps 6 and 7 are in this order for a reason, and reversing them is not a small mistake.
+   `/auth/setup` is open until it succeeds once — it has to be, since there is no account yet to
+   authorise it. On a public URL that means **whoever loads the page first becomes the owner of the
+   instance**, and of every transaction you later put into it. Publishing the URL and then going to
+   make coffee is enough. Setting up first costs nothing and closes the window completely.
 
 To stop paying for idle time, stop the Codespace when you are done; the data volume survives until
 the Codespace is deleted.
@@ -95,17 +106,32 @@ That serves plain HTTP on port 8080. On a public host, put something in front th
 TLS — Caddy or nginx with a real hostname, or a Cloudflare Tunnel, which also spares you opening
 a port at all. Set `WEB_PORT` in `.env` to bind somewhere other than 8080.
 
+**Same ordering applies here.** Reach the instance privately first — over an SSH tunnel, or with
+the port bound to `127.0.0.1` — complete first-run setup, and only then expose it. `/auth/setup` is
+open until it succeeds once, so on a reachable URL the first person to load it owns the instance
+and everything later put into it.
+
 ---
 
 ## Before you put it on the internet
 
 An instance reachable from the internet is reachable by people who are not you.
 
-- **Complete first-run setup immediately.** `/auth/setup` is open until it succeeds once, and it
-  creates the instance's only admin account. Whoever loads the page first owns the instance.
+- **Set up before you publish.** Covered as an ordered step above rather than repeated here,
+  because the mitigation only works if it is done in the right order.
+- **Failed logins are throttled.** After five consecutive failures from one caller the instance
+  stops answering that caller for fifteen minutes, and twenty failures across all callers stops it
+  answering anyone. Both expire on their own — there is no endpoint to lift a refusal and nothing
+  to edit in the database, deliberately, because a lockout only a developer could clear is one you
+  could not. If you lock yourself out, wait. Move the thresholds with
+  `app.security.login-throttle.per-caller-threshold`, `.instance-threshold` and `.window-minutes`.
+- **Your password needs at least 12 characters.** Enforced when you set it, never when you use it,
+  so an instance created before this rule keeps working with whatever it has.
 - **`JWT_SECRET` must be real randomness.** It signs sessions. `openssl rand -base64 32`.
   `.devcontainer/setup.sh` does this for you; a hand-written `.env` is where a placeholder creeps
   in.
+- **A deployed instance serves no API browser.** `docker-compose.deploy.yaml` turns springdoc off,
+  so `/swagger-ui` and `/v3/api-docs` return nothing. Development keeps them.
 - **TLS is not the app's job.** Codespaces port forwarding and Cloudflare Tunnel both terminate
   HTTPS for you. A bare VPS on port 8080 does not — that is plain HTTP, session token included.
 - **Do not put real financial history on a test instance.** There is no backup schedule here, and

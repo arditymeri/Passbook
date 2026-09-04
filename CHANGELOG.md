@@ -45,6 +45,16 @@ is safe to hand to someone else, not just the last change.
   through reaching an instance over the internet, and is honest about what a test instance is
   not: no backup schedule, and the app is still the only copy of what it holds.
 
+- **Failed logins are now refused after repeated failures.** Five consecutive failures from one
+  caller stops that caller for fifteen minutes; twenty across all callers stops everyone. Both
+  expire on their own — there is no endpoint to lift a refusal and nothing to edit in the database,
+  deliberately, because this app has one account and no password-reset email, and a lockout only a
+  developer could clear is one you could not. Thresholds are configurable.
+- **A new password must be at least 12 characters**, enforced when it is set — at first-run setup
+  and when changing it — and never when it is used.
+- **A deployed instance no longer serves its API browser or machine-readable description.**
+  Development still does.
+
 ### Fixed
 
 - **Importing a statement containing income could break the app afterwards.** The ingest path wrote
@@ -64,6 +74,16 @@ is safe to hand to someone else, not just the last change.
   line-oriented browser parser could not represent at all.
 
 ### ⚠ Operator note
+
+**Your existing password still works, but no longer meets the rule.** The 12-character minimum
+applies when a password is set, never when one is used, so nothing about your instance stops
+working on upgrade. The next time you change it, the new one will have to meet the minimum. If your
+current password is short, that is worth doing now rather than later — particularly if the instance
+is reachable from the internet.
+
+**If you lock yourself out, wait.** There is no unlock endpoint and nothing to reset in the
+database — by design. A refusal ends fifteen minutes after it started, whether or not anyone keeps
+trying in the meantime.
 
 **Confirming a recurring series now has a consequence it did not have before.** Under earlier
 versions, confirming a series only improved the dashboard's predictions; nothing was ever written.

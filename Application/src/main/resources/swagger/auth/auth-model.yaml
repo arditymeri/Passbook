@@ -16,7 +16,11 @@ components:
           minLength: 1
         password:
           type: "string"
-          minLength: 1
+          # 12, not the usual 8: this is ONE credential, chosen once, protecting an entire
+          # financial history, on a URL strangers can reach. NIST's floor of 8 assumes an account
+          # among many behind other controls. Enforced here AND in Domain (PasswordPolicy) so the
+          # rule does not live only in a generated artifact.
+          minLength: 12
 
     loginRequest:
       type: "object"
@@ -25,6 +29,10 @@ components:
         username:
           type: "string"
         password:
+          # DELIBERATELY unconstrained, and it must stay that way. A minimum here would reject a
+          # short password before checking it — telling the caller the stored password is short —
+          # and would lock out every account created before the rule existed. The minimum applies
+          # where a password is SET, never where one is used (FR-010).
           type: "string"
 
     changePasswordRequest:
@@ -35,7 +43,8 @@ components:
           type: "string"
         newPassword:
           type: "string"
-          minLength: 1
+          # Same minimum as setup, same reasoning. See setupRequest.password above.
+          minLength: 12
 
     session:
       type: "object"

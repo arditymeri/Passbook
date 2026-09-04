@@ -144,7 +144,11 @@ POST /auth/login  password "abc"  → accepted
 **Expected**: the minimum constrains setting a password, never using one. An upgrade that locked
 operators out of their own instances would be a far worse bug than the one this feature fixes.
 
-**Status**: **CI-verified** — it needs an account that predates the rule.
+**Status**: **runs locally**, as a Domain test on `AuthenticateServiceImpl` — changed from
+CI-verified during implementation. The integration version would have had to overwrite the shared
+admin account's password hash mid-suite and restore it afterwards; if it failed in between it would
+break every test class that ran after it. The rule being tested lives in Domain (authentication
+must not consult the policy at all), so that is where it is asserted.
 
 ---
 
@@ -198,11 +202,12 @@ after the steps or not at all.
 |---|---|
 | When a refusal starts | A refusal holding across real HTTP requests |
 | When it ends, unattended | The real proxy's forwarded header |
-| That attempts during a refusal change nothing | An account predating the password rule |
-| Success clearing the count | A deployment serving no API description |
-| Both tiers, and their interaction | Every authorization boundary unmoved |
-| Resolving the caller from a header | Setup and change-password refusing a short password |
+| That attempts during a refusal change nothing | A deployment serving no API description |
+| Success clearing the count | Every authorization boundary unmoved |
+| Both tiers, and their interaction | The 429 being identical for a real and an unknown username |
+| Resolving the caller from a header | |
 | The password rule itself | |
+| That authentication ignores the password rule | |
 
 Report the two columns separately. A green local build is evidence about the left column only —
 though here, as in 023, the left column holds most of what can actually go wrong.

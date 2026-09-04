@@ -62,9 +62,19 @@ services:
       #                                       startup against an empty database, which is what
       #                                       makes a test instance worth looking at. Put
       #                                       DEMO_DATA=false in .env for an empty one.
+      #   springdoc disabled                  A deployment has no reason to serve its own API
+      #                                       browser and machine-readable description to anonymous
+      #                                       visitors (feature 024). Note what is NOT done here:
+      #                                       SecurityConfig is untouched. With springdoc off its
+      #                                       permitAll entries for those paths permit routes that
+      #                                       no longer exist, so hardening an instance never puts
+      #                                       the authorization rules in the blast radius of a
+      #                                       documentation setting.
       APP_OPTS: >-
         -Dspring.kafka.listener.auto-startup=false
         -Dapp.demo-data.enabled=${DEMO_DATA:-true}
+        -Dspringdoc.api-docs.enabled=false
+        -Dspringdoc.swagger-ui.enabled=false
     depends_on:
       postgres:
         condition: service_healthy

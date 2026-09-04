@@ -5,6 +5,15 @@ app:
   recurring:
     auto-post:
       enabled: false
+  # Login throttling is off here for the same reason the schedule above is. Every integration test
+  # boots the full application against one shared instance, and the throttle is instance-wide by
+  # design — one test class asserting that bad passwords are rejected would push the shared counter
+  # past its threshold and start refusing OTHER tests' perfectly valid logins, surfacing as
+  # unrelated features failing authentication for no visible reason. LoginThrottleIntegrationTest
+  # turns it back on for itself alone.
+  security:
+    login-throttle:
+      enabled: false
 
 # Values for the environment-sourced secrets that Launcher's application.properties now
 # requires (feature 021). They are test fixtures, not credentials: the database they name is a

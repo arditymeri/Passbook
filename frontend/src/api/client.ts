@@ -70,12 +70,34 @@ export async function fetchAuthStatus(): Promise<AuthStatus> {
   return res.json();
 }
 
+/**
+ * Thrown when the server refuses further login attempts (feature 024). A distinct type because the
+ * caller must say something different: rendering this as "incorrect username or password" would
+ * tell an operator whose instance is under attack — or who simply mistyped five times — exactly
+ * the wrong thing, and leave them retyping a password that is correct.
+ */
+export class TooManyAttemptsError extends Error {
+  constructor() {
+    super('Too many failed attempts');
+    this.name = 'TooManyAttemptsError';
+  }
+}
+
+/** Thrown when a new password is rejected for being too short. */
+export class WeakPasswordError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'WeakPasswordError';
+  }
+}
+
 export async function setupAdminAccount(req: SetupRequest): Promise<Session> {
   const res = await fetch('/api/v1/auth/setup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
   });
+  if (res.status === 400) throw new WeakPasswordError(await res.text());
   if (!res.ok) throw new Error(`HTTP ${res.status}: /auth/setup`);
   return res.json();
 }
@@ -86,6 +108,7 @@ export async function login(req: LoginRequest): Promise<Session> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
   });
+  if (res.status === 429) throw new TooManyAttemptsError();
   if (!res.ok) throw new Error(`HTTP ${res.status}: /auth/login`);
   return res.json();
 }
@@ -104,6 +127,7 @@ export async function changePasswordRequest(req: ChangePasswordRequest): Promise
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(req),
   });
+  if (res.status === 400) throw new WeakPasswordError(await res.text());
   if (!res.ok) throw new Error(`HTTP ${res.status}: /auth/change-password`);
 }
 

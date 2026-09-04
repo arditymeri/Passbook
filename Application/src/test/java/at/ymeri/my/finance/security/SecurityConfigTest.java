@@ -6,6 +6,7 @@ import at.ymeri.my.finance.domain.api.ChangePasswordService;
 import at.ymeri.my.finance.domain.api.LogoutService;
 import at.ymeri.my.finance.domain.api.SetupAdminAccountService;
 import at.ymeri.my.finance.domain.api.ValidateSessionService;
+import at.ymeri.my.finance.domain.service.auth.LoginThrottle;
 import at.ymeri.my.finance.domain.spi.auth.GetAdminAccountPersistencePort;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest(controllers = AuthController.class,
         properties = "app.security.jwt-secret=slice-test-secret")
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class, JwtTokenService.class})
+// ClientAddressResolver and LoginThrottle joined AuthController's constructor with feature 024.
+// Both are imported rather than mocked: they are pure and construct freely, and mocking them would
+// let this test keep passing if the controller stopped consulting the throttle at all.
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class, JwtTokenService.class,
+        ClientAddressResolver.class, SecurityConfigTest.ThrottleForSliceTest.class})
 class SecurityConfigTest {
+
+    /**
+     * A throttle that never refuses. This test is about the filter chain, not about counting
+     * attempts — a live throttle would make the outcome depend on how many requests earlier tests
+     * in this class happened to make.
+     */
+    @org.springframework.boot.test.context.TestConfiguration
+    static class ThrottleForSliceTest {
+        @org.springframework.context.annotation.Bean
+        LoginThrottle loginThrottle() {
+            return new LoginThrottle(new LoginThrottle.Settings(
+                    false, 5, 20, java.time.Duration.ofMinutes(15)));
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
