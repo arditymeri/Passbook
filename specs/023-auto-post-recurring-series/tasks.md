@@ -293,6 +293,18 @@ a test that reads an account balance back after importing income — the path wh
 actually meet it. The adapter's class comment now says outright that every column the entity reads
 must be listed there.
 
+### A third thing CI caught, in the tests rather than the code
+
+`ReconciliationIntegrationTest` asserted that after supersession the prediction and its reversal
+were both findable in `GET /bills`. They are not, and should not be: that list has hidden a
+corrected row and its compensating entry since feature 008, and supersession is that same
+mechanism. The operator sees one rent charge, which is the point. The prediction stays fetchable at
+`GET /bill/{id}`, which is deliberately unfiltered.
+
+The tests now assert the balance (unchanged), the prediction by id (present and unmodified), and
+the list showing the bank's row alone. Quickstart scenario 4's table said "3 rows" without saying
+*where*, which is what the tests encoded; it now gives both counts, since both are true.
+
 ### What ran where
 
 **Locally verified** — `./mvnw clean install -pl '!integration-tests'`: BUILD SUCCESS, 333 Domain

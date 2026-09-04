@@ -76,13 +76,19 @@ postDueOccurrences(today = 2026-03-25)
 
 | Check | Value |
 |---|---|
-| Transactions on the account for 1 March | 3 — the prediction, its reversal, the imported row |
+| Rows in the ledger for 1 March | 3 — the prediction, its reversal, the imported row |
+| Rows in the operator's bill list | 1 — the bank's; `GET /bills` hides reversals and what they supersede |
 | Balance effect for March | −€1250, counted once |
-| The auto-posted row | Still present, unmodified |
+| The auto-posted row | Still present and unmodified, fetchable at `GET /bill/{id}` |
 | The reversal | References the auto-posted row |
 
 **The assertion that matters is the balance**, not the row count. Three rows is the correct outcome
 of a design that never deletes; a balance of −€2500 is the bug this whole story exists to prevent.
+
+**Note the two row counts, which are both true.** The list endpoint has hidden a corrected row and
+its compensating entry since feature 008, and supersession is that same mechanism — so an operator
+sees one rent charge, not three. Asserting "three rows" against `GET /bills` tests the list's
+filtering, not this feature, and fails.
 
 **Status**: **CI-verified end to end.** The matching rule underneath — is this import within the
 cadence and amount tolerance of that prediction? — **runs locally**.

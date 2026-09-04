@@ -42,11 +42,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * What happens when the bank's own version of a predicted transaction arrives.
  *
- * <p><strong>The balance is the assertion that matters, not the row count.</strong> Three rows —
- * the prediction, its reversal, and the imported booking — is the correct outcome of a design that
- * never deletes anything (Principle I). Counting rows would call that a failure; counting money
- * says whether the operator's rent was charged once, which is the thing that would actually be
- * wrong.
+ * <p><strong>The balance is the assertion that matters, not the row count.</strong> Three rows land
+ * in the ledger — the prediction, its reversal, and the imported booking — because nothing is ever
+ * deleted (Principle I). But {@code GET /bills} is the human-facing list and hides both reversals
+ * and anything they supersede, so it shows exactly one: the bank's. Both facts are true at once,
+ * and only one of them is money. Counting money says whether the operator's rent was charged once,
+ * which is the thing that would actually be wrong.
+ *
+ * <p>Reading a superseded row back therefore goes through {@code GET /bill/&#123;id&#125;}, which is
+ * deliberately unfiltered — an original stays fetchable by id forever.
  *
  * <p>Weekly rather than monthly for the same reason as {@link AutoPostIntegrationTest}: a weekly
  * step never clamps, so "the next occurrence is today" holds on every calendar date.
@@ -91,18 +95,19 @@ public class ReconciliationIntegrationTest {
                 .as("the bank's booking replaces the prediction; the rent is charged once, not twice")
                 .isEqualTo(afterPosting);
 
-        List<Bill> bills = billsOn(account);
-        Bill predictionAfterwards = bills.stream()
-                .filter(bill -> prediction.getId().equals(bill.getId()))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("the prediction must never be deleted"));
+        Bill predictionAfterwards = billById(prediction.getId());
+        assertThat(predictionAfterwards)
+                .as("the prediction must never be deleted — it stays fetchable by id forever")
+                .isNotNull();
         assertThat(predictionAfterwards.getAmount()).isEqualTo(prediction.getAmount());
         assertThat(predictionAfterwards.getTime()).isEqualTo(prediction.getTime());
-        assertThat(bills)
-                .as("the supersession is a compensating entry referencing the prediction")
-                .anyMatch(bill -> prediction.getId().toString().equals(bill.getCorrectsTransactionId())
-                        && Boolean.TRUE.equals(bill.getReversal())
-                        && bill.getAmount() == -1250.00);
+        assertThat(predictionAfterwards.getRecurringSeriesId()).isEqualTo(seriesId);
+
+        assertThat(billsOn(account))
+                .as("the operator's list shows the bank's row alone: the prediction it supersedes "
+                        + "and the compensating entry are both hidden, as for any correction")
+                .noneMatch(bill -> prediction.getId().equals(bill.getId()))
+                .hasSize(4);
     }
 
     @Test
@@ -113,7 +118,7 @@ public class ReconciliationIntegrationTest {
         String account = anAccount();
         String category = aCategory(description);
         aWeeklyHistory(category, account, description, 1250.00);
-        detectAndConfirm(description);
+        String seriesId = detectAndConfirm(description);
 
         postDue();
         double afterPosting = balanceOf(account);
@@ -127,7 +132,9 @@ public class ReconciliationIntegrationTest {
                 .as("no supersession, so the imported charge lands on top of the prediction")
                 .isEqualTo(afterPosting - 1600.00);
         assertThat(billsOn(account))
-                .noneMatch(bill -> Boolean.TRUE.equals(bill.getReversal()));
+                .as("the prediction is still the operator's — a superseded one would be hidden")
+                .anyMatch(bill -> seriesId.equals(bill.getRecurringSeriesId()))
+                .hasSize(5);
     }
 
     @Test
@@ -147,11 +154,19 @@ public class ReconciliationIntegrationTest {
                 """.formatted(LocalDate.now());
         ingest(account, csv);
         double afterFirstImport = balanceOf(account);
+        assertThat(afterFirstImport)
+                .as("three real occurrences and the bank's row; the prediction is superseded")
+                .isEqualTo(-320.00);
+
         ingest(account, csv);
 
+        // A second reversal of the same prediction would credit €80 the operator never had, so the
+        // balance is what says this did not happen. The reversal itself is not visible through any
+        // list endpoint by design, and the money is the point regardless.
         assertThat(balanceOf(account)).isEqualTo(afterFirstImport);
-        assertThat(billsOn(account).stream().filter(bill -> Boolean.TRUE.equals(bill.getReversal())))
-                .hasSize(1);
+        assertThat(billsOn(account))
+                .as("three real occurrences and the imported row; nothing added by re-importing")
+                .hasSize(4);
     }
 
     // --- helpers ---------------------------------------------------------------------------------
@@ -202,6 +217,14 @@ public class ReconciliationIntegrationTest {
                 .as("ingest failed: %s", response)
                 .isTrue();
         return response.getBody();
+    }
+
+    /** Unfiltered read: a superseded row is hidden from the list but never from this. */
+    private Bill billById(java.util.UUID id) {
+        ResponseEntity<BillResponseModel> response = restTemplate
+                .getForEntity("/bill/" + id, BillResponseModel.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        return response.getBody().getBill();
     }
 
     private double balanceOf(String accountId) {
