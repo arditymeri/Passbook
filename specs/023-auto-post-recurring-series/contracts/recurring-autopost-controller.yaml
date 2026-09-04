@@ -1,0 +1,131 @@
+openapi: "3.0.0"
+tags:
+  - name: "RecurringAutoPostController"
+    description: "Stopping a confirmed series, and running posting on demand"
+info:
+  title: "Personal Finance Service - Recurring Auto-Post API"
+  description: >
+    A confirmed recurring series writes its own transactions on a schedule. These endpoints let the
+    operator stop a series posting, and run posting immediately rather than waiting for the next
+    scheduled run.
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /recurring-series/{id}/stop:
+    post:
+      summary: "Stop a confirmed series from posting further transactions"
+      operationId: stopRecurringSeries
+      description: >
+        Ends a series that was real and has now finished — a cancelled subscription, a moved-out
+        tenancy. Deliberately distinct from dismissing a proposal, which says the detection was wrong
+        in the first place: collapsing the two would lose the difference between a bad guess and a
+        cancelled membership.
+
+        Already-posted transactions are left exactly as they are, and the series keeps its detection
+        history and stays listed.
+      tags:
+        - recurringAutoPost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Series stopped"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/recurringSeriesState"
+        "404":
+          description: "No such series"
+        "409":
+          description: "The series is not in a state that can be stopped (only a confirmed one can)"
+        default:
+          description: "Unexpected error"
+  /recurring-series/post-due:
+    post:
+      summary: "Post every occurrence that is currently due"
+      operationId: postDueOccurrences
+      description: >
+        Runs the same work the daily schedule does, immediately. Safe to call at any time and any
+        number of times: an occurrence that has already been posted is never posted again, which is
+        the same guarantee that makes catching up after downtime safe.
+
+        Reports what it did, so an operator who runs it by hand can see whether anything was actually
+        due rather than being left guessing.
+      tags:
+        - recurringAutoPost
+      responses:
+        "200":
+          description: "Posting run completed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postingRunResult"
+        default:
+          description: "Unexpected error"
+components:
+  schemas:
+    recurringSeriesState:
+      type: object
+      description: "A series and its current state"
+      required: [id, status]
+      properties:
+        id:
+          type: string
+        status:
+          $ref: "#/components/schemas/recurringSeriesStatus"
+    recurringSeriesStatus:
+      type: string
+      description: >
+        PROPOSED — detected, awaiting the operator. CONFIRMED — expected to continue, and posts.
+        DISMISSED — the detection was wrong. STOPPED — it was real and has ended.
+      enum:
+        - PROPOSED
+        - CONFIRMED
+        - DISMISSED
+        - STOPPED
+    postingRunResult:
+      type: object
+      description: "What a posting run did"
+      required: [postedCount, alreadyPostedCount, skippedSeriesCount]
+      properties:
+        postedCount:
+          type: integer
+          format: int32
+          description: "Occurrences newly recorded by this run"
+        alreadyPostedCount:
+          type: integer
+          format: int32
+          description: >
+            Occurrences that were due but already recorded. Routinely non-zero and not a problem —
+            every run recomputes the full due set rather than tracking where it left off.
+        skippedSeriesCount:
+          type: integer
+          format: int32
+          description: >
+            Confirmed series that could not be posted because they have no usable history to take an
+            amount and account from. Skipped deliberately rather than posted with invented values.
+        posted:
+          type: array
+          description: "The occurrences this run recorded"
+          items:
+            $ref: "#/components/schemas/postedOccurrence"
+    postedOccurrence:
+      type: object
+      required: [seriesId, occurrenceDate, transactionId]
+      properties:
+        seriesId:
+          type: string
+        occurrenceDate:
+          type: string
+          format: date
+        transactionId:
+          type: string
+        amount:
+          type: string
+          description: "Decimal as a string, to avoid the precision loss a JSON number would introduce"
+          example: "1250.00"

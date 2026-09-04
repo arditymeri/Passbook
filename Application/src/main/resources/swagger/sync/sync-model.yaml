@@ -45,7 +45,10 @@ components:
         groupKey: { type: "string" }
         description: { type: "string" }
         frequency: { type: "string", enum: [DAILY, WEEKLY, MONTHLY, YEARLY] }
-        status: { type: "string", enum: [PROPOSED, CONFIRMED, DISMISSED] }
+        # STOPPED added by feature 023. A stopped series must survive a device sync: without
+        # it the receiving device would see a CONFIRMED series and resume auto-posting a
+        # subscription the operator has already cancelled.
+        status: { type: "string", enum: [PROPOSED, CONFIRMED, DISMISSED, STOPPED] }
         createdAt: { type: "string", format: "date-time" }
         updatedAt: { type: "string", format: "date-time" }
 

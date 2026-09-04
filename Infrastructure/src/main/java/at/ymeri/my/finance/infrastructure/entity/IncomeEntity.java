@@ -41,7 +41,8 @@ public class IncomeEntity {
     @Column(name = "notes")
     private String notes;
 
-    @Column(name = "recurring")
+    @Column(name = "recurring", nullable = false)
+    @ColumnDefault("false")
     private boolean recurring;
 
     @Column(name = "recurring_frequency")
@@ -55,6 +56,14 @@ public class IncomeEntity {
      * ingestion (feature 022). Null for anything typed by hand and for every row recorded before
      * V2. Write-once: changing it would make the row permanently invisible to deduplication.
      */
+    /**
+     * The recurring series that produced this transaction, when the app posted it rather than the
+     * operator entering it or a statement bringing it (feature 023). Null for every other origin.
+     * This is the provenance Principle V requires for a row nobody typed.
+     */
+    @Column(name = "recurring_series_id")
+    private String recurringSeriesId;
+
     @Column(name = "external_id")
     private String externalId;
 

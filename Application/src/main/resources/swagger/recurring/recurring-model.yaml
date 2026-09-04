@@ -8,10 +8,16 @@ components:
 
     recurringSeriesStatus:
       type: "string"
+      description: >
+        PROPOSED - detected, awaiting the operator. CONFIRMED - expected to continue, and posts its
+        own transactions. DISMISSED - the detection was wrong. STOPPED - it was real and has ended.
+        DISMISSED and STOPPED are deliberately distinct: one is a judgement about the detection, the
+        other a fact about the world.
       enum:
         - PROPOSED
         - CONFIRMED
         - DISMISSED
+        - STOPPED
 
     recurringFrequency:
       type: "string"

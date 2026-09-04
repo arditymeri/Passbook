@@ -27,4 +27,18 @@ public interface IncomeRepository extends JpaRepository<IncomeEntity, UUID> {
     boolean existsByAccountId(String accountId);
 
     List<IncomeEntity> findByTimeBetween(OffsetDateTime start, OffsetDateTime end);
+
+    /**
+     * Auto-posted rows on one account that are not themselves reversals — the candidates an
+     * imported transaction could supersede. Reads through the {@code recurring_series_id} index
+     * added in {@code V3} rather than scanning the ledger, which reconciliation would otherwise do
+     * on every import.
+     */
+    List<IncomeEntity> findByAccountIdAndRecurringSeriesIdNotNullAndReversalFalse(String accountId);
+
+    /**
+     * Reversals on one account. Their {@code correctsTransactionId} values are the rows already
+     * superseded, which FR-010 makes ineligible for superseding again.
+     */
+    List<IncomeEntity> findByAccountIdAndCorrectsTransactionIdNotNull(String accountId);
 }

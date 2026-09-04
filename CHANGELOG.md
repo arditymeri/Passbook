@@ -19,6 +19,30 @@ is safe to hand to someone else, not just the last change.
 - Transactions that arrive through import now carry a stable identity, which is what makes
   re-ingestion a no-op. Uniqueness is enforced by the database, so two imports running at once
   cannot both record the same transaction.
+- **Confirmed recurring series now post their own transactions.** Once you confirm a series, the app
+  records each occurrence as it comes due — daily, and on demand via `POST
+  /recurring-series/post-due`. It catches up whatever was missed while the app was down, without
+  posting anything twice: an occurrence already recorded is refused by the database rather than by a
+  check that could be wrong.
+- **An imported transaction supersedes the prediction it matches.** When a statement brings in the
+  bank's own version of something the app predicted — same account, close enough in date and amount
+  — the prediction is reversed by a compensating entry, so the charge lands in your balance once.
+  Nothing is deleted or edited: the prediction, the reversal and the bank's row all stay visible.
+- **Auto-posted transactions are marked as such** in the transaction list, so a row the app wrote is
+  never mistaken for one you entered or your bank reported.
+- **A series can be stopped** (`POST /recurring-series/{id}/stop`, or Stop in the recurring series
+  dialog). Stopping ends the posting and leaves everything already posted in place — deliberately
+  different from dismissing a proposal, which says the detection was wrong to begin with.
+
+### Fixed
+
+- **Importing a statement containing income could break the app afterwards.** The ingest path wrote
+  income rows without a value for one column that cannot be null, so every later read of the income
+  table failed — account balances, budget status, savings goals and the next import all stopped
+  working, days after the import that caused it and with nothing to connect them to it. The insert
+  is fixed, the column now refuses null at the database, and rows already written are repaired on
+  upgrade. Introduced with server-side import in this same unreleased cycle, so no released version
+  is affected.
 
 ### Changed
 
@@ -29,6 +53,19 @@ is safe to hand to someone else, not just the last change.
   line-oriented browser parser could not represent at all.
 
 ### ⚠ Operator note
+
+**Confirming a recurring series now has a consequence it did not have before.** Under earlier
+versions, confirming a series only improved the dashboard's predictions; nothing was ever written.
+From this version a confirmed series writes transactions. If you have series confirmed under an
+older version, posting will begin for them on the first run after upgrading. Nothing dated before
+the day you confirmed a series is ever posted, so no history is fabricated — but a series confirmed
+long ago whose occurrences were never recorded will catch up every period since, in one run. Review
+your confirmed series **before** upgrading and stop any that have ended.
+
+Note also what auto-posting cannot know: **a series posting to an account whose statements you never
+import will keep posting until you stop it.** Nothing arrives to confirm or supersede those
+transactions, so that account's balance drifts toward what the app expects rather than what your
+bank did.
 
 Transactions you imported with the **old** client-side dialog carry no identity, because there was
 nowhere to store one. Re-importing a statement covering that period will therefore offer those rows

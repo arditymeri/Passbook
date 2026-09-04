@@ -111,6 +111,13 @@ export function RecentTransactions({
                         <Chip label="Corrected" size="small" variant="outlined" />
                       </Tooltip>
                     )}
+                    {t.recurringSeriesId && (
+                      <Tooltip
+                        title={`Posted automatically by the recurring series "${t.description ?? 'this series'}" — nobody entered it and no statement reported it yet`}
+                      >
+                        <Chip label="Auto-posted" size="small" variant="outlined" color="info" />
+                      </Tooltip>
+                    )}
                   </Stack>
                 </TableCell>
                 <TableCell>{t.categoryId ? (categoryNames.get(t.categoryId) ?? t.categoryId) : '—'}</TableCell>

@@ -61,6 +61,12 @@ components:
           type: "string"
         reversal:
           type: "boolean"
+        recurringSeriesId:
+          type: "string"
+          description: >
+            Set when this transaction was posted by a confirmed recurring series rather than entered
+            by a person or imported from a statement. Additive and optional: a client that ignores it
+            sees exactly what it saw before.
         recordedAt:
           type: "string"
           format: "date-time"

@@ -90,6 +90,8 @@ export interface Bill {
   accountId?: string | null;
   correctsTransactionId?: string | null;
   reversal?: boolean;
+  /** Set when this transaction was posted by a confirmed recurring series rather than by a person. */
+  recurringSeriesId?: string | null;
   necessityTag?: NecessityTag | null;
 }
 
@@ -102,6 +104,8 @@ export interface Income {
   accountId?: string | null;
   correctsTransactionId?: string | null;
   reversal?: boolean;
+  /** Set when this transaction was posted by a confirmed recurring series rather than by a person. */
+  recurringSeriesId?: string | null;
 }
 
 export type CategoryType = 'EXPENSE' | 'INCOME' | 'BOTH';
@@ -131,6 +135,7 @@ export interface Transaction {
   accountId?: string;
   source?: IncomeSource;
   correctsTransactionId?: string;
+  recurringSeriesId?: string | null;
   necessityTag?: NecessityTag | null;
 }
 
@@ -230,7 +235,7 @@ export interface CreateAccountRequest {
 
 export type RecurringFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 export type RecurringTransactionType = 'BILL' | 'INCOME';
-export type RecurringSeriesStatusValue = 'PROPOSED' | 'CONFIRMED' | 'DISMISSED';
+export type RecurringSeriesStatusValue = 'PROPOSED' | 'CONFIRMED' | 'DISMISSED' | 'STOPPED';
 
 export interface RecurringSeries {
   id: string;
@@ -531,4 +536,20 @@ export interface StatementIngestionResult {
   alreadyRecordedCount: number;
   rejectedCount: number;
   excludedCount: number;
+}
+
+/** What a posting run did — the response of POST /recurring-series/post-due. */
+export interface PostingRunResult {
+  postedCount: number;
+  alreadyPostedCount: number;
+  skippedSeriesCount: number;
+  posted?: PostedOccurrence[];
+}
+
+export interface PostedOccurrence {
+  seriesId: string;
+  occurrenceDate: string;
+  transactionId: string;
+  /** Decimal as a string, never a JS number — money must not go through floating point. */
+  amount?: string;
 }

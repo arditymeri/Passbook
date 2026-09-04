@@ -1,6 +1,7 @@
 package at.ymeri.my.finance.domain.service.ingestion;
 
 import at.ymeri.my.finance.domain.api.IngestTransactionsService;
+import at.ymeri.my.finance.domain.api.ReconcileAutoPostedService;
 import at.ymeri.my.finance.domain.data.bill.BillDto;
 import at.ymeri.my.finance.domain.data.income.IncomeDto;
 import at.ymeri.my.finance.domain.data.ingestion.IngestionResult;
@@ -35,9 +36,12 @@ import java.util.Set;
 public class IngestTransactionsServiceImpl implements IngestTransactionsService {
 
     private final IngestTransactionsPersistencePort persistencePort;
+    private final ReconcileAutoPostedService reconcileAutoPostedService;
 
-    public IngestTransactionsServiceImpl(IngestTransactionsPersistencePort persistencePort) {
+    public IngestTransactionsServiceImpl(IngestTransactionsPersistencePort persistencePort,
+                                         ReconcileAutoPostedService reconcileAutoPostedService) {
         this.persistencePort = persistencePort;
+        this.reconcileAutoPostedService = reconcileAutoPostedService;
     }
 
     @Override
@@ -77,6 +81,27 @@ public class IngestTransactionsServiceImpl implements IngestTransactionsService 
                     ? RowOutcome.recorded(row.rowIndex(), transactionId)
                     : RowOutcome.alreadyRecorded(row.rowIndex()));
         }
+
+        // Feature 023: the bank's own version of a transaction this app predicted supersedes the
+        // prediction, so the operator is not left holding both. Done here rather than in the
+        // controller so any future producer that ingests — the Kafka consumer 022 kept the door open
+        // for — gets it without rewiring. Rows that supersede something are still reported RECORDED:
+        // the supersession is an additional effect, not a different outcome.
+        List<String> recordedBillIds = new ArrayList<>();
+        List<String> recordedIncomeIds = new ArrayList<>();
+        for (StatementRow row : writable) {
+            String transactionId = insertedByIdentity.get(row.externalId());
+            if (transactionId == null) {
+                continue;
+            }
+            if (row.direction() == TransactionDirection.BILL) {
+                recordedBillIds.add(transactionId);
+            } else {
+                recordedIncomeIds.add(transactionId);
+            }
+        }
+        reconcileAutoPostedService.reconcileBills(recordedBillIds);
+        reconcileAutoPostedService.reconcileIncomes(recordedIncomeIds);
 
         outcomes.sort(java.util.Comparator.comparingInt(RowOutcome::rowIndex));
         return new IngestionResult(List.copyOf(outcomes));

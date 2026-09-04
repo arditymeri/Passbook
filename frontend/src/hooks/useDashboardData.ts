@@ -111,6 +111,7 @@ export function useDashboardData(year: number, month: number, refreshKey: number
           categoryId: b.categoryId ?? undefined,
           accountId: b.accountId ?? undefined,
           correctsTransactionId: b.correctsTransactionId ?? undefined,
+          recurringSeriesId: b.recurringSeriesId ?? undefined,
           necessityTag: b.necessityTag ?? undefined,
         }));
         const incomeTxns: Transaction[] = incomes.map((i) => ({
@@ -122,6 +123,7 @@ export function useDashboardData(year: number, month: number, refreshKey: number
           accountId: i.accountId ?? undefined,
           source: i.source ?? undefined,
           correctsTransactionId: i.correctsTransactionId ?? undefined,
+          recurringSeriesId: i.recurringSeriesId ?? undefined,
         }));
         const merged = [...billTxns, ...incomeTxns]
           .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());

@@ -19,6 +19,7 @@ public class IncomeDto {
     private String notes;
     private boolean recurring;
     private RecurringFrequency recurringFrequency;
+    private String recurringSeriesId;
     private String externalId;
     private String correctsTransactionId;
     private boolean reversal;

@@ -39,13 +39,20 @@ import java.util.UUID;
  * <p>Duplicates <em>within</em> one call are handled too: {@code DO NOTHING} conflicts against rows
  * inserted earlier in the same command, not only against pre-existing ones. That matters for a
  * malformed statement that repeats a bank-supplied transaction id.
+ *
+ * <p><strong>Every column the entity reads must be listed here.</strong> Hand-written SQL does not
+ * get the compiler's help: a column left out is not an error, it is a row that reads back wrong or
+ * not at all. {@code income.recurring} maps to a primitive {@code boolean}, so omitting it wrote
+ * NULL and every later read of that row threw — breaking account balances, budgets and savings
+ * goals long after the import that caused it. Adding a column to {@code BillEntity} or
+ * {@code IncomeEntity} means revisiting this class.
  */
 @Service
 public class IngestTransactionsPostgresAdapter implements IngestTransactionsPersistencePort {
 
     private static final String BILL_INSERT = """
             insert into bill (id, description, amount, time, category_id, account_id,
-                              reversal, recorded_at, external_id)
+                              reversal, recorded_at, external_id, recurring_series_id)
             values %s
             on conflict (account_id, external_id) where external_id is not null do nothing
             returning id, external_id
@@ -53,7 +60,8 @@ public class IngestTransactionsPostgresAdapter implements IngestTransactionsPers
 
     private static final String INCOME_INSERT = """
             insert into income (id, description, amount, time, account_id,
-                                reversal, recorded_at, external_id)
+                                reversal, recurring, recorded_at, external_id,
+                                recurring_series_id)
             values %s
             on conflict (account_id, external_id) where external_id is not null do nothing
             returning id, external_id
@@ -61,7 +69,7 @@ public class IngestTransactionsPostgresAdapter implements IngestTransactionsPers
 
     private static final String BILL_ROW_PLACEHOLDERS =
             "(:id%1$d, :description%1$d, :amount%1$d, :time%1$d, :categoryId%1$d, :accountId%1$d, "
-                    + "false, :recordedAt%1$d, :externalId%1$d)";
+                    + "false, :recordedAt%1$d, :externalId%1$d, :recurringSeriesId%1$d)";
 
     /**
      * IncomeDto carries no category: feature 017's suggestion rule only ever looked at past bills,
@@ -69,7 +77,7 @@ public class IngestTransactionsPostgresAdapter implements IngestTransactionsPers
      */
     private static final String INCOME_ROW_PLACEHOLDERS =
             "(:id%1$d, :description%1$d, :amount%1$d, :time%1$d, :accountId%1$d, "
-                    + "false, :recordedAt%1$d, :externalId%1$d)";
+                    + "false, false, :recordedAt%1$d, :externalId%1$d, :recurringSeriesId%1$d)";
 
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -105,6 +113,10 @@ public class IngestTransactionsPostgresAdapter implements IngestTransactionsPers
             // true write-time timestamp (Principle V).
             params.addValue("recordedAt" + i, now);
             params.addValue("externalId" + i, bill.getExternalId());
+            // Feature 023: the series that produced this row, when the app posted it rather than a
+            // person or a statement. Null for every other origin — and a column omitted here is a
+            // provenance that silently does not exist, which is exactly how it was first missed.
+            params.addValue("recurringSeriesId" + i, bill.getRecurringSeriesId());
             i++;
         }
         return runReturningInsert(BILL_INSERT.formatted(String.join(", ", rows)), params);
@@ -127,6 +139,7 @@ public class IngestTransactionsPostgresAdapter implements IngestTransactionsPers
             params.addValue("accountId" + i, income.getAccountId());
             params.addValue("recordedAt" + i, now);
             params.addValue("externalId" + i, income.getExternalId());
+            params.addValue("recurringSeriesId" + i, income.getRecurringSeriesId());
             i++;
         }
         return runReturningInsert(INCOME_INSERT.formatted(String.join(", ", rows)), params);
