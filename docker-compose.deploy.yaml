@@ -1,0 +1,91 @@
+# Passbook, deployable. Three containers: the database, the backend, and a web server that puts
+# the SPA and the API on one origin.
+#
+#   docker compose -f docker-compose.deploy.yaml up -d --build
+#
+# WHAT IS NOT HERE, and why
+#   kafka, control-center, kafdrop  Nothing produces to booking.topic — the consumer is a stub
+#                                   (Events/.../BookingConsumer). Control Center alone wants
+#                                   about a gigabyte. Dropping all three is what makes this fit
+#                                   on a free tier at all.
+#   pgadmin                         A development convenience. Reaching the database from the
+#                                   internet is not something a deployment should offer.
+#
+# WHAT IS NOT PUBLISHED, and why
+#   Only the web container binds a host port. Postgres and the backend are reachable on the
+#   internal network and nowhere else. The development compose file publishes 5432, 5050, 9000
+#   and 9021 to the host, which is fine on a laptop and is your database on the internet the
+#   moment the host has a public IP.
+#
+# See docs/DEPLOYING.md.
+
+services:
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-myfinance}
+      POSTGRES_USER: ${POSTGRES_USER:-diti}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env — copy .env.example}
+    volumes:
+      # A named volume, so `docker compose down` does not take the data with it. `down -v` does,
+      # which is the difference between stopping a test instance and discarding it.
+      - passbook-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-diti} -d ${POSTGRES_DB:-myfinance}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [passbook]
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-diti}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env — copy .env.example}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env — copy .env.example}
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-myfinance}
+      # Spring overrides as -D flags rather than environment variables — see the Dockerfile for
+      # why. Two settings:
+      #
+      #   kafka listener auto-startup=false   No broker here, so the listener never starts.
+      #                                       Otherwise the consumer spends the life of the
+      #                                       container retrying a host that does not exist and
+      #                                       fills the log with it. Nothing is lost: nothing
+      #                                       produces to booking.topic yet.
+      #
+      #   demo-data.enabled                   Seeds accounts, categories, six months of history
+      #                                       and a few confirmed recurring series on first
+      #                                       startup against an empty database, which is what
+      #                                       makes a test instance worth looking at. Put
+      #                                       DEMO_DATA=false in .env for an empty one.
+      APP_OPTS: >-
+        -Dspring.kafka.listener.auto-startup=false
+        -Dapp.demo-data.enabled=${DEMO_DATA:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [passbook]
+
+  web:
+    build:
+      context: ./frontend
+    ports:
+      # Host 8080 -> Caddy 80. The only port this deployment exposes.
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    networks: [passbook]
+
+volumes:
+  passbook-db:
+
+networks:
+  passbook:
+    driver: bridge

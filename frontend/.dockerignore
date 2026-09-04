@@ -1,0 +1,8 @@
+# The build context here is frontend/, so this file governs it rather than the repository root's.
+node_modules/
+dist/
+dist-ssr/
+.env
+.env.*
+!.env.example
+*.local
