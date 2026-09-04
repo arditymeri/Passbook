@@ -24,6 +24,7 @@ public class BillDto {
     private List<String> tags;
     private boolean recurring;
     private RecurringFrequency recurringFrequency;
+    private String recurringSeriesId;
     private String externalId;
     private String correctsTransactionId;
     private boolean reversal;
