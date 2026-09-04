@@ -1,4 +1,4 @@
-import type { Account, Allocation, AuthStatus, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, ChangePasswordRequest, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, LoginRequest, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, Session, SetupRequest, SyncSnapshot, SystemVersion, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
+import type { Account, Allocation, AuthStatus, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, ChangePasswordRequest, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, LoginRequest, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, Session, SetupRequest, StatementIngestionResult, StatementPreview, SyncSnapshot, SystemVersion, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
 import { clearToken, getToken, sessionDied } from '../auth/authToken';
 
 function authHeaders(): HeadersInit {
@@ -296,4 +296,45 @@ export async function applySyncImport(snapshot: SyncSnapshot): Promise<ImportSum
 
 export function fetchSystemVersion(): Promise<SystemVersion> {
   return request<SystemVersion>('/api/v1/system/version');
+}
+
+/**
+ * Statement import (feature 022). Both calls send the file: the commit re-uploads it rather than
+ * posting back the previewed rows, so the server derives every identity itself and a client can
+ * never introduce a row carrying an identity no re-parse would reproduce.
+ *
+ * Content-Type is deliberately not set — the browser must add the multipart boundary itself.
+ */
+function statementFormData(file: File, accountId: string, excludedRowIndexes?: number[]): FormData {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('accountId', accountId);
+  if (excludedRowIndexes && excludedRowIndexes.length > 0) {
+    // The endpoint takes this as a JSON part rather than repeated form fields.
+    form.append('excludedRowIndexes',
+      new Blob([JSON.stringify(excludedRowIndexes)], { type: 'application/json' }));
+  }
+  return form;
+}
+
+async function postStatement<T>(url: string, form: FormData): Promise<T> {
+  const res = await fetch(url, { method: 'POST', headers: authHeaders(), body: form });
+  handlePossibleSessionDeath(res);
+  if (!res.ok) {
+    // A file that is not a readable statement comes back as 400 with an explanation; surface it
+    // rather than a bare status code, since it is the operator's own file that is wrong.
+    throw new Error((await res.text()) || `HTTP ${res.status}: ${url}`);
+  }
+  return res.json();
+}
+
+export function previewStatement(file: File, accountId: string): Promise<StatementPreview> {
+  return postStatement<StatementPreview>('/api/v1/statements/preview',
+    statementFormData(file, accountId));
+}
+
+export function ingestStatement(file: File, accountId: string,
+                                excludedRowIndexes: number[]): Promise<StatementIngestionResult> {
+  return postStatement<StatementIngestionResult>('/api/v1/statements/ingest',
+    statementFormData(file, accountId, excludedRowIndexes));
 }

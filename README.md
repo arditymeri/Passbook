@@ -186,6 +186,7 @@ All paths are prefixed with `/api/v1`.
 | Savings goals | `GET/POST /savings-goals`, `GET/PUT/DELETE /savings-goals/{id}` |
 | Recurring detection | `POST /recurring-series/detect`, `GET /recurring-series`, `GET /recurring-series/dashboard`, `POST /recurring-series/{id}/confirm`, `POST /recurring-series/{id}/dismiss` |
 | Forecast | `GET /cash-flow-forecast` |
+| Statement import | `POST /statements/preview`, `POST /statements/ingest` |
 | System | `GET /system/version` |
 
 Net worth trend, spending trends, and transaction search are currently computed **client-side**
@@ -205,9 +206,10 @@ Full interactive documentation is at **http://localhost:8080/swagger-ui.html** w
 The near-term work is the pipeline, not more dashboards. Today there are many features that
 *consume* transactions and exactly one that *produces* them (a manual form).
 
-1. **Statement import** — CSV, and CAMT.053 / MT940 for European banks. Requires no third party
-   and removes most of the typing. Ingestion is idempotent, so re-importing overlapping date
-   ranges is safe rather than duplicating.
+1. **Statement import** — **CSV delivered** (unreleased, on `main`): statements are parsed server-side and
+   ingested idempotently, so re-importing overlapping date ranges is safe rather than duplicating,
+   and two genuinely identical rows on the same day are both kept. **Still ahead**: CAMT.053 and
+   MT940 for European banks, which attach to the same server-side seam.
 2. **Auto-categorisation** — merchant string to category, learned from your corrections.
 3. **Auto-posting confirmed recurring series** — detection already exists and stops at detection;
    confirmed series should write their own transactions.

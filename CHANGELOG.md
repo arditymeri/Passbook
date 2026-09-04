@@ -10,7 +10,31 @@ is safe to hand to someone else, not just the last change.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Server-side statement import with idempotent ingestion.** Upload a CSV bank statement, review
+  what it will do, and confirm. Re-importing the same statement — or a later one that overlaps it —
+  records nothing twice. Two genuinely identical rows on the same day are both kept: only a real
+  repeat is a repeat.
+- Transactions that arrive through import now carry a stable identity, which is what makes
+  re-ingestion a no-op. Uniqueness is enforced by the database, so two imports running at once
+  cannot both record the same transaction.
+
+### Changed
+
+- **The import dialog now asks the server, not the browser.** Feature 017's client-side CSV parsing
+  and duplicate detection are gone. That detection could only compare against transactions the
+  browser happened to have loaded; it could not protect a second device, or anything arriving by any
+  other route. Quoted fields containing commas and newlines now parse correctly too, which the
+  line-oriented browser parser could not represent at all.
+
+### ⚠ Operator note
+
+Transactions you imported with the **old** client-side dialog carry no identity, because there was
+nowhere to store one. Re-importing a statement covering that period will therefore offer those rows
+as new rather than recognising them. This is deliberate — the app will not claim to recognise
+history it never ingested — but it means the first import after upgrading may need rows unticked.
+Hand-entered transactions are unaffected and behave exactly as before.
 
 ## [0.1.0] — 2026-09-03
 
