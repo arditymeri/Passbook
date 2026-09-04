@@ -155,6 +155,16 @@ class OccurrenceScheduleTest {
         }
 
         @Test
+        void afterClampingItDoesNotReturnToThe31st() {
+            // Deliberate: the next date is derived from the previous occurrence and nothing else.
+            // Remembering "the 31st" would mean carrying a nominal day-of-month beside the ledger —
+            // invisible state that can disagree with the transactions actually recorded. The drift
+            // this causes stops at the first real occurrence, which re-anchors the series.
+            assertThat(OccurrenceSchedule.next(RecurringFrequency.MONTHLY, LocalDate.of(2026, 2, 28)))
+                    .isEqualTo(LocalDate.of(2026, 3, 28));
+        }
+
+        @Test
         void steppingNeverThrowsAcrossAWholeYearOfMonthEnds() {
             LocalDate date = LocalDate.of(2026, 1, 31);
             for (int i = 0; i < 12; i++) {

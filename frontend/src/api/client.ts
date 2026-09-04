@@ -1,4 +1,4 @@
-import type { Account, Allocation, AuthStatus, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, ChangePasswordRequest, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, LoginRequest, MonthlySummary, NecessityTag, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, Session, SetupRequest, StatementIngestionResult, StatementPreview, SyncSnapshot, SystemVersion, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
+import type { Account, Allocation, AuthStatus, Bill, BudgetStatusEntry, BudgetStatusResponse, CashFlowForecastResponse, CashFlowWindowWeeks, Category, ChangePasswordRequest, CorrectBillRequest, CorrectIncomeRequest, CreateAccountRequest, CreateAllocationRequest, CreateBillRequest, CreateCategoryRequest, CreateIncomeRequest, CreateSavingsGoalRequest, ImportSummary, Income, LoginRequest, MonthlySummary, NecessityTag, PostingRunResult, RecurringCostSummaryItem, RecurringDashboard, RecurringSeries, RecurringSeriesStatusValue, RepeatAllocationsRequest, RepeatAllocationsResponse, SavingsGoalStatus, Session, SetupRequest, StatementIngestionResult, StatementPreview, SyncSnapshot, SystemVersion, TransactionHistoryEntry, TransferAllocationRequest, TransferAllocationResponse, UpdateSavingsGoalRequest } from '../types';
 import { clearToken, getToken, sessionDied } from '../auth/authToken';
 
 function authHeaders(): HeadersInit {
@@ -160,6 +160,21 @@ export async function confirmRecurringSeries(id: string): Promise<RecurringSerie
 
 export async function dismissRecurringSeries(id: string): Promise<RecurringSeries> {
   return postAndReturn<RecurringSeries>(`/api/v1/recurring-series/${id}/dismiss`, {});
+}
+
+/**
+ * Ends a confirmed series. Deliberately separate from dismissing a proposal: dismissing says the
+ * detection was wrong, stopping says the thing was real and has now finished. Already-posted
+ * transactions are left alone.
+ */
+export async function stopRecurringSeries(id: string): Promise<{ id: string; status: RecurringSeriesStatusValue }> {
+  return postAndReturn<{ id: string; status: RecurringSeriesStatusValue }>(
+    `/api/v1/recurring-series/${id}/stop`, {});
+}
+
+/** Runs the same work the daily schedule does, immediately. Safe to call any number of times. */
+export async function postDueOccurrences(): Promise<PostingRunResult> {
+  return postAndReturn<PostingRunResult>('/api/v1/recurring-series/post-due', {});
 }
 
 export async function fetchRecurringDashboard(): Promise<RecurringDashboard> {

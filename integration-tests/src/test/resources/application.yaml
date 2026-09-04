@@ -1,3 +1,11 @@
+# The recurring auto-post schedule is off here. Every integration test boots the full
+# application against a shared database; a live schedule would post against it mid-suite and show
+# up as unrelated features failing balance assertions (feature 023).
+app:
+  recurring:
+    auto-post:
+      enabled: false
+
 # Values for the environment-sourced secrets that Launcher's application.properties now
 # requires (feature 021). They are test fixtures, not credentials: the database they name is a
 # throwaway Testcontainer on a random port, discarded when the suite ends. They live here so the

@@ -76,7 +76,7 @@ postDueOccurrences(today = 2026-03-25)
 
 | Check | Value |
 |---|---|
-| Transactions matching the series in March | 3 — the prediction, its reversal, the imported row |
+| Transactions on the account for 1 March | 3 — the prediction, its reversal, the imported row |
 | Balance effect for March | −€1250, counted once |
 | The auto-posted row | Still present, unmodified |
 | The reversal | References the auto-posted row |
@@ -178,10 +178,21 @@ from a `DISMISSED` series.
 **Setup**: `MONTHLY`, latest real occurrence 31 January.
 
 **Expected**: the February occurrence resolves to 28 or 29 February — the last valid day — rather
-than being skipped or throwing. March resolves to 31 March again.
+than being skipped or throwing.
+
+**Delivered differently from the original wording here, deliberately.** March does *not* return to
+the 31st: stepping from 28 February gives 28 March. Returning to the 31st would mean carrying a
+nominal day-of-month alongside the ledger — invisible state that can disagree with the transactions
+actually recorded. The clamped answer is derived from the previous occurrence and nothing else, so
+it can always be recomputed from what is stored.
+
+In practice the drift stops at the first real occurrence: a bank posting rent on 31 March re-anchors
+the series on that date. It accumulates only for a series posting to an account whose statements are
+never imported — the case the README and CHANGELOG both name outright.
 
 **Status**: **runs locally**. This falls out of `java.time` rather than needing a rule of our own,
-but it is asserted so a future refactor cannot quietly lose it.
+but both the clamp and the non-return to the 31st are asserted so a future refactor cannot quietly
+change either.
 
 ---
 

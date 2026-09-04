@@ -185,6 +185,7 @@ All paths are prefixed with `/api/v1`.
 | Budgets & envelopes | `GET/POST /budgets`, `DELETE /budgets/{id}`, `GET /budgets/status`, `POST /budgets/repeat`, `POST /budgets/transfer` |
 | Savings goals | `GET/POST /savings-goals`, `GET/PUT/DELETE /savings-goals/{id}` |
 | Recurring detection | `POST /recurring-series/detect`, `GET /recurring-series`, `GET /recurring-series/dashboard`, `POST /recurring-series/{id}/confirm`, `POST /recurring-series/{id}/dismiss` |
+| Recurring auto-posting | `POST /recurring-series/post-due`, `POST /recurring-series/{id}/stop` |
 | Forecast | `GET /cash-flow-forecast` |
 | Statement import | `POST /statements/preview`, `POST /statements/ingest` |
 | System | `GET /system/version` |
@@ -211,8 +212,18 @@ The near-term work is the pipeline, not more dashboards. Today there are many fe
    and two genuinely identical rows on the same day are both kept. **Still ahead**: CAMT.053 and
    MT940 for European banks, which attach to the same server-side seam.
 2. **Auto-categorisation** — merchant string to category, learned from your corrections.
-3. **Auto-posting confirmed recurring series** — detection already exists and stops at detection;
-   confirmed series should write their own transactions.
+3. **Auto-posting confirmed recurring series** — **delivered** (unreleased, on `main`): a confirmed
+   series now writes its own transactions as they come due, daily and on demand, catching up
+   whatever was missed while the app was down. Nothing is posted for a period before you confirmed
+   the series, and an occurrence already recorded is refused by the database rather than posted
+   twice. When a statement import brings in the bank's own version of a transaction the app
+   predicted, the prediction is superseded by a compensating entry, so the charge counts once.
+
+   The honest shape of it: **a series posting to an account you never import will keep posting
+   until you stop it.** Nothing outside the app confirms those transactions ever happened, so the
+   ledger drifts toward what the app expects rather than what your bank did. Stop a series when it
+   ends — the Stop action leaves everything already posted in place, which is what makes it
+   different from dismissing a proposal.
 4. **Bank synchronisation** — via a PSD2/Open Banking aggregator, read-only by construction (no
    payment initiation). This is planned as the project's paid, optional service, since aggregators
    charge per connection. It relays bookings and holds connection credentials only — **never your
