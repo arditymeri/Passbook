@@ -41,7 +41,8 @@ public class IncomeEntity {
     @Column(name = "notes")
     private String notes;
 
-    @Column(name = "recurring")
+    @Column(name = "recurring", nullable = false)
+    @ColumnDefault("false")
     private boolean recurring;
 
     @Column(name = "recurring_frequency")

@@ -269,6 +269,30 @@ All 38 tasks completed. What differed from the plan, and why:
    on every calendar date; a monthly series anchored on the 31st would make these tests pass or fail
    depending on which day CI happened to run. The cadence is incidental to what they assert.
 
+### Two bugs CI found that local verification could not
+
+The first CI run of this feature failed 48 integration tests across savings goals, budgets, account
+balances, income corrections, statement import and recurring detection. Both causes were in feature
+022's hand-written ingestion SQL, where a missing column is not a compile error:
+
+1. **`recurring_series_id` was not in either insert.** Auto-posting writes through that adapter, so
+   every posted row landed with null provenance — invisible in the transaction list (all of US3) and
+   invisible to reconciliation, which looks candidates up by exactly that column (all of US2). The
+   feature was inert in precisely the way its own tests were written to catch.
+
+2. **`income.recurring` was not in the income insert**, and it maps to a primitive `boolean`. Every
+   imported income row landed NULL, and Hibernate cannot read such a row. This was latent from 022:
+   the import succeeds, and what breaks is every *later* read of the income table. It stayed green in
+   022's CI only because the classes that read income happened to run before the class that wrote the
+   bad rows; adding two test classes reshuffled that order. An operator would have met it as the app
+   breaking days after an import, with no visible connection to it.
+
+Fixed in the adapter, plus `V4` to repair rows already written and make the column refuse null so a
+future hand-written insert cannot reintroduce it silently. `StatementIngestionIntegrationTest` gained
+a test that reads an account balance back after importing income — the path where an operator would
+actually meet it. The adapter's class comment now says outright that every column the entity reads
+must be listed there.
+
 ### What ran where
 
 **Locally verified** — `./mvnw clean install -pl '!integration-tests'`: BUILD SUCCESS, 333 Domain
@@ -276,7 +300,8 @@ tests green (17 for `OccurrenceSchedule`, 9 for `PostDueOccurrencesServiceImpl`,
 `ReconcileAutoPostedServiceImpl`), plus `./mvnw -pl integration-tests test-compile` and
 `cd frontend && npm run build`, both clean.
 
-**CI-verified only** — there is no Docker daemon in this environment, so nothing in
+**CI-verified only** — and this feature is the case for reporting the two columns separately rather
+than treating a green local build as evidence. There is no Docker daemon in this environment, so nothing in
 `AutoPostIntegrationTest` or `ReconciliationIntegrationTest` has been executed here: the `V3`
 migration, the unique index refusing a repeat post, the two derived queries binding against the
 entities at context startup, reconciliation inside the import path, stopping end to end, and the

@@ -34,6 +34,16 @@ is safe to hand to someone else, not just the last change.
   dialog). Stopping ends the posting and leaves everything already posted in place — deliberately
   different from dismissing a proposal, which says the detection was wrong to begin with.
 
+### Fixed
+
+- **Importing a statement containing income could break the app afterwards.** The ingest path wrote
+  income rows without a value for one column that cannot be null, so every later read of the income
+  table failed — account balances, budget status, savings goals and the next import all stopped
+  working, days after the import that caused it and with nothing to connect them to it. The insert
+  is fixed, the column now refuses null at the database, and rows already written are repaired on
+  upgrade. Introduced with server-side import in this same unreleased cycle, so no released version
+  is affected.
+
 ### Changed
 
 - **The import dialog now asks the server, not the browser.** Feature 017's client-side CSV parsing

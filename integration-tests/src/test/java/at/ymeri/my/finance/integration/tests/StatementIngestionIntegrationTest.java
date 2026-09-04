@@ -200,6 +200,29 @@ public class StatementIngestionIntegrationTest {
                 .isEqualTo(RowStatus.ALREADY_RECORDED);
     }
 
+    // --- What an imported row must look like once it is in the database -------------------------
+
+    @Test
+    void anImportedIncomeCanStillBeReadBackAfterwards() {
+        // Regression. The ingest path writes with hand-written SQL, and its income column list once
+        // omitted `recurring` — which maps to a primitive boolean, so every imported income landed
+        // as NULL and every LATER read of the income table threw. The import itself succeeded; what
+        // broke was account balances, budgets, savings goals and the next import, days later, with
+        // nothing to connect them to the statement that caused it.
+        //
+        // Reading the balance back is the assertion because that is where an operator would meet it.
+        String account = anAccount();
+
+        ingest(account, OVERLAP_A);
+
+        AccountResponse afterwards = restTemplate
+                .getForEntity("/accounts/" + account, AccountResponse.class).getBody();
+        assertThat(afterwards).isNotNull();
+        assertThat(afterwards.getBalance())
+                .as("2400.00 salary less 54.20 and 3.40 of spending")
+                .isEqualTo(2342.40);
+    }
+
     // --- Rejected rows and unusable files -------------------------------------------------------
 
     @Test
