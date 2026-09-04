@@ -32,6 +32,14 @@ public class BillEntity {
     @Column(name = "account_id")
     private String accountId;
 
+    /**
+     * Stable identity of this transaction at its source, present only for rows that arrived through
+     * ingestion (feature 022). Null for anything typed by hand and for every row recorded before
+     * V2. Write-once: changing it would make the row permanently invisible to deduplication.
+     */
+    @Column(name = "external_id")
+    private String externalId;
+
     @Column(name = "corrects_transaction_id")
     private String correctsTransactionId;
 
