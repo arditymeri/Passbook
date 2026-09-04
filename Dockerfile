@@ -11,4 +11,4 @@ COPY . .
 RUN chmod +x mvnw && ./mvnw clean package -Dmaven.test.skip=true
 
 # Run the application
-CMD ["java", "-jar", "Launcher/target/Launcher-0.0.1-SNAPSHOT-exec.jar"]
+CMD ["java", "-jar", "Launcher/target/Launcher-0.1.0-exec.jar"]

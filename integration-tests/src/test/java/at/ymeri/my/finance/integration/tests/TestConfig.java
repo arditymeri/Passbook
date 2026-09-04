@@ -14,7 +14,7 @@ public class TestConfig {
         PostgreSQLContainer<?> container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"))
                 .withDatabaseName("myfinance")
                 .withUsername("diti")
-                .withPassword("FinanceDbPassword");
+                .withPassword("integration-test-password");
         container.start();
         return container;
     }

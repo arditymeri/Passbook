@@ -6,10 +6,22 @@
     <parent>
         <groupId>at.ymeri.my-finance</groupId>
         <artifactId>parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>domain</artifactId>
 
 
+
+    <dependencies>
+        <!-- Statement parsing (feature 022). Declared here rather than in the parent because Domain
+             is the only module that parses: quoted fields containing commas, escaped quotes and
+             embedded newlines are exactly what a hand-rolled parser gets wrong, and the failure mode
+             is a silently mis-parsed financial record. Not managed by Spring Boot, so versioned. -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.12.0</version>
+        </dependency>
+    </dependencies>
 </project>

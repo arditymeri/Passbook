@@ -1,0 +1,210 @@
+openapi: "3.0.0"
+tags:
+  - name: "StatementIngestionController"
+    description: "Server-side statement import: preview what a file will do, then commit it"
+info:
+  title: "Personal Finance Service - Statement Ingestion API"
+  description: >
+    Import a bank statement into an account. The server parses the file and derives each row's
+    external identity; no client ever decides what a transaction's identity is. Re-importing a
+    statement that has already been imported records nothing.
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080/api/v1"
+paths:
+  /statements/preview:
+    post:
+      summary: "Show what importing this statement would do, without recording anything"
+      operationId: previewStatement
+      description: >
+        Parses the uploaded statement against the chosen account and reports, per row, whether it
+        would be recorded, is already recorded, or is unusable. Read-only — nothing is written.
+
+        The already-recorded marks are ADVISORY. They come from reading current state, which can be
+        stale by the time the operator confirms. Nothing depends on them being right: the uniqueness
+        constraint applied during ingest is what actually guarantees no double-counting.
+      tags:
+        - statementIngestion
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, accountId]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "The statement file (CSV)"
+                accountId:
+                  type: string
+                  description: "Account the statement belongs to. Identity is scoped per account."
+      responses:
+        "200":
+          description: "Preview produced"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/statementPreview"
+        "400":
+          description: "The file could not be read at all. Nothing was recorded."
+        default:
+          description: "Unexpected error"
+  /statements/ingest:
+    post:
+      summary: "Import this statement"
+      operationId: ingestStatement
+      description: >
+        Re-parses the same file, re-derives every identity, skips the rows the operator excluded, and
+        records the rest. Rows whose identity is already present are skipped — enforced by a
+        uniqueness constraint rather than by looking before writing, so two simultaneous imports of
+        overlapping statements cannot both record the same transaction.
+
+        The file is uploaded again rather than the client posting back the previewed rows: that keeps
+        identity derivation entirely server-side, so a client can never introduce a row carrying an
+        identity that no re-parse of the statement would reproduce.
+
+        Create-only. This never modifies or deletes an existing transaction (Principle I).
+      tags:
+        - statementIngestion
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, accountId]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "The same statement file that was previewed"
+                accountId:
+                  type: string
+                  description: "Account the statement belongs to"
+                excludedRowIndexes:
+                  type: array
+                  description: >
+                    Zero-based row positions the operator chose not to import. Excluding a row does
+                    not record anything about it, so the same row is offered again as new on a later
+                    import of the same statement.
+                  items:
+                    type: integer
+                    format: int32
+      responses:
+        "200":
+          description: "Import completed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ingestionResult"
+        "400":
+          description: "The file could not be read at all. Nothing was recorded."
+        default:
+          description: "Unexpected error"
+components:
+  schemas:
+    statementPreview:
+      type: object
+      description: "What an import of this statement would do"
+      required: [rows, newCount, alreadyRecordedCount, rejectedCount]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/statementRowPreview"
+        newCount:
+          type: integer
+          format: int32
+        alreadyRecordedCount:
+          type: integer
+          format: int32
+        rejectedCount:
+          type: integer
+          format: int32
+    statementRowPreview:
+      type: object
+      description: "One parsed row and what would happen to it"
+      required: [rowIndex, status]
+      properties:
+        rowIndex:
+          type: integer
+          format: int32
+          description: >
+            Zero-based position in the file. Stable across re-parses of the same file, and how the
+            operator names an exclusion on ingest.
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        amount:
+          type: string
+          description: >
+            Decimal as a string, to avoid the precision loss a JSON number would introduce
+            (Principle IV). Always positive; direction says which way it goes.
+          example: "42.50"
+        direction:
+          $ref: "#/components/schemas/transactionDirection"
+        suggestedCategoryId:
+          type: string
+          description: "Server-side category suggestion, reusing the category of a similar past transaction"
+        status:
+          $ref: "#/components/schemas/rowStatus"
+        rejectionReason:
+          type: string
+          description: "Present only when status is REJECTED"
+    ingestionResult:
+      type: object
+      description: "What the import actually did"
+      required: [rows, recordedCount, alreadyRecordedCount, rejectedCount, excludedCount]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/statementRowOutcome"
+        recordedCount:
+          type: integer
+          format: int32
+        alreadyRecordedCount:
+          type: integer
+          format: int32
+        rejectedCount:
+          type: integer
+          format: int32
+        excludedCount:
+          type: integer
+          format: int32
+    statementRowOutcome:
+      type: object
+      description: "What happened to one row"
+      required: [rowIndex, status]
+      properties:
+        rowIndex:
+          type: integer
+          format: int32
+        status:
+          $ref: "#/components/schemas/rowStatus"
+        rejectionReason:
+          type: string
+          description: "Present only when status is REJECTED"
+        transactionId:
+          type: string
+          description: "Present only when status is RECORDED — the transaction that was created"
+    rowStatus:
+      type: string
+      description: >
+        RECORDED and ALREADY_RECORDED on an ingest come from the write itself, never from a lookup.
+        On a preview they are advisory.
+      enum:
+        - RECORDED
+        - ALREADY_RECORDED
+        - REJECTED
+        - EXCLUDED
+    transactionDirection:
+      type: string
+      description: "Which side of the ledger the row belongs to"
+      enum:
+        - BILL
+        - INCOME

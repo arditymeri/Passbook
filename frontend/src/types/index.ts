@@ -406,21 +406,6 @@ export interface SpendingMover {
   percentChange: number | null;
 }
 
-export type ImportDirection = 'BILL' | 'INCOME';
-export type ImportRowStatus = 'ok' | 'duplicate' | 'error';
-
-export interface ImportCandidate {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  direction: ImportDirection;
-  categoryId?: string;
-  status: ImportRowStatus;
-  errorMessage?: string;
-  included: boolean;
-}
-
 export interface TaggedTransactionOpportunity {
   transactionId: string;
   description: string | null;
@@ -492,4 +477,58 @@ export interface Session {
   token: string;
   username: string;
   expiresAt: string;
+}
+
+/**
+ * What version this instance is running, from the backend rather than the frontend build — the
+ * two can diverge, and it is the running backend an operator needs to identify.
+ */
+export interface SystemVersion {
+  version: string;
+  /** Absent when the backend runs from an unfiltered classpath (an IDE run). */
+  buildTime?: string;
+}
+
+/**
+ * Server-computed statement import (feature 022). Every judgement below — what a row is, whether it
+ * is already recorded, what category it should get — is made by the backend. The client renders the
+ * answer and never derives one, because two implementations of "is this a duplicate" that can
+ * disagree is worse than either alone.
+ */
+export type StatementRowStatus = 'RECORDED' | 'ALREADY_RECORDED' | 'REJECTED' | 'EXCLUDED';
+
+export type StatementDirection = 'BILL' | 'INCOME';
+
+export interface StatementRowPreview {
+  rowIndex: number;
+  date?: string;
+  description?: string;
+  /** Decimal as a string, so no precision is lost on the way through JSON. */
+  amount?: string;
+  direction?: StatementDirection;
+  suggestedCategoryId?: string;
+  status: StatementRowStatus;
+  rejectionReason?: string;
+}
+
+export interface StatementPreview {
+  rows: StatementRowPreview[];
+  newCount: number;
+  alreadyRecordedCount: number;
+  rejectedCount: number;
+}
+
+export interface StatementRowOutcome {
+  rowIndex: number;
+  status: StatementRowStatus;
+  rejectionReason?: string;
+  transactionId?: string;
+}
+
+export interface StatementIngestionResult {
+  rows: StatementRowOutcome[];
+  recordedCount: number;
+  alreadyRecordedCount: number;
+  rejectedCount: number;
+  excludedCount: number;
 }

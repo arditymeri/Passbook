@@ -25,8 +25,13 @@ basis. If a fix will take a while, you will be told that rather than left in sil
 
 ## Supported Versions
 
-The project is pre-1.0 and there are no released versions yet. Only the current `main` branch
-receives fixes. Once tagged releases exist, this section will say which of them are supported.
+| Version | Supported |
+|---------|-----------|
+| 0.1.0   | ✅ |
+| earlier (unreleased snapshots) | ❌ — upgrade to 0.1.0 |
+
+The project is pre-1.0. Only the latest release and the current `main` branch receive fixes;
+there are no backports to older releases.
 
 ## Known and Accepted Limitations
 
@@ -35,18 +40,29 @@ about them are not needed — they are already in the
 [README](README.md#before-you-self-host) and the
 [constitution](.specify/memory/constitution.md).
 
-- **No authentication or authorisation.** The API is unauthenticated by design: every instance is
-  single-tenant, intended for one person or household, and network placement is the access
-  control. **Do not expose an instance to the internet.**
+- **Single shared credential, not multi-user.** One admin username and password protects the whole
+  instance. There are no per-user accounts, no roles, and no row-level isolation — every instance
+  is single-tenant, for one person or household, by design. "User B can see user A's data" is not
+  a finding; there is only one user.
 - **No transport encryption.** The app assumes it runs on localhost or inside a trusted network.
-  TLS is the operator's responsibility, via a reverse proxy.
-- **Default credentials in `docker-compose.yaml`.** The Postgres password and pgAdmin login are
-  local development defaults, published deliberately so the stack starts with one command. Any
-  deployment beyond a local machine must override them.
-- **`spring.jpa.hibernate.ddl-auto=update`.** Schema is inferred at startup rather than migrated.
-  This is a known release blocker and is unsafe for data you care about.
+  TLS is the operator's responsibility, via a reverse proxy. **Do not expose an instance directly
+  to the internet.**
+- **Session tokens are not individually revocable.** Logging out or changing the password
+  invalidates *all* existing sessions (via a token version counter) rather than one device's.
+  At single-account scale this is the intended trade-off, not an oversight.
 - **Dependency advisories with no practical exploit path** in this codebase. A version bump is
   welcome as a normal pull request rather than a security report.
+
+## Rotate the historically published database password
+
+Releases before 0.1.0 shipped a working PostgreSQL password in `docker-compose.yaml` and
+`application.properties`. It is **still in this repository's published git history**, and removing
+it from the working tree does not remove it from history.
+
+If you have ever run an instance using that value, **rotate it** — set a new password in your
+`.env` and change it on the database itself. Assuming that removal was sufficient is the mistake
+this section exists to prevent. From 0.1.0 onward all secrets come from the operator's
+environment, and the app refuses to start without them.
 
 ## In Scope
 

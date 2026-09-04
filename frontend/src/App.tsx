@@ -362,7 +362,6 @@ function App() {
         open={importDialogOpen}
         onClose={() => setImportDialogOpen(false)}
         onImported={handleSaveSuccess}
-        allTransactions={allTransactions}
         categories={categories}
         accounts={accounts}
       />

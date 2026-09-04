@@ -20,3 +20,9 @@ frontend/dist-ssr/
 .agents/
 .claude/
 specs/
+
+# Secrets — the Dockerfile does `COPY . .`, so an operator's local .env would
+# otherwise be baked into the image layer and shipped with it.
+.env
+.env.*
+!.env.example

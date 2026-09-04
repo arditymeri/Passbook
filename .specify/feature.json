@@ -1,3 +1,3 @@
 {
-  "feature_directory": "specs/020-single-user-authentication"
+  "feature_directory": "specs/022-idempotent-statement-ingestion"
 }

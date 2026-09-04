@@ -1,0 +1,3 @@
+# Fail fast, before any bean, when a required secret is missing (feature 021, FR-009).
+org.springframework.boot.env.EnvironmentPostProcessor=\
+at.ymeri.my.finance.config.RequiredSecretsEnvironmentPostProcessor
