@@ -62,7 +62,8 @@ alone — the other three stories can ship later or not at all.
 ### User Story 2 - A password long enough to be worth guarding (Priority: P2)
 
 The operator sets their password during first-run setup, or changes it later. Today the app accepts
-a single character. On a URL strangers can reach, that is a door with a one-digit combination. After
+a single character — `setupRequest.password` and `changePasswordRequest.newPassword` both carry a
+minimum of one, and `loginRequest.password` carries no minimum at all. On a URL strangers can reach, that is a door with a one-digit combination. After
 this feature the app refuses to *accept* a password too short to matter, at the moment it is set.
 
 Logging in is deliberately not constrained: an existing password's length is not the API's business,
