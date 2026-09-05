@@ -54,3 +54,9 @@ frontend/.env.*
 .claude/settings.local.json
 # Local JDK pin (jenv); the exact patch version is machine-specific.
 .java-version
+
+### Playwright (feature 025 layout checks) ###
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/.playwright/

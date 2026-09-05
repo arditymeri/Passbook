@@ -6,3 +6,7 @@ dist-ssr/
 .env.*
 !.env.example
 *.local
+
+# Playwright output — never needed in an image
+test-results/
+playwright-report/

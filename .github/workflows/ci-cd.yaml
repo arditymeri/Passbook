@@ -56,3 +56,26 @@ jobs:
 
       - name: Type-check and build
         run: npm run build
+
+      # The layout check (feature 025) drives the built SPA in a real browser at 320, 375 and
+      # 1280 px and fails if any screen scrolls sideways. It needs a browser, which `npm ci` does
+      # not install; --with-deps also pulls the shared libraries a headless Chromium needs on a
+      # bare runner. It runs against the artefact the step above just produced, so it costs a
+      # browser download and nothing else.
+      - name: Install Chromium for the layout check
+        run: npx playwright install --with-deps chromium
+
+      - name: Layout check (no screen scrolls sideways)
+        run: npx playwright test
+
+      # Traces are written only for failures. Without them a red layout check tells you a number
+      # and not which component was 4px too wide.
+      - name: Upload layout traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          retention-days: 7
