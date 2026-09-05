@@ -32,11 +32,23 @@ export default defineConfig({
 
   // `vite preview` serves ./dist, so `npm run build` must have run first. The test:layout script
   // chains them so this cannot be forgotten.
+  //
+  // `--host 127.0.0.1` is not decoration. Vite preview binds to `localhost` by default, which on a
+  // GitHub runner resolves to ::1 first — so the server was up and Playwright, polling
+  // http://127.0.0.1:4173, waited the full 60 seconds and failed with "Timed out waiting from
+  // config.webServer" and not one word about why. Binding and polling the same literal address
+  // removes the ambiguity. This passed locally before it failed in CI, which is exactly the shape
+  // of bug an IPv4/IPv6 default mismatch has.
+  //
+  // stdout/stderr are piped so the next failure of this step says something. A silent timeout is
+  // the worst possible CI message.
   webServer: {
-    command: 'npx vite preview --port 4173 --strictPort',
+    command: 'npx vite preview --port 4173 --strictPort --host 127.0.0.1',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    timeout: 120_000,
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 
   // A layout failure is deterministic — a retry would only hide a flake that is really a bug.
