@@ -1,6 +1,8 @@
 {
   "name": "Passbook",
-  "image": "mcr.microsoft.com/devcontainers/java:1-21-bookworm",
+  // Built from a Dockerfile rather than used directly: the image needs one fix applied before
+  // any feature installs. See .devcontainer/Dockerfile.
+  "build": { "dockerfile": "Dockerfile" },
 
   "features": {
     // Needed to run docker compose inside the Codespace. Without it there is no Docker daemon
