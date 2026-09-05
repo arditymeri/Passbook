@@ -92,10 +92,12 @@ export function SavingsGoalsPage({ onBack }: SavingsGoalsPageProps) {
               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{goal.name}</Typography>
               <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
                 {paceChip(goal)}
-                <IconButton size="small" aria-label="Edit goal" onClick={() => openEdit(goal)}>
+                <IconButton size="small" aria-label="Edit goal" onClick={() => openEdit(goal)}
+                  sx={{ minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}>
                   <EditIcon fontSize="small" />
                 </IconButton>
-                <IconButton size="small" aria-label="Delete goal" onClick={() => setDeletingGoal(goal)}>
+                <IconButton size="small" aria-label="Delete goal" onClick={() => setDeletingGoal(goal)}
+                  sx={{ minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Stack>
@@ -134,6 +136,7 @@ export function SavingsGoalsPage({ onBack }: SavingsGoalsPageProps) {
         goal={editingGoal}
       />
 
+      {/* A confirmation, not a form: stays boxed on a phone. See Modal.tsx for why. */}
       <Dialog open={deletingGoal !== null} onClose={() => setDeletingGoal(null)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 700 }}>Delete this goal?</DialogTitle>
         <DialogContent>

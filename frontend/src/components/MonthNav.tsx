@@ -21,13 +21,15 @@ export function MonthNav({ year, month, onPrevious, onNext }: MonthNavProps) {
   return (
     <Paper variant="outlined" sx={{ px: 2, py: 1 }}>
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
-        <IconButton onClick={onPrevious} aria-label="Previous month" size="small">
+        <IconButton onClick={onPrevious} aria-label="Previous month" size="small"
+          sx={{ minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}>
           <ChevronLeftIcon />
         </IconButton>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           {label}
         </Typography>
-        <IconButton onClick={onNext} aria-label="Next month" size="small">
+        <IconButton onClick={onNext} aria-label="Next month" size="small"
+          sx={{ minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}>
           <ChevronRightIcon />
         </IconButton>
       </Stack>

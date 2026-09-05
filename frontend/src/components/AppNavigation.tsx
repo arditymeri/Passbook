@@ -80,7 +80,7 @@ export function AppNavigation({ destinations, actions }: AppNavigationProps) {
             onClick={() => setDrawerOpen(true)}
             // 44px is the smallest target a finger hits reliably (FR-010, SC-005). MUI's default
             // IconButton padding gets close; this states it rather than hoping.
-            sx={{ mr: 1, minWidth: 44, minHeight: 44 }}
+            sx={{ mr: 1, minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}
           >
             <MenuIcon />
           </IconButton>
@@ -108,7 +108,7 @@ export function AppNavigation({ destinations, actions }: AppNavigationProps) {
               key={a.label}
               color="inherit"
               variant="contained"
-              sx={{ bgcolor: 'secondary.main', minHeight: 44, whiteSpace: 'nowrap' }}
+              sx={{ bgcolor: 'secondary.main', minHeight: { xs: 44, sm: 'auto' }, whiteSpace: 'nowrap' }}
               onClick={a.onClick}
             >
               {a.label}
@@ -126,7 +126,7 @@ export function AppNavigation({ destinations, actions }: AppNavigationProps) {
             <IconButton
               aria-label="Close navigation"
               onClick={() => setDrawerOpen(false)}
-              sx={{ minWidth: 44, minHeight: 44 }}
+              sx={{ minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}
             >
               <CloseIcon />
             </IconButton>

@@ -84,6 +84,39 @@ async function expectNoHorizontalScroll(page: Page, where: string) {
 }
 
 /**
+ * Nothing on this screen has to be swiped sideways to be read.
+ *
+ * WHY THIS IS SEPARATE FROM THE ONE ABOVE, and why the feature would have shipped broken without
+ * it: MUI's TableContainer sets `overflow-x: auto`. A six-column table in a 320px viewport
+ * therefore scrolls *inside its own box* and the document stays exactly 320px wide — so
+ * expectNoHorizontalScroll passes while the primary content of the dashboard is unreadable without
+ * swiping. That is US2's entire complaint, and the page-level check cannot see it.
+ *
+ * Applied to the dashboard only. The sync page's table is explicitly allowed to scroll in its own
+ * container (quickstart scenario 9): it is rarely visited and does not warrant the transaction
+ * list's treatment. The dashboard is the screen the app is opened to look at.
+ */
+async function expectNothingSwipesSideways(page: Page, where: string) {
+  const scrollers = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('*'))
+      .filter((el) => {
+        if (el.clientWidth === 0 || el.scrollWidth <= el.clientWidth + 1) return false;
+        // Only `auto` and `scroll` produce a swipe. `hidden` clips, which is what an ellipsis
+        // truncation is — deliberate, readable, and not a thing anyone has to drag. Flagging it
+        // would make every correctly truncated description a failure and the check useless.
+        const overflowX = getComputedStyle(el).overflowX;
+        return overflowX === 'auto' || overflowX === 'scroll';
+      })
+      .map((el) => `<${el.tagName.toLowerCase()}> ${el.scrollWidth}px inside ${el.clientWidth}px "${(el.textContent || '').trim().slice(0, 40)}"`)
+      .slice(0, 6));
+
+  expect(
+    scrollers,
+    `${where} has content that must be swiped sideways to read:\n  ${scrollers.join('\n  ')}`,
+  ).toEqual([]);
+}
+
+/**
  * Reaches a destination the way a person does. At phone width the destinations live behind a menu;
  * at desktop width they are in the header. Trying the header first and falling back keeps this
  * working at every width without the test needing to know which layout it is looking at — which
@@ -121,6 +154,7 @@ for (const { name, width, height } of WIDTHS) {
       await page.goto('/');
       await expectAppRendered(page);
       await expectNoHorizontalScroll(page, `The dashboard at ${width}px`);
+      await expectNothingSwipesSideways(page, `The dashboard at ${width}px`);
     });
 
     test('every screen is reachable and none scrolls sideways', async ({ page }) => {

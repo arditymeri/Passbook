@@ -38,7 +38,7 @@ export function PageHeader({ title, onBack, children }: PageHeaderProps) {
       }}
     >
       {/* 44px is the smallest target a finger hits reliably (FR-010, SC-005). */}
-      <IconButton onClick={onBack} aria-label="Back" sx={{ minWidth: 44, minHeight: 44 }}>
+      <IconButton onClick={onBack} aria-label="Back" sx={{ minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}>
         <ArrowBackIcon />
       </IconButton>
       <Typography variant="h5" sx={{ fontWeight: 700, flexGrow: 1, minWidth: 0 }} noWrap>
