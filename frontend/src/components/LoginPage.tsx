@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import { login } from '../api/client';
+import { login, TooManyAttemptsError } from '../api/client';
 import { setToken } from '../auth/authToken';
 
 interface LoginPageProps {
@@ -29,9 +29,16 @@ export function LoginPage({ onAuthenticated }: LoginPageProps) {
       const session = await login({ username, password });
       setToken(session.token);
       onAuthenticated();
-    } catch {
-      // Deliberately generic — never reveals whether the username or the password was wrong (FR-012).
-      setError('Incorrect username or password');
+    } catch (e) {
+      if (e instanceof TooManyAttemptsError) {
+        // Distinct from a wrong password on purpose. Saying "incorrect username or password" here
+        // would have the operator retyping a password that is correct, and would hide that their
+        // instance is being guessed at.
+        setError('Too many failed attempts. Wait a few minutes and try again.');
+      } else {
+        // Deliberately generic — never reveals whether the username or the password was wrong (FR-012).
+        setError('Incorrect username or password');
+      }
       setSubmitting(false);
     }
   }

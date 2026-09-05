@@ -29,6 +29,9 @@ public class SetupAdminAccountServiceImpl implements SetupAdminAccountService {
         if (getAdminAccountPersistencePort.get().isPresent()) {
             throw new IllegalStateException("An admin account already exists");
         }
+        // Checked before anything is written, so a rejected setup leaves the instance unclaimed
+        // and still claimable by its operator.
+        PasswordPolicy.requireAcceptable(password);
         AdminAccountDto account = new AdminAccountDto();
         account.setUsername(username);
         account.setPasswordHash(passwordHasher.hash(password));

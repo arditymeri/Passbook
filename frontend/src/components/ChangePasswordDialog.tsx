@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+
+/** Mirrors PasswordPolicy.MINIMUM_LENGTH and the OpenAPI schema's minLength. */
+const MIN_PASSWORD_LENGTH = 12;
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import { Modal } from './Modal';
@@ -31,7 +34,7 @@ export function ChangePasswordDialog({ open, onClose }: ChangePasswordDialogProp
   }
 
   async function handleSubmit() {
-    if (!currentPassword || !newPassword) return;
+    if (!currentPassword || newPassword.length < MIN_PASSWORD_LENGTH) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -62,6 +65,8 @@ export function ChangePasswordDialog({ open, onClose }: ChangePasswordDialogProp
           label="New Password"
           type="password"
           value={newPassword}
+          helperText={`At least ${MIN_PASSWORD_LENGTH} characters`}
+          error={newPassword.length > 0 && newPassword.length < MIN_PASSWORD_LENGTH}
           onChange={(e) => setNewPassword(e.target.value)}
           fullWidth
         />
@@ -70,7 +75,7 @@ export function ChangePasswordDialog({ open, onClose }: ChangePasswordDialogProp
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={submitting || !currentPassword || !newPassword}
+            disabled={submitting || !currentPassword || newPassword.length < MIN_PASSWORD_LENGTH}
           >
             {submitting ? 'Changing…' : 'Change Password'}
           </Button>

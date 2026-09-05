@@ -104,5 +104,5 @@ frontend/
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/023-auto-post-recurring-series/plan.md`.
+at `specs/024-exposed-instance-hardening/plan.md`.
 <!-- SPECKIT END -->

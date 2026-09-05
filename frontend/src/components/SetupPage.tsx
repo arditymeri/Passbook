@@ -5,6 +5,9 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+
+/** Mirrors PasswordPolicy.MINIMUM_LENGTH and the OpenAPI schema's minLength. */
+const MIN_PASSWORD_LENGTH = 12;
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import { setupAdminAccount } from '../api/client';
@@ -57,9 +60,18 @@ export function SetupPage({ onAuthenticated }: SetupPageProps) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            // Stated up front rather than discovered by rejection: this is the operator's first
+            // interaction with the app, and meeting a rule as an error is a worse introduction
+            // than meeting it as guidance.
+            helperText={`At least ${MIN_PASSWORD_LENGTH} characters — this one credential protects everything`}
+            error={password.length > 0 && password.length < MIN_PASSWORD_LENGTH}
             fullWidth
           />
-          <Button type="submit" variant="contained" disabled={submitting || !username || !password}>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={submitting || !username || password.length < MIN_PASSWORD_LENGTH}
+          >
             {submitting ? 'Setting up…' : 'Create Admin Account'}
           </Button>
         </Stack>

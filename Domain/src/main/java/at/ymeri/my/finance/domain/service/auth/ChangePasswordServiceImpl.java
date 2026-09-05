@@ -32,6 +32,9 @@ public class ChangePasswordServiceImpl implements ChangePasswordService {
         if (!passwordHasher.matches(currentPassword, account.getPasswordHash())) {
             throw new IllegalArgumentException("Current password is incorrect");
         }
+        // The new password must meet the minimum; the CURRENT one is never checked against it,
+        // so an operator whose password predates the rule can still change it (FR-010).
+        PasswordPolicy.requireAcceptable(newPassword);
         account.setPasswordHash(passwordHasher.hash(newPassword));
         account.setTokenVersion(account.getTokenVersion() + 1);
         account.setUpdatedAt(OffsetDateTime.now());
