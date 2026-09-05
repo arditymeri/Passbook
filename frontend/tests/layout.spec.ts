@@ -31,6 +31,11 @@ const WIDTHS = [
   { name: '320 (floor)', width: 320, height: 568 },
   { name: '375 (reference phone)', width: 375, height: 667 },
   { name: '1280 (desktop)', width: 1280, height: 800 },
+  // A phone turned sideways: short rather than narrow. SC-007 and quickstart scenario 10 call this
+  // "by eye", and the legible half of it still is — but the horizontal half costs nothing here, and
+  // 667px is above the 600px boundary, so this is the one case that exercises the desktop
+  // arrangement in a viewport that cannot show it comfortably.
+  { name: '667x375 (landscape phone)', width: 667, height: 375 },
 ];
 
 /** The five full-page views. Recurring, Import and Change Password are dialogs, checked separately. */
@@ -154,7 +159,15 @@ for (const { name, width, height } of WIDTHS) {
       await page.goto('/');
       await expectAppRendered(page);
       await expectNoHorizontalScroll(page, `The dashboard at ${width}px`);
-      await expectNothingSwipesSideways(page, `The dashboard at ${width}px`);
+
+      // Phone widths only. Above the 600px boundary the transaction list is the six-column table
+      // it has always been, and a table that scrolls inside its own container at a narrow desktop
+      // width is existing behaviour this feature deliberately does not change (SC-006) — the
+      // stacked rendering is the phone layout, not a second desktop one. Asserting this at 667px
+      // would be asserting that the desktop layout must also be a phone layout.
+      if (width < 600) {
+        await expectNothingSwipesSideways(page, `The dashboard at ${width}px`);
+      }
     });
 
     test('every screen is reachable and none scrolls sideways', async ({ page }) => {

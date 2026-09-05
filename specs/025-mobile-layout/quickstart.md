@@ -13,10 +13,17 @@ written out as a procedure rather than left as "have a look on your phone".
 **Run the automated half:**
 
 ```bash
-cd frontend && npm run build && npm run test:layout
+cd frontend
+npx playwright install chromium   # once
+npm run test:layout               # builds, then checks
 ```
 
-No backend and no database: it serves the built SPA and stubs every API call.
+No backend and no database: it serves the built SPA and stubs every API call. It runs at four
+viewports — 320, 375, 1280 and 667 × 375 (landscape) — and asserts two things: that no page scrolls
+sideways, and that nothing on the dashboard is hidden behind a horizontal swipe *inside* a
+container. The second was added during implementation because the first could not see the
+transaction table's problem at all: MUI's TableContainer scrolls internally, so a six-column table
+in a 320px viewport left the document exactly 320px wide.
 
 **Set up the manual half:** open the app, then in the browser's developer tools use the device
 toolbar to set an exact width. 375 × 667 is the reference phone; 320 × 568 the floor.
@@ -27,7 +34,8 @@ toolbar to set an exact width. 375 × 667 is the reference phone; 320 × 568 the
 
 **At 375px**, look at the header.
 
-**Expected**: a menu button, the title, and buttons for Add Bill and Add Income. Nothing clipped,
+**Expected**: a menu button, the title, and buttons for **+ Add Expense** and **+ Add Income**
+(those are the labels in the code — the spec called them Add Bill and Add Income). Nothing clipped,
 nothing beyond the right edge.
 
 Open the menu. **Expected**: all nine destinations — Accounts, Budgeting, Recurring, Goals,
@@ -174,7 +182,9 @@ construction held.
 
 | Automated | By eye |
 |---|---|
-| No page scrolls horizontally, at three widths, on every route | Whether anything is legible |
+| No page scrolls horizontally, at four viewports, on every screen and dialog | Whether anything is legible |
+| Nothing on the dashboard hides behind a horizontal swipe | Whether the phone layout reads sensibly |
+| The app actually rendered before any of the above was measured | — |
 | Every destination reachable at phone width | Whether the phone layout reads sensibly |
 | A long description does not widen the page | Whether a real keyboard hides a field |
 | — | Whether the desktop still looks right |
