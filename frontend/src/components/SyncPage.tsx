@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type * as React from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
@@ -13,10 +12,10 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { applySyncImport, fetchSyncExport, previewSyncImport } from '../api/client';
 import { downloadJsonFile } from '../utils/downloadFile';
 import type { EntityMergeCounts, ImportSummary, SyncSnapshot } from '../types';
+import { PageHeader } from './PageHeader';
 
 interface SyncPageProps {
   onBack: () => void;
@@ -128,12 +127,7 @@ export function SyncPage({ onBack }: SyncPageProps) {
 
   return (
     <Box sx={{ p: 2, maxWidth: 720 }}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
-        <IconButton onClick={onBack} aria-label="Back">
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h5" sx={{ fontWeight: 700, flexGrow: 1 }}>Device Sync</Typography>
-      </Stack>
+      <PageHeader title="Device Sync" onBack={onBack} />
 
       <Stack spacing={2.5}>
         <Paper sx={{ p: 2 }}>

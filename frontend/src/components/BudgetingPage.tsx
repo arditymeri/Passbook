@@ -5,10 +5,10 @@ import { MonthNav } from './MonthNav';
 import { AllocationForm } from './AllocationForm';
 import { MoveAllocationDialog } from './MoveAllocationDialog';
 import { RepeatAllocationsDialog } from './RepeatAllocationsDialog';
+import { PageHeader } from './PageHeader';
 import type { Allocation, BudgetStatusEntry, Category, Period } from '../types';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
@@ -17,7 +17,6 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 
 interface BudgetingPageProps {
@@ -92,11 +91,7 @@ export function BudgetingPage({ onBack }: BudgetingPageProps) {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
-        <IconButton onClick={onBack} aria-label="Back">
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h5" sx={{ fontWeight: 700, flexGrow: 1 }}>Budgeting</Typography>
+      <PageHeader title="Budgeting" onBack={onBack}>
         <Button variant="outlined" onClick={() => setRepeatDialogOpen(true)}>
           Repeat Last Month
         </Button>
@@ -106,7 +101,7 @@ export function BudgetingPage({ onBack }: BudgetingPageProps) {
         <Button variant="contained" startIcon={<AddIcon />} onClick={handleAssignNew}>
           Assign to Category
         </Button>
-      </Stack>
+      </PageHeader>
 
       <Stack spacing={2.5}>
         <MonthNav year={period.year} month={period.month} onPrevious={handlePrevious} onNext={handleNext} />

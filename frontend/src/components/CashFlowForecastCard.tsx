@@ -56,7 +56,7 @@ function AccountForecastRow({ forecast, expanded, onToggle }: {
   return (
     <Stack>
       <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-        <Typography sx={{ flex: 1, minWidth: 140, fontWeight: 600 }}>{forecast.accountName}</Typography>
+        <Typography sx={{ flex: 1, minWidth: { xs: 0, sm: 140 }, fontWeight: 600 }}>{forecast.accountName}</Typography>
         <Typography color={forecast.currentBalance >= 0 ? 'success.main' : 'error.main'} sx={{ fontWeight: 700 }}>
           {fmt.format(forecast.currentBalance)}
         </Typography>

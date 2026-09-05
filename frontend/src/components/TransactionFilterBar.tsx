@@ -66,8 +66,11 @@ export function TransactionFilterBar({ filters, onFiltersChange, categories, acc
             },
           }}
         />
+        {/* Responsive minimums, per the pattern documented in SummaryCard.tsx: a 220px floor
+            fits a laptop and overflows a phone, so below sm each control takes a full line and
+            above sm nothing changes at all. */}
         <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
-          <FormControl size="small" sx={{ minWidth: 220 }}>
+          <FormControl size="small" sx={{ minWidth: { xs: 0, sm: 220 }, width: { xs: '100%', sm: 'auto' } }}>
             <InputLabel id="txn-filter-category-source-label">Category / Source</InputLabel>
             <Select
               labelId="txn-filter-category-source-label"
@@ -87,7 +90,7 @@ export function TransactionFilterBar({ filters, onFiltersChange, categories, acc
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 180 }}>
+          <FormControl size="small" sx={{ minWidth: { xs: 0, sm: 180 }, width: { xs: '100%', sm: 'auto' } }}>
             <InputLabel id="txn-filter-account-label">Account</InputLabel>
             <Select
               labelId="txn-filter-account-label"

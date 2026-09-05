@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
+import { useIsPhone } from '../hooks/useIsPhone';
 
 interface TransactionHistoryDialogProps {
   open: boolean;
@@ -33,8 +34,13 @@ export function TransactionHistoryDialog({
   loading,
   onClose,
 }: TransactionHistoryDialogProps) {
+  const isPhone = useIsPhone();
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    // Full screen on a phone for the same reason Modal.tsx is: a correction history is a list to
+    // read through, not a question to answer. This dialog does not use Modal because it has its
+    // own actions row.
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" fullScreen={isPhone}>
       <DialogTitle sx={{ fontWeight: 700 }}>Correction history</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>

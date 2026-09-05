@@ -3,6 +3,7 @@ import { useSavingsGoals } from '../hooks/useSavingsGoals';
 import { useAccounts } from '../hooks/useAccounts';
 import { deleteSavingsGoal } from '../api/client';
 import { SavingsGoalForm } from './SavingsGoalForm';
+import { PageHeader } from './PageHeader';
 import type { SavingsGoalStatus } from '../types';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -18,7 +19,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -69,13 +69,9 @@ export function SavingsGoalsPage({ onBack }: SavingsGoalsPageProps) {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
-        <IconButton onClick={onBack} aria-label="Back">
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h5" sx={{ fontWeight: 700, flexGrow: 1 }}>Savings Goals</Typography>
+      <PageHeader title="Savings Goals" onBack={onBack}>
         <Button variant="contained" onClick={openCreate}>+ New Goal</Button>
-      </Stack>
+      </PageHeader>
 
       {loading && (
         <Stack spacing={1.5}>
@@ -96,10 +92,12 @@ export function SavingsGoalsPage({ onBack }: SavingsGoalsPageProps) {
               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{goal.name}</Typography>
               <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
                 {paceChip(goal)}
-                <IconButton size="small" aria-label="Edit goal" onClick={() => openEdit(goal)}>
+                <IconButton size="small" aria-label="Edit goal" onClick={() => openEdit(goal)}
+                  sx={{ minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}>
                   <EditIcon fontSize="small" />
                 </IconButton>
-                <IconButton size="small" aria-label="Delete goal" onClick={() => setDeletingGoal(goal)}>
+                <IconButton size="small" aria-label="Delete goal" onClick={() => setDeletingGoal(goal)}
+                  sx={{ minWidth: { xs: 44, sm: 'auto' }, minHeight: { xs: 44, sm: 'auto' } }}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Stack>
@@ -138,6 +136,7 @@ export function SavingsGoalsPage({ onBack }: SavingsGoalsPageProps) {
         goal={editingGoal}
       />
 
+      {/* A confirmation, not a form: stays boxed on a phone. See Modal.tsx for why. */}
       <Dialog open={deletingGoal !== null} onClose={() => setDeletingGoal(null)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 700 }}>Delete this goal?</DialogTitle>
         <DialogContent>

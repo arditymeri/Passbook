@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import { AddBillForm } from './components/AddBillForm';
+import { AppNavigation } from './components/AppNavigation';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
 import { AddIncomeForm } from './components/AddIncomeForm';
 import { CorrectBillForm } from './components/CorrectBillForm';
@@ -188,48 +187,23 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppBar position="static" color="primary" elevation={2}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            Passbook Dashboard
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('accounts')}>
-              Accounts
-            </Button>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('budgeting')}>
-              Budgeting
-            </Button>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setRecurringProposalsOpen(true)}>
-              Recurring
-            </Button>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('goals')}>
-              Goals
-            </Button>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('categories')}>
-              Categories
-            </Button>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setImportDialogOpen(true)}>
-              Import
-            </Button>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setView('sync')}>
-              Sync
-            </Button>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={() => setChangePasswordDialogOpen(true)}>
-              Change Password
-            </Button>
-            <Button color="inherit" variant="outlined" sx={{ borderColor: 'rgba(255,255,255,0.5)' }} onClick={handleLogout}>
-              Log Out
-            </Button>
-            <Button color="inherit" variant="contained" sx={{ bgcolor: 'secondary.main' }} onClick={() => setBillFormOpen(true)}>
-              + Add Expense
-            </Button>
-            <Button color="inherit" variant="contained" sx={{ bgcolor: 'secondary.main' }} onClick={() => setIncomeFormOpen(true)}>
-              + Add Income
-            </Button>
-          </Stack>
-        </Toolbar>
-      </AppBar>
+      <AppNavigation
+        destinations={[
+          { label: 'Accounts', onClick: () => setView('accounts') },
+          { label: 'Budgeting', onClick: () => setView('budgeting') },
+          { label: 'Recurring', onClick: () => setRecurringProposalsOpen(true) },
+          { label: 'Goals', onClick: () => setView('goals') },
+          { label: 'Categories', onClick: () => setView('categories') },
+          { label: 'Import', onClick: () => setImportDialogOpen(true) },
+          { label: 'Sync', onClick: () => setView('sync') },
+          { label: 'Change Password', onClick: () => setChangePasswordDialogOpen(true) },
+          { label: 'Log Out', onClick: handleLogout },
+        ]}
+        actions={[
+          { label: '+ Add Expense', onClick: () => setBillFormOpen(true) },
+          { label: '+ Add Income', onClick: () => setIncomeFormOpen(true) },
+        ]}
+      />
 
       <Container maxWidth="lg" sx={{ py: 3 }}>
         <Stack spacing={2.5}>

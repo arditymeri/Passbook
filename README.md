@@ -289,6 +289,25 @@ from real vulnerabilities.
 ./mvnw -pl integration-tests test
 ```
 
+### The frontend layout check
+
+```bash
+cd frontend
+npx playwright install chromium   # once
+npm run test:layout               # builds, then checks
+```
+
+This drives the built SPA in a real browser at 320, 375, 667 and 1280 CSS pixels and fails if any
+screen scrolls sideways or hides content behind a horizontal swipe. It needs no backend and no
+database — it serves the static build and stubs every API call — which is why it is affordable to
+run on every push.
+
+It checks one thing, deliberately: the thing a machine judges better than a person and a person
+cannot repeat reliably across four widths and every screen. **Whether the phone layout is legible
+still needs eyes**, and the procedure for that is written out in
+[`specs/025-mobile-layout/quickstart.md`](specs/025-mobile-layout/quickstart.md). A green run is
+evidence about one requirement — the most important one, and still only one.
+
 ---
 
 ## API Overview

@@ -38,11 +38,19 @@ export function AccountList({
   return (
     <Stack spacing={2}>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+        {/*
+          Six type filters in one row are 452px wide — they fit a laptop and run off a phone. The
+          layout check found this; it is not one of the components feature 025 set out to fix,
+          which is rather the point of having a check that looks at every screen rather than the
+          ones somebody remembered. Wrapping is additive: above 452px of available width nothing
+          about this renders differently.
+        */}
         <ToggleButtonGroup
           value={activeTypeFilter}
           exclusive
           onChange={(_, val) => { if (val !== null) onTypeFilterChange(val); }}
           size="small"
+          sx={{ flexWrap: 'wrap' }}
         >
           {TYPE_FILTERS.map((f) => (
             <ToggleButton key={f} value={f}>{f}</ToggleButton>

@@ -29,6 +29,9 @@ export function RemoveConfirmDialog({
   onConfirm,
   submitting,
 }: RemoveConfirmDialogProps) {
+  // Deliberately NOT full-screen on a phone, unlike Modal.tsx: expanding a two-button question to
+  // fill the screen hides the transaction being confirmed, which is the one piece of context that
+  // makes the answer meaningful (research R4, quickstart scenario 7).
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle sx={{ fontWeight: 700 }}>Remove this transaction?</DialogTitle>

@@ -12,6 +12,18 @@ is safe to hand to someone else, not just the last change.
 
 ### Added
 
+- **Passbook works on a phone.** The nine navigation destinations move into a drawer behind a menu
+  button below 600px, so nothing is off the edge any more — previously most of the header ran past
+  the screen with no way to scroll to it, which made whole features unreachable rather than merely
+  awkward. Adding an expense and adding an income stay in the bar at every width. The transaction
+  list becomes one block per transaction instead of a six-column table, with the description, the
+  date and the amount all visible at once; the amount is never truncated or abbreviated. Forms fill
+  the screen; confirmations deliberately do not. Touch targets are at least 44px on a phone.
+- **An automated layout check.** Every screen is now checked in a real browser at 320, 375, 667 and
+  1280 CSS pixels for sideways scrolling, including screens added after this was written. It runs
+  in CI against the built frontend with no backend and no database. It found three overflows nobody
+  had listed, one of them on the desktop at exactly 1280px.
+
 - **Server-side statement import with idempotent ingestion.** Upload a CSV bank statement, review
   what it will do, and confirm. Re-importing the same statement — or a later one that overlaps it —
   records nothing twice. Two genuinely identical rows on the same day are both kept: only a real
