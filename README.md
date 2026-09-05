@@ -34,28 +34,62 @@ in [`.specify/memory/constitution.md`](.specify/memory/constitution.md).
 
 ---
 
-## Running the Full Stack
+## Two ways to run Passbook
 
-**First, once: create your `.env`.** Passbook ships no credentials, and will not start without
-them.
+There are **two separate stacks**, and picking the right one is most of the battle:
+
+| | Development | Production / self-hosted |
+|---|---|---|
+| Compose file | `docker-compose.yaml` | `docker-compose.deploy.yaml` |
+| Containers | Postgres, Kafka, Kafdrop, Control Center, pgAdmin, backend | Postgres, backend, Caddy |
+| Frontend | Vite dev server, separate, port 5173 | Built and served by Caddy, same origin as the API |
+| Ports published | Six, including the database | One |
+| Database survives a restart? | **No** — see below | Yes, named volume |
+| Guide | This section | **[docs/DEPLOYING.md](docs/DEPLOYING.md)** |
+
+They do not overlap and neither replaces the other. Use the development stack to write code; use
+the deployment stack to run an instance you actually keep data in.
+
+---
+
+## First, once: create your `.env`
+
+Passbook ships no credentials at all, so **nothing** starts — and, awkwardly, nothing *stops*
+either — until this file exists with real values.
 
 ```bash
-cp .env.example .env
-$EDITOR .env          # set POSTGRES_PASSWORD, JWT_SECRET, PGADMIN_DEFAULT_PASSWORD
+./scripts/generate-env.sh
 ```
 
-Generate a good `JWT_SECRET` with `openssl rand -base64 32`. `.env` is gitignored and never
-enters the Docker image.
+That writes `POSTGRES_PASSWORD`, `JWT_SECRET` and `PGADMIN_DEFAULT_PASSWORD` with generated
+secrets. It refuses to overwrite a complete `.env`; pass `--force` to replace one.
 
-### Option A — Everything in Docker (recommended)
+> **Do not just `cp .env.example .env`.** The example holds the keys with *empty* values, and
+> Docker Compose treats an empty required variable exactly like a missing one — so you get a
+> `.env` that exists, looks correct, and still fails every command with
+> `required variable POSTGRES_PASSWORD is missing a value`. Running the script over such a file
+> tells you which values are blank instead of leaving you to guess.
 
-Builds the backend JAR inside a container and starts all services (Postgres, Kafka, the Spring Boot app).
+`.env` is gitignored and never enters a Docker image. Prefer to fill it in yourself? Copy the
+example and set all three values by hand; `openssl rand -base64 32` makes a good `JWT_SECRET`.
+
+---
+
+## Development
+
+The development stack runs the full rig, Kafka and admin UIs included, and publishes everything to
+your host so you can poke at it.
+
+### Option A — everything in Docker
+
+Simplest. Builds the backend image and starts every service:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
-Then start the frontend separately (the Vite dev server cannot run inside Docker for local development):
+Then the frontend, separately — the Vite dev server is not containerised, because hot reload
+through a bind mount is worse than running it natively:
 
 ```bash
 cd frontend
@@ -63,54 +97,112 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:5173** in your browser.
+Open **http://localhost:5173**.
 
-> The Vite dev server proxies all `/api` requests to the backend at `localhost:8080`, so there are no CORS issues.
+> Vite proxies `/api` to the backend on `localhost:8080`, so there are no CORS issues.
+
+### Option B — backend on your host, infrastructure in Docker
+
+Considerably faster to iterate on, and what to use when you are changing backend code: you rebuild
+with Maven in seconds instead of rebuilding a container image.
+
+```bash
+# 1. Rebuild all modules into your local Maven repository.
+#    Not optional: `-pl Launcher` below resolves the other modules from ~/.m2, not from the
+#    reactor, so skipping this runs your PREVIOUS build and your change appears to do nothing.
+./mvnw clean install -DskipTests
+
+# 2. Start just the database.
+docker compose up -d postgres
+
+# 3. Run the backend, pointing it at localhost — the default targets the `postgres` Compose
+#    service, which your host cannot resolve. Maven does not read .env (that is Compose's file),
+#    so the secrets come from your shell.
+export $(grep -vE '^\s*#' .env | xargs)
+DATABASE_URL=jdbc:postgresql://localhost:5432/myfinance \
+  ./mvnw -pl Launcher spring-boot:run
+```
+
+Then the frontend as in Option A.
+
+> Kafka is not needed. Nothing produces to `booking.topic` yet — the consumer is a stub — so the
+> app starts fine without a broker and simply retries in the background. To silence that, add
+> `-Dspring-boot.run.jvmArguments="-Dspring.kafka.listener.auto-startup=false"`.
+
+> Requires **Java 21**. Check with `java -version`.
+
+### Rebuilding after a change
+
+| Changed | Do this |
+|---|---|
+| Backend code, Option A | `docker compose up --build` |
+| Backend code, Option B | `./mvnw clean install -DskipTests`, then restart step 3 |
+| An OpenAPI YAML | `./mvnw -pl Application clean generate-sources` — `clean` is required, since `skipOverwrite=true` means existing generated files are never replaced |
+| Frontend code | Nothing; Vite hot-reloads |
+
+### Stopping, and a warning about your data
+
+```bash
+docker compose down        # stop and remove containers
+docker compose down -v     # ...and delete the database volume
+```
+
+> **The development stack does not keep your database across a `down`.** It declares no named
+> volume, so Postgres writes to an anonymous one that is orphaned when the container is removed —
+> the next `up` gets an empty database, re-runs the migrations and re-seeds demo data. Use
+> `docker compose stop` / `start` to keep dev data between sessions. The deployment stack does
+> this properly, with a named `passbook-db` volume.
+
+> Both `down` and `up` need `.env` to exist, because Compose interpolates the whole file whatever
+> the command. If teardown fails complaining about a missing variable, that is what it means.
 
 ---
 
-### Option B — Backend on host, infrastructure in Docker
+## Production / self-hosted
 
-Start only the infrastructure services (Postgres + Kafka), then run the Spring Boot app from your IDE or terminal:
-
-```bash
-# Start only Postgres and Kafka (skip the finance-app container)
-docker-compose up postgres kafka kafdrop
-```
+Use **`docker-compose.deploy.yaml`**, and read **[docs/DEPLOYING.md](docs/DEPLOYING.md)** before
+exposing an instance to anyone.
 
 ```bash
-# In a separate terminal, run the backend. Set DATABASE_URL to localhost: the default targets
-# the `postgres` Compose service, which is not resolvable from your host.
-DATABASE_URL=jdbc:postgresql://localhost:5432/myfinance ./mvnw -pl Launcher spring-boot:run
+./scripts/generate-env.sh                                    # if you have not already
+docker compose -f docker-compose.deploy.yaml up -d --build
 ```
 
-> The backend reads `POSTGRES_PASSWORD` and `JWT_SECRET` from your shell environment here, not
-> from `.env` — `.env` is read by Docker Compose. Export them, or use `env $(cat .env | xargs)`.
+Three containers: Postgres, the backend, and Caddy serving the built frontend and proxying `/api`
+so both answer on **one origin** — which is why no CORS configuration or API base URL is needed
+anywhere. It listens on **http://localhost:8080** (change with `WEB_PORT` in `.env`).
+
+What the deployment stack does differently, and why:
+
+- **No Kafka, Kafdrop, Control Center or pgAdmin.** Nothing produces to the topic yet, Control
+  Center alone wants about a gigabyte, and a deployment has no business offering a database UI.
+- **Only the web server publishes a port.** Postgres and the backend are reachable on the internal
+  network and nowhere else. The development file publishes six ports to your host, which is
+  harmless on a laptop and is your database on the internet the moment the host has a public IP.
+- **A named volume**, so the database survives `down`. `down -v` still destroys it.
+- **No API browser.** `/swagger-ui` and `/v3/api-docs` are switched off.
 
 ```bash
-# In another terminal, run the frontend
-cd frontend
-npm install
-npm run dev
+docker compose -f docker-compose.deploy.yaml logs -f backend   # first boot runs migrations
+docker compose -f docker-compose.deploy.yaml ps                # backend should reach "healthy"
+docker compose -f docker-compose.deploy.yaml down              # stop, keeping the data
 ```
 
-> Requires **Java 21** on your machine. Check with `java -version`.
+Before anyone else can reach it, read
+[Before you put it on the internet](docs/DEPLOYING.md#before-you-put-it-on-the-internet) — in
+particular, **complete first-run setup before you publish the URL**, because `/auth/setup` is open
+until it succeeds once and whoever loads it first owns the instance.
 
----
-
-## Deploying
-
-To reach an instance over the internet — a test instance on GitHub Codespaces, a VPS, or anything
-else with Docker — see **[docs/DEPLOYING.md](docs/DEPLOYING.md)**.
-
-`docker-compose.deploy.yaml` is a separate, smaller stack: Postgres, the backend, and Caddy
-serving the built frontend and proxying `/api` so both answer on one origin. No Kafka, no
-Control Center, no Kafdrop, no pgAdmin, and nothing but the web server binds a port. The
-`docker-compose.yaml` described above stays the development rig.
+To upgrade: `git pull`, then the same `up -d --build`. Migrations apply at startup and Hibernate
+runs with `ddl-auto=validate`, so a database that disagrees with the code stops startup rather than
+being silently reshaped. Take a backup first — [docs/UPGRADING.md](docs/UPGRADING.md) makes that
+step one.
 
 ---
 
 ## Ports
+
+**Development** (`docker-compose.yaml`) — everything is published to your host:
 
 | Service | URL |
 |---------|-----|
@@ -120,12 +212,22 @@ Control Center, no Kafdrop, no pgAdmin, and nothing but the web server binds a p
 | pgAdmin | http://localhost:5050 |
 | Kafdrop (Kafka UI) | http://localhost:9000 |
 | Confluent Control Center | http://localhost:9021 |
+| PostgreSQL | localhost:5432 |
+
+**Production** (`docker-compose.deploy.yaml`) — one port, and nothing else is reachable:
+
+| Service | URL |
+|---------|-----|
+| Passbook (frontend and API, one origin) | http://localhost:8080 |
+
+Postgres and the backend have no published port there at all; Swagger UI is switched off.
 
 ---
 
 ## Database
 
-PostgreSQL runs at `localhost:5432`, database `myfinance`, user `diti`.
+PostgreSQL, database `myfinance`, user `diti`. In development it is published at
+`localhost:5432`; in a deployment it is on the internal network only.
 
 Schema changes are explicit, versioned Flyway migrations in
 `Infrastructure/src/main/resources/db/migration/`, applied automatically at startup. Hibernate
@@ -139,7 +241,11 @@ baseline, with no table dropped, recreated or emptied. See [docs/UPGRADING.md](d
 exercised against a real PostgreSQL on every CI build rather than only being written down.
 
 **pgAdmin** (http://localhost:5050) uses `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD`
-from your `.env`.
+from your `.env`. Development only — it is not part of the deployment stack.
+
+**Development data does not survive `docker compose down`** — the development stack declares no
+named volume. Use `stop`/`start` to keep it between sessions. See
+[Stopping, and a warning about your data](#stopping-and-a-warning-about-your-data).
 
 ---
 

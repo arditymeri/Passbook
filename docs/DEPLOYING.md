@@ -45,8 +45,9 @@ The shortest path: no new account, no card, no DNS. The repository carries a
 [`.devcontainer`](../.devcontainer) so the Codespace has Docker and generates its own secrets.
 
 1. On GitHub: **Code → Codespaces → Create codespace on main.**
-2. Wait for it to finish building. `.devcontainer/setup.sh` writes a `.env` with freshly generated
-   `POSTGRES_PASSWORD` and `JWT_SECRET`. It never overwrites an existing one.
+2. Wait for it to finish building. `scripts/generate-env.sh` runs automatically and writes a
+   `.env` with freshly generated `POSTGRES_PASSWORD` and `JWT_SECRET`. It never overwrites a
+   complete one.
 3. In the Codespace terminal:
 
    ```bash
@@ -98,7 +99,7 @@ Always Free instance:
 
 ```bash
 git clone https://github.com/arditymeri/Passbook.git && cd Passbook
-cp .env.example .env && $EDITOR .env      # POSTGRES_PASSWORD and JWT_SECRET are required
+./scripts/generate-env.sh                 # writes .env with generated secrets
 docker compose -f docker-compose.deploy.yaml up -d --build
 ```
 
@@ -128,7 +129,7 @@ An instance reachable from the internet is reachable by people who are not you.
 - **Your password needs at least 12 characters.** Enforced when you set it, never when you use it,
   so an instance created before this rule keeps working with whatever it has.
 - **`JWT_SECRET` must be real randomness.** It signs sessions. `openssl rand -base64 32`.
-  `.devcontainer/setup.sh` does this for you; a hand-written `.env` is where a placeholder creeps
+  `scripts/generate-env.sh` does this for you; a hand-written `.env` is where a placeholder creeps
   in.
 - **A deployed instance serves no API browser.** `docker-compose.deploy.yaml` turns springdoc off,
   so `/swagger-ui` and `/v3/api-docs` return nothing. Development keeps them.

@@ -55,8 +55,19 @@ is safe to hand to someone else, not just the last change.
 - **A deployed instance no longer serves its API browser or machine-readable description.**
   Development still does.
 
+- **`scripts/generate-env.sh`**, which writes `.env` with generated secrets. Replaces "copy the
+  example and edit it" as the documented first step.
+
 ### Fixed
 
+- **`cp .env.example .env` looked sufficient and was not.** The example carries the keys with empty
+  values, and Docker Compose treats an empty required variable exactly like a missing one — so the
+  result was a `.env` that existed, looked filled in, and still failed every command, including
+  `docker compose down`, with a message saying the variable was missing. `scripts/generate-env.sh`
+  now writes real values, and run against such a file it names the empty keys instead of leaving
+  you to guess.
+- **The README did not distinguish the two stacks.** Development and production setup are now
+  separate sections rather than interleaved, with a table up front saying which file does what.
 - **Importing a statement containing income could break the app afterwards.** The ingest path wrote
   income rows without a value for one column that cannot be null, so every later read of the income
   table failed — account balances, budget status, savings goals and the next import all stopped
