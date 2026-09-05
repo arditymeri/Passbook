@@ -16,10 +16,11 @@
     "8080": { "label": "Passbook", "onAutoForward": "notify" }
   },
 
-  // Generates .env with fresh random secrets if it does not exist. Idempotent — an existing .env
-  // is never touched, so rebuilding the container does not invalidate sessions or lock you out
-  // of the database.
-  "postCreateCommand": "bash .devcontainer/setup.sh",
+  // Generates .env with fresh random secrets. The same script an operator runs on their own
+  // machine (scripts/generate-env.sh) rather than a Codespaces-only copy, so there is one place
+  // this behaviour is defined. Idempotent — a complete .env is never touched, so rebuilding the
+  // container does not invalidate sessions or lock you out of the database.
+  "postCreateCommand": "bash scripts/generate-env.sh",
 
   "customizations": {
     "vscode": {
